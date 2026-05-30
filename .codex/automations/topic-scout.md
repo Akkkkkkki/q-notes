@@ -22,7 +22,7 @@ For each run:
 4. Fact-check the factual substrate for each candidate.
 5. Stress-test the logic: strongest argument, best counterargument, what would make the idea false, and why the author has a plausible angle.
 6. Append the best candidates to `research/backlog.md` in the existing format.
-7. Open a pull request with the backlog update. Do not create article drafts in this automation.
+7. Open a new, non-draft pull request with the backlog update. Do not create article drafts in this automation.
 
 ## Output format for each backlog item
 
