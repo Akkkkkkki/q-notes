@@ -71,7 +71,9 @@ prominent. Type or dictate; hit send; done. The entry lands as a dated line in
 - **Share-sheet target**: share a URL, quote, or screenshot caption from any app →
   becomes a spark with the source attached (`2026-06-14 — <comment> ← <url>`). Half of
   good sparks are reactions to something just read; this captures the reaction *and* the
-  provenance the scout needs.
+  provenance the scout needs. Android only via the Web Share Target API; iOS Safari does
+  not support it, so on iPhone this ships as an Apple Shortcuts share-sheet action
+  posting to the same `append-spark` endpoint (see §8).
 - **Mixed-language as designed**: English, 中文, or both in one line — the pipeline
   already treats that as first-class input.
 - **Offline queue**: sparks queue locally and commit when back online (subway-proof).
@@ -121,8 +123,9 @@ Phone (PWA: Capture / Interview / Desk)
    │  HTTPS + Cloudflare Access (author-only auth)
    ▼
 Cloudflare Worker API proxy            ← same account already hosting the site
-   │  fine-grained GitHub PAT (server-side only):
-   │    contents: read/write on research/** and drafts/**
+   │  fine-grained GitHub PAT (server-side only), repo-scoped:
+   │    contents: read/write — GitHub cannot scope tokens to paths,
+   │      so the Worker enforces a path allowlist (research/**, drafts/**)
    │    pull_requests: read, merge, comment
    ▼
 GitHub repo  ◄── automations 01–05 (unchanged)
@@ -132,10 +135,15 @@ Decisions and their reasons:
 
 - **PWA, no app store.** Install from Safari/Chrome, web push works on modern iOS/Android,
   zero review process, one codebase. Static assets ship from the existing Worker.
-- **Worker as the only secret-holder.** The PAT never reaches the phone. The Worker
-  exposes ~6 narrow endpoints (`append-spark`, `get-brief`, `save-answer`, `list-desk`,
-  `merge-pr`, `comment-pr`) rather than proxying the GitHub API generically — the app
-  physically cannot do anything the pipeline didn't intend.
+- **Worker as the only secret-holder, and the only path enforcer.** The PAT never
+  reaches the phone. Fine-grained PATs scope to repositories and permission classes,
+  not paths — `contents: write` can touch any file in the repo — so the blast-radius
+  containment lives in the Worker: it exposes ~6 narrow endpoints (`append-spark`,
+  `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`), hard-codes the
+  writable paths (`research/**`, `drafts/**`), and never proxies the GitHub API
+  generically. Branch protection on `main` (PRs only for `src/content/**`) backs this
+  up at the repo level. If endpoint sprawl ever makes this allowlist hard to audit,
+  graduate to a GitHub App with short-lived installation tokens.
 - **Cloudflare Access for auth** (free tier, one email): no password code to write, and
   a lost phone is revoked in the dashboard.
 - **No framework ceremony.** Three screens of vanilla or near-vanilla code (e.g., one
@@ -203,9 +211,11 @@ only ones that matter terminally.
   rule 2 (weekend cap, publishing-first gate), §6 kill criteria, §7's "done is a feature."
 - **PAT blast radius** — mitigated by fine-grained scopes, narrow Worker endpoints, and
   Cloudflare Access; rotating the token is a 2-minute dashboard task.
-- **iOS PWA limitations** — web push and share targets work on current iOS but lag
-  Android; Phase 0/1 designs assume nothing beyond "installable page with a text box,"
-  so the floor is safe.
+- **iOS PWA limitations** — web push works on current iOS for installed PWAs, but the
+  Web Share Target API is unsupported in iOS Safari, so share-sheet capture is an
+  Android-only progressive enhancement. The iOS floor is "installable page with a text
+  box" plus an Apple Shortcuts share action (or the messaging bot) hitting
+  `append-spark`; Phase 1 must not assume more than that.
 - **Drift between app and pipeline** — mitigated by repo-as-backend: the automations and
   the app share files, not APIs, so the pipeline doc stays the single contract.
 
