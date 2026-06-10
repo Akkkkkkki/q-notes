@@ -45,7 +45,15 @@ Produce the highest rung available:
   own language, not a translation).
 - Use `research/glossary.md` for recurring term renderings; append any new term decisions
   you made to the glossary in the same PR.
-- File naming: `src/content/posts/<translationKey>.en.md` and `<translationKey>.zh.md`.
+- File placement depends on whether the Phase 2 bilingual site work (`docs/pipeline.md`
+  §6) has landed — check `src/content.config.ts` for a `lang` field:
+  - **Phase 2 landed**: `src/content/posts/<translationKey>.en.md` and
+    `<translationKey>.zh.md`.
+  - **Not yet**: the collection publishes every file under `src/content/posts/` and
+    builds URLs from the file id, so a `.zh.md` file there would go live in the English
+    list. Keep the English version at the current `src/content/posts/<slug>.md`
+    convention and park the Chinese version at `drafts/zh/<slug>.md` (outside the
+    collection) in the same PR; Phase 2 moves parked files into place.
 
 ## Closing the loop
 

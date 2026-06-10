@@ -231,8 +231,13 @@ Target state:
 6. **Back-fill**: the three existing consulting essays get Chinese versions — three
    ready-made early wins for the new pipeline.
 
-Until Phase 2 lands, the drafter may still produce both versions in one PR (the zh file
-simply isn't routed yet); nothing in the writing pipeline blocks on the site work.
+Until Phase 2 lands, the writing pipeline still doesn't block on the site work — but the
+zh file cannot live under `src/content/posts/` yet, because the collection publishes
+every file there and `src/pages/posts/[slug].astro` builds URLs from the file id (a
+`slug.zh.md` would go live at `/posts/slug.zh` in the English list and RSS). So
+pre-Phase-2 the drafter keeps the current `<slug>.md` convention for English and parks
+the Chinese version at `drafts/zh/<slug>.md`, outside the collection, in the same PR.
+Phase 2 includes moving parked zh files into place.
 
 ## 7. Capturing the author's own sparks
 
