@@ -1,6 +1,8 @@
-# q-notes Codex Instructions
+# q-notes Agent Instructions
 
 This repository is a personal website for publishing sharp notes, opinions, essays, and blog posts. Treat it as an editorial system, not as a generic application repo.
+
+The editorial pipeline — content tiers, weekly automation loop, definitions of done, and the bilingual contract — is defined in `docs/pipeline.md`. Runnable stage prompts live in `automations/`. Any agent drafting or editing content must follow that document; the rules below are the always-on summary.
 
 ## Editorial north star
 
@@ -28,6 +30,13 @@ This repository is a personal website for publishing sharp notes, opinions, essa
 - Make the argument sharper during revision: remove generic framing, reduce caveats that do not change the conclusion, and replace abstractions with concrete examples.
 - End with a memorable implication, question, or prediction tracker when useful.
 - Draft posts under `src/content/posts/` with frontmatter compatible with the site's content collection.
+
+## Bilingual contract
+
+- Every published piece has an English and a Chinese version, shipped in the same PR as one editorial unit.
+- The two versions are transcreations, not literal translations: thesis, structure, factual claims, numbers, and source links must be identical; idioms, rhythm, and titles adapt to each language.
+- Recurring terms use the renderings in `research/glossary.md`; new term decisions are appended there in the same PR.
+- The author's voice may originate in either language or both mixed; draft first in the language the input leans toward.
 
 ## Pull request expectations
 
