@@ -16,12 +16,15 @@
   },
   // Tuesday 08:30 Asia/Shanghai: nudge the phone if the week's interview
   // brief (written Tue 08:00 by routine 02) is still unanswered.
+  // Friday 08:30 Asia/Shanghai: desk push if the ship gate (Fri 08:00,
+  // routine 04) left open content PRs to decide on.
   "triggers": {
-    "crons": ["30 0 * * 2"]
+    "crons": ["30 0 * * 2", "30 0 * * 5"]
   }
   // Secrets (set once via `npx wrangler secret put <NAME>`):
-  //   GITHUB_TOKEN      — fine-grained PAT scoped to this repo, contents: read/write
-  //   CAPTURE_TOKEN     — shared secret for the Capture/Interview pages and shortcuts
+  //   GITHUB_TOKEN      — fine-grained PAT scoped to this repo,
+  //                       contents: read/write + pull requests: read/write
+  //   CAPTURE_TOKEN     — shared secret for the Companion pages and shortcuts
   //   VAPID_PUBLIC_KEY,
   //   VAPID_PRIVATE_JWK — optional, web push (node scripts/generate-vapid.mjs)
 }

@@ -1,10 +1,11 @@
 // Minimal shell cache so the Companion surfaces open with no network (the
 // offline spark queue lives in the Capture page itself, in localStorage).
-// Site pages are untouched. Also handles the Tuesday-brief push: pushes are
-// sent without a payload (VAPID wake-up only), so the notification text is
-// fixed here and deep-links to /interview/.
-const CACHE = 'capture-shell-v2';
-const SHELL = ['/capture/', '/interview/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
+// Site pages are untouched. Also handles the scheduled pushes: they are sent
+// without a payload (VAPID wake-up only), so the text is fixed here. Two
+// crons exist — Tuesday brief and Friday desk — and a payload-less push
+// can't say which fired, so the weekday picks the notification.
+const CACHE = 'capture-shell-v3';
+const SHELL = ['/capture/', '/interview/', '/desk/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
@@ -22,6 +23,7 @@ self.addEventListener('activate', (event) => {
 function shellPath(pathname) {
   if (pathname === '/capture' || pathname === '/capture/') return '/capture/';
   if (pathname === '/interview' || pathname === '/interview/') return '/interview/';
+  if (pathname === '/desk' || pathname === '/desk/') return '/desk/';
   return SHELL.includes(pathname) ? pathname : null;
 }
 
@@ -44,13 +46,18 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', (event) => {
+  // Friday (or Thursday evening west of the cron's timezone) → the desk push.
+  const day = new Date().getDay();
+  const desk = day === 5 || day === 4;
   event.waitUntil(
     self.registration.showNotification("Q's Notes", {
-      body: 'This week’s interview brief is ready. 15–30 min, any language, fragments welcome.',
+      body: desk
+        ? 'The desk has drafts waiting. Ship, one change, or downgrade — five minutes.'
+        : 'This week’s interview brief is ready. 15–30 min, any language, fragments welcome.',
       icon: '/icons/capture-192.png',
       badge: '/icons/capture-192.png',
-      tag: 'qnotes-brief',
-      data: { url: '/interview/' },
+      tag: desk ? 'qnotes-desk' : 'qnotes-brief',
+      data: { url: desk ? '/desk/' : '/interview/' },
     })
   );
 });

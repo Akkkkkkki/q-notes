@@ -14,7 +14,8 @@
   ],
   "shortcuts": [
     { "name": "Capture", "url": "/capture/" },
-    { "name": "Interview", "url": "/interview/" }
+    { "name": "Interview", "url": "/interview/" },
+    { "name": "Desk", "url": "/desk/" }
   ],
   "share_target": {
     "action": "/capture/",

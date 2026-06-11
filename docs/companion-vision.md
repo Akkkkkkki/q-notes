@@ -5,10 +5,11 @@ CMS — a tool that makes the author's three recurring touchpoints (capture a sp
 an interview, approve a ship) take two minutes from anywhere.
 
 Status: vision (revised 2026-06-11 — added the voice mechanisms in §4, listen-to-review,
-walk-mode interviews, ship-time author slots, and the spark echo). **Phases 1 (Capture)
-and 2 (Interview) are built**: the `/capture` and `/interview` PWA surfaces and the
-Worker API live in this repo (`src/pages/capture.astro`, `src/pages/interview.astro`,
-`worker/`); setup steps are in the README. Builds on
+walk-mode interviews, ship-time author slots, and the spark echo). **Phases 1 (Capture),
+2 (Interview), and 3 (Desk) are built**: the `/capture`, `/interview`, and `/desk` PWA
+surfaces and the Worker API live in this repo (`src/pages/capture.astro`,
+`src/pages/interview.astro`, `src/pages/desk.astro`, `worker/`), with a test suite under
+`tests/`; setup steps are in the README. Builds on
 [`docs/pipeline.md`](./pipeline.md); references issues
 [#7](https://github.com/Akkkkkkki/q-notes/issues/7) (bilingual site) and
 [#8](https://github.com/Akkkkkkki/q-notes/issues/8) (inbox seeding).

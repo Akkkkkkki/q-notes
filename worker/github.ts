@@ -8,9 +8,10 @@ import type { Env } from './types';
 
 export async function getFile(
   env: Env,
-  path: string
+  path: string,
+  ref?: string
 ): Promise<{ content: string; sha: string } | null> {
-  const res = await github(env, 'GET', path);
+  const res = await github(env, 'GET', path + (ref ? `?ref=${encodeURIComponent(ref)}` : ''));
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub read failed (${res.status})`);
   const data = (await res.json()) as { content: string; sha: string };
@@ -22,12 +23,14 @@ export async function putFile(
   path: string,
   content: string,
   message: string,
-  sha?: string
+  sha?: string,
+  branch?: string
 ): Promise<{ ok: boolean; status: number; commitUrl?: string }> {
   const res = await github(env, 'PUT', path, {
     message,
     content: toBase64(content),
     ...(sha ? { sha } : {}),
+    ...(branch ? { branch } : {}),
   });
   if (!res.ok) return { ok: false, status: res.status };
   const data = (await res.json()) as { commit?: { html_url?: string } };
@@ -43,8 +46,16 @@ export async function listDir(env: Env, path: string): Promise<string[]> {
 }
 
 function github(env: Env, method: string, path: string, body?: unknown): Promise<Response> {
+  return gh(env, method, `contents/${path}`, body);
+}
+
+/**
+ * Repo-scoped GitHub API call. The repo is hard-coded from config and callers
+ * pass only the path under it — this Worker never proxies the API generically.
+ */
+export function gh(env: Env, method: string, repoPath: string, body?: unknown): Promise<Response> {
   const base = env.GITHUB_API || 'https://api.github.com';
-  return fetch(`${base}/repos/${env.GITHUB_REPO}/contents/${path}`, {
+  return fetch(`${base}/repos/${env.GITHUB_REPO}/${repoPath}`, {
     method,
     headers: {
       Authorization: `Bearer ${env.GITHUB_TOKEN}`,

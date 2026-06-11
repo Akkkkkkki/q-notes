@@ -1,23 +1,26 @@
 /**
- * Companion API — Phases 1 (Capture) and 2 (Interview).
+ * Companion API — Phases 1 (Capture), 2 (Interview), and 3 (Desk).
  *
  * The only writable paths are hard-coded in their modules: this Worker is
  * the path allowlist (docs/companion-vision.md §5).
  *   - research/inbox.md                              (append-spark, below)
  *   - research/interviews/<date>-<slug>.md           (worker/interview.ts)
  *   - research/.companion/push-subscriptions.json    (worker/push.ts)
+ *   - src/content/** and drafts/** on PR branches    (apply-slots only, worker/desk.ts)
  *
  * Secrets (wrangler secret put …):
- *   GITHUB_TOKEN      — fine-grained PAT, this repo only, contents: read/write
+ *   GITHUB_TOKEN      — fine-grained PAT, this repo only,
+ *                       contents: read/write + pull requests: read/write
  *   CAPTURE_TOKEN     — shared secret the pages / Shortcuts send as a Bearer token
  *   VAPID_PUBLIC_KEY,
- *   VAPID_PRIVATE_JWK — optional, for Tuesday-brief web push (scripts/generate-vapid.mjs)
+ *   VAPID_PRIVATE_JWK — optional, for Tuesday/Friday web push (scripts/generate-vapid.mjs)
  */
 
 import type { Env } from './types';
 import { getFile, putFile, todayIn, collapse, json } from './github';
 import { getBrief, saveAnswer, closeBrief } from './interview';
-import { getPublicKey, subscribe, notifyIfBriefOpen } from './push';
+import { listDesk, shipPr, commentPr, killPr, applySlots } from './desk';
+import { getPublicKey, subscribe, notifyIfBriefOpen, notifyIfDeskOpen } from './push';
 
 const INBOX_PATH = 'research/inbox.md';
 const MAX_SPARK_LENGTH = 2000;
@@ -32,9 +35,14 @@ export default {
     return env.ASSETS.fetch(request);
   },
 
-  // Tuesday 08:30 Asia/Shanghai (00:30 UTC), see wrangler.jsonc triggers.
-  async scheduled(_event: unknown, env: Env): Promise<void> {
-    await notifyIfBriefOpen(env);
+  // Tuesday 08:30 Asia/Shanghai: brief nudge. Friday 08:30: desk summary.
+  // (Both 00:30 UTC, see wrangler.jsonc triggers.)
+  async scheduled(event: { cron?: string }, env: Env): Promise<void> {
+    if (event?.cron === '30 0 * * 5') {
+      await notifyIfDeskOpen(env);
+    } else {
+      await notifyIfBriefOpen(env);
+    }
   },
 };
 
@@ -59,6 +67,16 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await saveAnswer(request, env);
       case 'POST /api/brief/close':
         return await closeBrief(request, env);
+      case 'GET /api/desk':
+        return await listDesk(env);
+      case 'POST /api/desk/ship':
+        return await shipPr(request, env);
+      case 'POST /api/desk/comment':
+        return await commentPr(request, env);
+      case 'POST /api/desk/kill':
+        return await killPr(request, env);
+      case 'POST /api/desk/slots':
+        return await applySlots(request, env);
       case 'GET /api/push/key':
         return getPublicKey(env);
       case 'POST /api/push/subscribe':

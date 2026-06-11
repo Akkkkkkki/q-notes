@@ -29,6 +29,7 @@ npm run dev          # http://localhost:4321
 npm run build        # production build to dist/
 npm run preview      # preview the production build
 npm run deploy:check # build + dry-run Wrangler deploy
+npm test             # Companion Worker API test suite (vitest)
 ```
 
 ## Project structure
@@ -53,7 +54,8 @@ npm run deploy:check # build + dry-run Wrangler deploy
 │   └── utils/
 ├── public/              # Static assets (fonts, images, favicon, Capture PWA manifest + SW)
 ├── scripts/             # One-off helpers (VAPID keygen for web push)
-├── worker/              # Companion API (Cloudflare Worker: capture, interview, push)
+├── tests/               # Companion Worker API tests (vitest, mocked GitHub API)
+├── worker/              # Companion API (Cloudflare Worker: capture, interview, desk, push)
 ├── astro.config.mjs
 └── wrangler.jsonc       # Cloudflare Workers deploy config
 ```
@@ -86,10 +88,10 @@ summary any agent should read before drafting or editing content, and
 [`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
 companion app for the pipeline's recurring author touchpoints.
 
-## Companion — Capture + Interview (Phases 1–2)
+## Companion — Capture + Interview + Desk (Phases 1–3)
 
 The phone-first companion app from [`docs/companion-vision.md`](./docs/companion-vision.md)
-exists as its first two phases, installable as one PWA. Repo-as-backend: the app owns no
+exists as its first three phases, installable as one PWA. Repo-as-backend: the app owns no
 data; everything reads and writes the same files the automations use.
 
 **Capture** (`/capture`) — "thought to repo in under 15 seconds":
@@ -116,10 +118,31 @@ data; everything reads and writes the same files the automations use.
   brief is still unanswered and wakes subscribed devices via web push. Enable it from
   the Interview page once VAPID keys are configured.
 
+**Desk** (`/desk`) — "ship from the couch":
+
+- One card per open **content** PR (a PR qualifies only if every changed file lives
+  under `src/content/`, `drafts/`, `research/`, or `public/images/` — the phone can
+  never see or merge a code PR). Each card shows the ship gate's verdict, tier, age,
+  and a link to the rendered branch preview — prose approved as prose, not as a diff.
+- **Voice panel**: the drafter's verbatim-spine list (*your words, kept*) and one
+  "Says X — yours?" question per untraceable opinion, resolved with one-tap
+  **keep** / **cut** (lands as a PR comment the next automation run acts on).
+- **Ship** offers the two author-owned slots — pick a title (the drafter's three
+  options, or type your own) and dictate a replacement last line — both skippable in
+  one tap, then merges. The slots ride `POST /api/desk/slots`, the only writer that
+  ever touches `src/content/**`: PR branches only, title frontmatter line and final
+  paragraph only.
+- **One change** (a dictated sentence as a PR comment), **Downgrade to note** (invokes
+  the documented remedy), and a smaller **Kill** (comments and closes — killed is a
+  valid outcome).
+- **Friday push** (optional): after the ship gate's Friday-morning pass, a 08:30 cron
+  wakes subscribed devices if anything is sitting on the desk.
+
 ### One-time setup
 
 1. Create a fine-grained GitHub PAT scoped to **this repo only**, with
-   **Contents: read and write** as its only permission.
+   **Contents: read and write** and **Pull requests: read and write** as its only
+   permissions.
 2. Set the Worker secrets:
    ```bash
    npx wrangler secret put GITHUB_TOKEN    # the PAT
@@ -130,7 +153,8 @@ data; everything reads and writes the same files the automations use.
 4. Optional web push: `node scripts/generate-vapid.mjs`, store the two values with
    `npx wrangler secret put VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_JWK`, redeploy, then tap
    "Enable Tuesday notifications" on `/interview` (requires the PWA to be installed on iOS).
-5. Optional hardening: put Cloudflare Access in front of `/capture`, `/interview`, and `/api/*`.
+5. Optional hardening: put Cloudflare Access in front of `/capture`, `/interview`,
+   `/desk`, and `/api/*`.
 6. Optional iOS share sheet: an Apple Shortcut that sends
    `POST /api/spark` with header `Authorization: Bearer <CAPTURE_TOKEN>` and JSON body
    `{"text": "...", "url": "..."}`.
@@ -138,6 +162,8 @@ data; everything reads and writes the same files the automations use.
 The API surface stays small, and every writable path is hard-coded in the Worker:
 `POST /api/spark` → `research/inbox.md`; `GET /api/sparks`; `GET /api/brief`,
 `POST /api/answer`, `POST /api/brief/close` → `research/interviews/*.md`;
+`GET /api/desk`; `POST /api/desk/{ship,comment,kill}` → content PRs only;
+`POST /api/desk/slots` → `src/content/**` / `drafts/**` on PR branches only;
 `GET /api/push/key`, `POST /api/push/{subscribe,unsubscribe}` →
 `research/.companion/push-subscriptions.json`. Local dev: put the secrets in
 `.dev.vars` and run `npx wrangler dev` after a build.
