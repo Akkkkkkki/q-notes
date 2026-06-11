@@ -9,7 +9,9 @@
     "build": "astro build",
     "deploy:check": "npm run build && npx wrangler versions upload --dry-run",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.3",
@@ -27,6 +29,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.8"
   }
 }

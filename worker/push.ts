@@ -1,6 +1,7 @@
 import type { Env } from './types';
 import { getFile, putFile, json } from './github';
 import { latestBrief } from './interview';
+import { listOpenContentPrs } from './desk';
 
 /**
  * Web push for the Tuesday brief (Companion Phase 2). Repo-as-backend:
@@ -73,6 +74,22 @@ export async function notifyIfBriefOpen(env: Env): Promise<void> {
   if (!(ageDays >= 0 && ageDays <= 7)) return;
   if (!brief.questions.some((q) => q.answer === null)) return;
 
+  await wakeAllDevices(env);
+}
+
+/**
+ * Friday cron (Companion Phase 3): if the Desk has anything on it after the
+ * ship gate's morning pass, wake the phone. Same payload-less push as the
+ * Tuesday brief; the service worker picks the Desk text/link by weekday.
+ */
+export async function notifyIfDeskOpen(env: Env): Promise<void> {
+  if (!pushConfigured(env)) return;
+  const open = await listOpenContentPrs(env);
+  if (!open.length) return;
+  await wakeAllDevices(env);
+}
+
+async function wakeAllDevices(env: Env): Promise<void> {
   const file = await getFile(env, SUBSCRIPTIONS_PATH);
   if (!file) return;
   const subs: PushSubscriptionJSON[] = JSON.parse(file.content);
