@@ -173,3 +173,15 @@ The API surface stays small, and every writable path is hard-coded in the Worker
 The site builds to static files (`npm run build`) and deploys to Cloudflare Workers
 using the config in `wrangler.jsonc`. `npm run deploy:check` runs a build and a
 dry-run upload to catch configuration issues before a real deploy.
+
+**Continuous deployment**: [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml)
+builds and runs `wrangler deploy` on every push to `main`. It needs two repository
+secrets (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_API_TOKEN` — an "Edit Cloudflare Workers" scoped API token
+- `CLOUDFLARE_ACCOUNT_ID` — from the Cloudflare dashboard sidebar
+
+Worker runtime secrets (`GITHUB_TOKEN`, `CAPTURE_TOKEN`, optional VAPID keys — see
+[Companion setup](#companion--capture--interview--desk-phases-13)) are set once via
+`npx wrangler secret put <NAME>` from a machine where `wrangler login` can open a
+browser; they are not part of CI.
