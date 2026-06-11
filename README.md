@@ -1,199 +1,91 @@
-<!-- templatedeck-backlink -->
-> 🎨 **BROOK 2** is part of the [TemplateDeck](https://templatedeck.com) collection — handcrafted HTML and Astro templates for developers and designers.
->
-> 📥 **[Download free on TemplateDeck](https://templatedeck.com/templates/brook2)** · 🌐 **[Browse all templates](https://templatedeck.com)**
+# q-notes
 
----
+Source for [Q's Notes](https://notes.qiuyue.dev) — a personal, bilingual (English / 中文)
+blog for notes, essays, and opinions on AI, technology, software, business, consulting,
+and the occasional aside on games, books, films, or culture.
 
-# Brook - A Minimalist Blog Template Built with Astro
+## What's in this repo
 
-![Brook Blog](./cover.png)
+This repo is two things layered together:
 
-**[Live Demo](https://brook2-astro-blog.vercel.app/)**
+1. **A small Astro site** — the blog itself: posts, layouts, pages, and styles.
+2. **An editorial pipeline** — automation prompts that scout topics, interview the
+   author, draft bilingual posts, and run a weekly publish loop, so writing the
+   author's own point of view is the only manual step. If you're an agent (or human)
+   working on content here, start with [`AGENTS.md`](./AGENTS.md).
 
-Brook is a minimalist blog template for developers and writers that focuses on clean typography and a distraction-free reading experience.
+## Stack
 
-## ✨ Features
+- [Astro](https://astro.build/) (static output) + TypeScript
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- Astro content collections for posts
+- Deployed to Cloudflare Workers via [Wrangler](https://developers.cloudflare.com/workers/wrangler/)
 
-- **Clean Minimalist Design**: Elegant layout focused on readability and content
-- **Full Dark/Light Mode**: Complete support for both modes with smooth transitions
-- **Responsive Design**: Optimized for all device sizes
-- **Content Collections**: Organized content using Astro's content collections
-- **Markdown/MDX Support**: Write your content in Markdown with optional JSX support
-- **Image Optimization**: Automatic image processing and optimization
-- **View Transitions**: Smooth page transitions with Astro's view transitions API
-- **Tagging System**: Categorize and filter posts using tags
-- **Code Syntax Highlighting**: Beautiful syntax highlighting for code blocks
-- **SEO Optimized**: Built-in meta tags and structured data (JSON-LD)
-- **Type-Safe**: Fully typed with TypeScript
-- **Reading Time**: Automatic calculation of estimated reading time
-- **Accessible**: Built with accessibility in mind
-- **Fast Performance**: Optimized for web vitals with minimal JavaScript
-- **RSS Feed**: Auto-generated RSS feed
-
-## 🚀 Getting Started
+## Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/holger1411/astro-brook.git
-cd astro-brook
-
-# Install dependencies
 npm install
-
-# Start the development server
-npm run dev
+npm run dev          # http://localhost:4321
+npm run build        # production build to dist/
+npm run preview      # preview the production build
+npm run deploy:check # build + dry-run Wrangler deploy
 ```
 
-Visit [http://localhost:4321](http://localhost:4321) to see the result.
-
-## 📁 Project Structure
+## Project structure
 
 ```
-├── public/               # Static assets
+├── automations/        # Editorial pipeline prompts (scout, interview, drafter, ship gate, gardener)
+├── docs/
+│   ├── pipeline.md          # Editorial pipeline design - source of truth
+│   └── companion-vision.md  # Vision for a phone-first companion app
+├── research/
+│   ├── backlog.md           # Topic backlog
+│   ├── inbox.md             # Author's raw idea inbox
+│   ├── voice.md             # Voiceprint: stances, signature phrasing, never-say terms
+│   ├── glossary.md          # EN <-> 中文 glossary for transcreation
+│   └── interviews/          # Interview briefs + author answers
 ├── src/
-│   ├── assets/           # Optimized assets (images, etc.)
-│   ├── components/       # Reusable components
-│   │   ├── PostCard.astro      # Blog post preview card
-│   │   ├── PostList.astro      # List of blog posts
-│   │   ├── PostNavigation.astro # Next/previous post navigation
-│   │   └── ui/                 # UI components
-│   ├── content/          # Content directory (using Astro Content Collections)
-│   │   └── posts/        # Blog posts (Markdown/MDX)
-│   ├── layouts/          # Astro layouts
-│   │   ├── BaseLayout.astro    # Base layout
-│   │   └── PostLayout.astro    # Layout for blog posts
-│   ├── pages/            # Astro pages
-│   │   ├── about.astro         # About page
-│   │   ├── index.astro         # Homepage
-│   │   ├── journal.astro       # Blog overview page
-│   │   ├── posts/[slug].astro    # Dynamic blog post route
-│   │   └── tags/[tag].astro    # Tag-based filtering
-│   ├── styles/           # Stylesheets
-│   └── utils/            # Helper functions and utilities
-└── astro.config.mjs      # Astro configuration
+│   ├── components/      # Astro components (post cards, lists, dark mode toggle, ...)
+│   ├── content/posts/   # Blog posts (Markdown)
+│   ├── layouts/         # Base + post layouts
+│   ├── pages/           # Routes (home, journal, posts, tags, about, RSS)
+│   ├── styles/
+│   └── utils/
+├── public/              # Static assets (fonts, images, favicon)
+├── astro.config.mjs
+└── wrangler.jsonc       # Cloudflare Workers deploy config
 ```
 
-## 📝 Adding Content
+## Writing a post
 
-### Creating a New Blog Post
+Posts live in `src/content/posts/` as Markdown, with frontmatter validated by
+`src/content.config.ts`:
 
-1. Create a new `.md` or `.mdx` file in the `src/content/posts/` directory
-2. Add frontmatter metadata:
-
-```mdx
+```yaml
 ---
-title: My New Blog Post
-date: 2025-03-01
-excerpt: A short description of the blog post
-image: /images/my-image.jpg
-tags: [tag1, tag2]
+title: Post title
+date: 2026-06-01
+excerpt: One- or two-sentence summary used in lists, RSS, and OG tags.
+image: /images/my-image.jpg   # optional
+tags: ["English", "AI", "Notes"]
 ---
-
-Here goes the content of the blog post.
-
-## A Heading
-
-More text and content...
 ```
 
-### Images
+Images referenced from frontmatter or post content go in `public/images/`.
 
-For images in your blog posts:
+## Editorial pipeline
 
-1. Place images in the `public/images/` directory
-2. Reference them in your frontmatter and content using the path `/images/my-image.jpg`
+Most posts here come out of a weekly automation loop (scout -> interview -> author
+braindump -> draft -> ship gate, plus a monthly gardener pass) rather than ad hoc
+writing. The full design — content tiers (note / essay / tracker), the bilingual
+transcreation contract, and per-tier definitions of done — lives in
+[`docs/pipeline.md`](./docs/pipeline.md). [`AGENTS.md`](./AGENTS.md) is the always-on
+summary any agent should read before drafting or editing content, and
+[`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
+companion app for the pipeline's recurring author touchpoints.
 
-## 🎨 Customization
+## Deployment
 
-### Theme Customization
-
-The color palette and other design elements can be customized in the `tailwind.config.mjs` file and `src/styles/global.css`:
-
-```javascript
-// tailwind.config.mjs
-export default {
-  theme: {
-    extend: {
-      colors: {
-        // Customize colors here
-      },
-      typography: {
-        // Typography settings
-      }
-    }
-  }
-}
-```
-
-### Layout Customization
-
-The main layouts are located in the `src/layouts/` directory.
-
-## 🧩 Technology Stack
-
-- [Astro](https://astro.build/) - Modern web framework
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/) - Content management
-- [MDX](https://mdxjs.com/) - Markdown with JSX (optional)
-
-## 📦 Dependencies
-
-- `@tailwindcss/vite` - Tailwind CSS v4 integration
-- `@astrojs/mdx` - MDX support
-- `@astrojs/sitemap` - Sitemap generation
-- `@astrojs/rss` - RSS feed generation
-- `date-fns` - Date formatting
-
-## 🛠️ Development
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## 🚀 Deployment
-
-This project can be deployed on any platform that supports Astro:
-
-- [Netlify](https://www.netlify.com/)
-- [Vercel](https://vercel.com/)
-- [GitHub Pages](https://pages.github.com/)
-- [Cloudflare Pages](https://pages.cloudflare.com/)
-- [Deno Deploy](https://deno.com/deploy)
-
-For Netlify (recommended):
-
-```bash
-npm install -g netlify-cli
-netlify deploy
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## ❓ Support
-
-If you have any questions or suggestions, please open an issue or start a discussion.
-
----
-
-Built with ❤️ using Astro, TypeScript, and Tailwind CSS.
+The site builds to static files (`npm run build`) and deploys to Cloudflare Workers
+using the config in `wrangler.jsonc`. `npm run deploy:check` runs a build and a
+dry-run upload to catch configuration issues before a real deploy.
