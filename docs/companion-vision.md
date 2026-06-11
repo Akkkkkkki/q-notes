@@ -4,7 +4,9 @@ A phone-first companion app for the q-notes editorial pipeline. Not a blog edito
 CMS — a tool that makes the author's three recurring touchpoints (capture a spark, answer
 an interview, approve a ship) take two minutes from anywhere.
 
-Status: vision. Builds on [`docs/pipeline.md`](./pipeline.md); references issues
+Status: vision (revised 2026-06-11 — added the voice mechanisms in §4, listen-to-review,
+walk-mode interviews, ship-time author slots, and the spark echo). Builds on
+[`docs/pipeline.md`](./pipeline.md); references issues
 [#7](https://github.com/Akkkkkkki/q-notes/issues/7) (bilingual site) and
 [#8](https://github.com/Akkkkkkki/q-notes/issues/8) (inbox seeding).
 
@@ -73,13 +75,18 @@ prominent. Type or dictate; hit send; done. The entry lands as a dated line in
   good sparks are reactions to something just read; this captures the reaction *and* the
   provenance the scout needs. Android only via the Web Share Target API; iOS Safari does
   not support it, so on iPhone this ships as an Apple Shortcuts share-sheet action
-  posting to the same `append-spark` endpoint (see §8).
+  posting to the same `append-spark` endpoint (see §9).
 - **Mixed-language as designed**: English, 中文, or both in one line — the pipeline
   already treats that as first-class input.
 - **Offline queue**: sparks queue locally and commit when back online (subway-proof).
 - After sending, show the last 3 sparks with their `→ where it went` annotations when
   the automations have consumed them. Seeing sparks *become posts* is the reward loop
   that keeps capture alive.
+- **Spark echo** (Phase 4): in that same after-send slot, at most once a day, one aged
+  unconsumed spark comes back as a question — *"Three weeks ago: '…'. Still true?"* —
+  with three one-tap answers: **still true** / **wrong now** / **drop** (§4.4). The
+  inbox composts instead of rotting, and "wrong now" turns the author's past self into
+  a co-author. It never appears before sending; capture speed is sacred.
 
 ### 3.2 Interview — "answer five questions on a commute"
 
@@ -94,6 +101,15 @@ an answer, move on. Partial answers save immediately (each answer commits into t
   generated from the brief's counterargument ("You said X — what about <counterargument>?").
   Capped at one per question so the session stays under 30 minutes and interviewing
   never becomes interrogation.
+- **Walk mode** (Phase 4): press play and pocket the phone. On-device text-to-speech
+  reads the three-sentence idea, then each question aloud; the author rambles; a pause
+  or a tap advances to the next question. The whole brief fits a 25-minute walk, hands-
+  and eyes-free. People think differently — better — while walking than while staring
+  at a text box; this is the feature most likely to turn the pipeline's highest-leverage
+  moment into something the author looks forward to.
+- **Mirror question card**: when the brief quotes one of the author's own published
+  sentences back at them (§4.4), it renders as a distinct quote card — visually, the
+  author being interviewed by their own archive.
 - **Resumable**: answer two questions Tuesday, three Thursday morning; the drafter takes
   whatever exists at draft time, exactly as the pipeline already specifies.
 - A skip button per question and a "not this topic" button for the whole brief (marks it
@@ -109,14 +125,83 @@ One card per open content PR, built from the ship gate's output:
 - **Reader-mode preview, not a diff**: the card embeds the Cloudflare branch preview URL
   (already generated per PR) shown as the actual rendered post, with an EN ⇄ 中文 toggle
   once issue #7 lands. Prose should be approved as prose.
+- **Listen-to-review** (Phase 4): a play button reads the draft aloud (on-device
+  text-to-speech, en or zh). Tapping once while listening pins a dictated note to the
+  paragraph being read; each pin becomes a paragraph-anchored One-change comment. The
+  ear catches voice-fakeness the skimming eye forgives, and it turns review into a walk
+  instead of a squint.
+- **Voice panel**: each card shows the drafter's verbatim-spine list — *your words,
+  kept* — and one flag per opinion the drafter could not trace to the author's input,
+  rendered as a question ("Says X — yours?") with **keep** / **cut** buttons (§4.2).
 - Three buttons: **Ship** (merge), **One change** (free-text/dictated comment that the
   ship gate or drafter acts on next run), **Downgrade to note** (invokes the documented
   remedy). A fourth, smaller: **Kill**.
+- **Ship-time slots**: tapping Ship offers the two author-owned slots — the title pick
+  and the last line (§4.3). Each is skippable in one tap and the drafter's defaults
+  stand; shipping is never blocked.
 - Push notifications (web push) replace the email channel for the Tuesday brief, the
   Friday desk summary, and the monthly gardener report. Notification deep-links open the
   relevant surface directly.
 
-## 4. Architecture
+## 4. Keeping it human — voice mechanisms
+
+Making writing easier has a known failure mode: pieces get easier to ship and less worth
+shipping, because the author's opinions come out laundered into model-smooth consensus
+prose. The pipeline already guards the *origin* of every opinion (interview answers,
+sparks). This section guards its *texture* — and the guards are mechanisms, not vibes.
+
+The striking thing: the highest-leverage mechanisms cost **zero app code**. They are
+prompt and file changes to the existing automations, and they land now, before Phase 1.
+
+### 4.1 The voiceprint — `research/voice.md`
+
+A living file of the author's public stances, signature phrasings, never-say terms, and
+rhythm notes. The drafter consults it before writing; the ship gate enforces the
+never-list; the interviewer mines the stances for mirror questions; the gardener
+proposes additions monthly (mined from that month's interview answers and published
+pieces) under a `Proposed` heading the author promotes or deletes. Repo-as-backend,
+again: the author's voice is a versioned file, not a vibe the model is asked to imagine.
+
+### 4.2 The verbatim spine
+
+The drafter must carry at least three of the author's own phrases — from interview
+answers or sparks — into the draft verbatim, list them in the PR body, and separately
+declare any opinion it *cannot* trace to author input (a list that should be empty).
+The Desk renders this as the voice panel: *your words, kept*, plus one tap-to-resolve
+question per untraceable opinion. The author never has to wonder which sentences are
+theirs; the system shows them.
+
+### 4.3 Author-owned slots
+
+At ship time, two optional ten-second touches: pick the **title** (three drafter options
+per language, or dictate your own) and the **last line** (keep it, or dictate a
+replacement). Skipping either is one tap and the defaults stand — but when touched,
+every published piece carries a deliberately human fingerprint in exactly the two
+positions readers remember. This stays inside the "one sentence is the editing maximum"
+ceiling (§6); it is the floor of authorship, not the start of a phone editor.
+
+### 4.4 The author as their own interlocutor
+
+Two mechanisms, one idea — nothing generates original writing more reliably than
+disagreement, and the cheapest person to disagree with is yourself, last month:
+
+- **Mirror questions**: the interview brief quotes one sentence the author actually
+  published against the new thesis ("In *Consulting outcomes* you wrote '…' — does that
+  survive here?"). The archive becomes the sharpest interviewer in the room.
+- **Spark echo**: Capture occasionally resurfaces one aged, unconsumed spark as a
+  question with **still true** (annotates and bumps it for the scout) / **wrong now**
+  (appends the disagreement as a fresh spark — the most honest tracker fuel there is) /
+  **drop** (archives it).
+
+### The guardrail over all of it
+
+**The anti-perfectionism contract outranks the voice contract.** No voice mechanism may
+block a ship or add a required step: every flag resolves in one tap, every slot has a
+default, and the voiceprint is maintained by the gardener's proposals rather than author
+diligence. If a voice check ever stalls a passing checklist, that is a prompt bug to
+fix, not a feature.
+
+## 5. Architecture
 
 ```
 Phone (PWA: Capture / Interview / Desk)
@@ -138,21 +223,29 @@ Decisions and their reasons:
 - **Worker as the only secret-holder, and the only path enforcer.** The PAT never
   reaches the phone. Fine-grained PATs scope to repositories and permission classes,
   not paths — `contents: write` can touch any file in the repo — so the blast-radius
-  containment lives in the Worker: it exposes ~6 narrow endpoints (`append-spark`,
-  `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`), hard-codes the
-  writable paths (`research/**`, `drafts/**`), and never proxies the GitHub API
+  containment lives in the Worker: it exposes ~7 narrow endpoints (`append-spark`,
+  `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`, `apply-slots`), hard-codes the
+  writable paths (`research/**`, `drafts/**`, plus one narrowly scoped `src/content/**`
+  exception granted only to `apply-slots` — next bullet), and never proxies the GitHub API
   generically. Branch protection on `main` (PRs only for `src/content/**`) backs this
   up at the repo level. If endpoint sprawl ever makes this allowlist hard to audit,
   graduate to a GitHub App with short-lived installation tokens.
+- **Ship-time slots get one dedicated endpoint**, `apply-slots` — the only writer that
+  ever touches `src/content/**`, and it is constrained to PR branches (never `main`),
+  to the title frontmatter line and the final paragraph only, applied immediately before
+  the merge the author just approved. The narrowness is the point: it cannot become a
+  phone editor by accident.
 - **Cloudflare Access for auth** (free tier, one email): no password code to write, and
   a lost phone is revoked in the dashboard.
 - **No framework ceremony.** Three screens of vanilla or near-vanilla code (e.g., one
   small Astro/Vite app in `companion/` in this repo). The repo already deploys on push;
   the Companion rides the same pipeline.
-- **Transcription** (ramble mode) is the only model call the app makes, via the Worker.
-  Everything generative stays in the scheduled automations, where it's reviewable.
+- **Transcription** (ramble and walk modes) is the only model call the app makes, via
+  the Worker. Text-to-speech (listen-to-review, walk-mode prompts) stays on-device via
+  the Web Speech API — free, offline, private. Everything generative stays in the
+  scheduled automations, where it's reviewable.
 
-## 5. What the best UX here actually is — design principles
+## 6. What the best UX here actually is — design principles
 
 1. **Two-minute ceilings.** Every surface is designed to be *completable* in one elevator
    ride (Capture) or one commute (Interview). If a session can't finish small, the
@@ -166,14 +259,22 @@ Decisions and their reasons:
 4. **Declining is a first-class action.** Skip, "not this topic," downgrade, kill — all
    one tap. A system the author can cheaply say no to is one they'll keep saying yes to.
 5. **The app never asks for writing.** If any future feature involves composing
-   paragraphs on the phone, it violates the vision. (Editing a *sentence* in the One
-   change flow is the permitted maximum.)
+   paragraphs on the phone, it violates the vision. (Editing a *sentence* — the One
+   change flow, the ship-time title and last-line slots — is the permitted maximum.)
+6. **The phone's superpowers are the mouth, the ear, and the pocket — not the screen.**
+   Capture dictates, Interview walks, Desk listens. Any flow that requires sustained
+   staring at a phone screen is competing with a laptop and will lose; flows built on
+   speech and movement have no desktop equivalent to lose to.
 
-## 6. Phasing — smallest thing first, kill criteria attached
+## 7. Phasing — smallest thing first, kill criteria attached
 
 **Phase 0 — no code (now).** Wire a notification channel (email or a messaging
 connector) for routines 02/04/05; bookmark `research/inbox.md` on the phone's home
 screen via GitHub mobile; optionally a messaging-bot connector that appends sparks.
+**Also now, costing no weekend:** the pipeline-side voice mechanisms (§4) — the
+voiceprint file, the drafter's verbatim spine, the ship gate's voice check, mirror
+questions, the gardener's voiceprint maintenance — are prompt and file edits to
+automations 02–05, not Companion code. They ship with this revision.
 *Run for 2–3 weeks. Measure: sparks/week, interview answer rate.*
 **Kill criterion for the whole Companion: if Phase 0 sustains ≥5 sparks/week and
 interviews get answered, stop here — the app isn't needed.**
@@ -186,13 +287,20 @@ Phase 0 within a month, stop building and keep what exists.*
 notification for the Tuesday brief. *Success: interview answer rate ≥3 of 4 weeks.*
 
 **Phase 3 — Desk (one weekend).** PR cards + preview embed + Ship/One change/Downgrade
-+ Friday push. *Success: median draft→publish drops below the 7-day target.*
++ voice panel + ship-time slots (the panel renders straight from the PR body; the slots
+ride the merge flow — no new backend beyond `apply-slots`) + Friday push.
+*Success: median draft→publish drops below the 7-day target.*
 
-**Phase 4 — only if earned**: ramble-mode transcription, EN⇄中文 preview toggle (after
-issue #7), spark annotations surfaced in-app. Nothing else is currently imaginable that
-wouldn't violate §5.
+**Phase 4 — only if earned**, one weekend per item, picked by whichever funnel metric
+is weakest: ramble-mode transcription; **walk-mode interviews** (§3.2); **listen-to-review**
+(§3.3); EN⇄中文 preview toggle (after issue #7); spark annotations surfaced in-app plus
+the **spark echo** (§4.4); and — pure reward, strictly last — **the garden**: a home
+screen that renders the published archive from its existing maturity field (seedling 🌱 /
+growing 🌿 / evergreen 🌳), where tapping a seedling asks "has this grown?" and the
+answer lands as a spark. Each item still rides the same rules: publishing targets first,
+and anything that asks the author to compose paragraphs stays banned (§6).
 
-## 7. Success metrics
+## 8. Success metrics
 
 Companion metrics are *funnel* metrics; the pipeline's publishing metrics remain the
 only ones that matter terminally.
@@ -203,12 +311,21 @@ only ones that matter terminally.
 | Median capture time (open → committed) | n/a → <15 s |
 | Interview briefs answered (≥3 questions) | measure → 3 of 4 weeks |
 | Median draft PR → publish | ≤7 days (pipeline target, Desk should secure it) |
+| Untraceable opinions surviving to publish | 0 — every voice flag resolved (keep/cut) before merge |
+| Author-owned slots touched (title or last line) | watch only — a mirror, never a quota |
 | Companion build time / month after Phase 3 | → ~0 (it's done; done is a feature) |
 
-## 8. Risks
+## 9. Risks
 
 - **Tool-building as procrastination** — the central risk, mitigated structurally: §1
-  rule 2 (weekend cap, publishing-first gate), §6 kill criteria, §7's "done is a feature."
+  rule 2 (weekend cap, publishing-first gate), §7 kill criteria, §8's "done is a feature."
+- **Easy becoming generic** — the failure mode §4 exists for, handled by mechanism
+  (verbatim spine, voice check) rather than reviewer vigilance. The residual risk is
+  gaming — a drafter satisfying the letter by keeping three trivial phrases — so the
+  ship gate spot-checks that the kept phrases carry the piece's actual claims.
+- **Voice mechanisms becoming homework** — every mechanism defaults to ship-anyway, and
+  the voiceprint is fed by gardener proposals rather than author diligence (§4
+  guardrail). If a voice flag ever blocks a passing checklist, that's a prompt bug.
 - **PAT blast radius** — mitigated by fine-grained scopes, narrow Worker endpoints, and
   Cloudflare Access; rotating the token is a 2-minute dashboard task.
 - **iOS PWA limitations** — web push works on current iOS for installed PWAs, but the
@@ -219,7 +336,7 @@ only ones that matter terminally.
 - **Drift between app and pipeline** — mitigated by repo-as-backend: the automations and
   the app share files, not APIs, so the pipeline doc stays the single contract.
 
-## 9. Alternatives considered
+## 10. Alternatives considered
 
 - **GitHub mobile only** — the Phase 0 control group; wins if friction was imaginary.
 - **Messaging bot (Telegram/WhatsApp/iMessage connector) as the whole product** — superb

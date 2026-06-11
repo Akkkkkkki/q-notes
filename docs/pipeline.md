@@ -47,6 +47,12 @@ Every design decision below exists to close one of these gaps.
 6. **PRs for content only.** Backlog, inbox, interview, and glossary changes commit
    directly to `main`. Human review is reserved for the one thing that needs it:
    the published words.
+7. **Voice is enforced by mechanism, not vibes.** `research/voice.md` (the voiceprint)
+   records the author's stances, signature phrasings, and never-say terms. The drafter
+   carries a verbatim spine of the author's own phrases into every piece and declares
+   any opinion it cannot trace to author input; the ship gate flags voice violations as
+   questions, never as blockers. Easy must never come to mean generic. (Full design:
+   [`docs/companion-vision.md`](./companion-vision.md) §4.)
 
 ## 3. Content tiers
 
@@ -137,7 +143,10 @@ produces the highest rung available:
 The drafter writes **both language versions in the same PR** (see §6), runs
 `npm run build`, marks the backlog item `Drafted`, and opens a ready (non-draft) PR whose
 body contains: thesis, tier, sources re-checked, what the author should challenge,
-and a claim-parity confirmation between the two language versions.
+a claim-parity confirmation between the two language versions, a **voice section**
+(the author phrases kept verbatim; any opinion not traceable to author input — a list
+that should be empty), and **three title options per language** so the author can swap
+the title at ship time without writing anything.
 
 ### 4.4 Friday — Ship gate (`automations/04-ship-gate.md`)
 
@@ -146,6 +155,10 @@ The anti-perfectionism enforcer. For every open content PR:
 - Run the tier's definition-of-done checklist (§5). If it passes, comment a verdict:
   **"Ready to ship"** plus a 3-bullet summary, so the author's approval takes five
   minutes on a phone.
+- Run the **voice check** against `research/voice.md`: never-list hits, and any
+  opinionated claim not traceable to the author's answers, sparks, or published
+  positions, get flagged in the verdict as questions ("Says X — yours?"). Voice flags
+  shape the author's five minutes; they never block a passing checklist.
 - If the PR has been open **> 7 days**: cut it down — extract the strongest single idea
   into a Note, re-tier, and re-propose. The system converts stuck essays into shipped notes.
 - If open **> 14 days**: close it, log one line in the backlog item explaining the kill.
@@ -166,6 +179,10 @@ First of the month:
   (e.g., the consulting series' "EM promotion-rate compression by 2027" test) and external
   events that confirm/contradict published theses → propose Tracker candidates. This is
   how the site develops *continuity of thought* instead of a stream of unrelated takes.
+- **Voiceprint maintenance**: propose 1–3 additions to `research/voice.md` under its
+  `Proposed` heading — a stance now taken in public, a signature phrasing worth keeping,
+  a new never-say — mined from the month's interview answers and published pieces.
+  Propose only; promotion is the author's, by editing the file.
 - **Hygiene**: glossary consistency check, dead-link scan, backlog pruning.
 
 ## 5. Definitions of done
@@ -251,6 +268,14 @@ requirements beyond a date. Capture paths, lowest-friction first:
 
 The scout and drafter treat inbox sparks as **first-class, outranking external finds** —
 a half-formed authored thought beats a polished aggregated one, by policy.
+
+The inbox has a sibling: `research/voice.md`, the **voiceprint**. Where the inbox
+captures *what* the author thinks, the voiceprint captures *how they sound* — stances,
+signature phrasings, never-say terms — so the drafter writes in the author's voice
+instead of asking a model to imagine one. The Companion design adds a **spark echo** on
+top of the inbox: aged unconsumed sparks resurface as one-tap questions ("Still true?"),
+and a "wrong now" answer appends the disagreement as a fresh spark — the author arguing
+with their past self is the most reliable generator of original material the system has.
 
 ## 8. Execution: wiring the routines
 
