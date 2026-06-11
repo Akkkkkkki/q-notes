@@ -52,7 +52,8 @@ npm run deploy:check # build + dry-run Wrangler deploy
 │   ├── styles/
 │   └── utils/
 ├── public/              # Static assets (fonts, images, favicon, Capture PWA manifest + SW)
-├── worker/              # Companion API (Cloudflare Worker: append-spark endpoint)
+├── scripts/             # One-off helpers (VAPID keygen for web push)
+├── worker/              # Companion API (Cloudflare Worker: capture, interview, push)
 ├── astro.config.mjs
 └── wrangler.jsonc       # Cloudflare Workers deploy config
 ```
@@ -85,24 +86,35 @@ summary any agent should read before drafting or editing content, and
 [`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
 companion app for the pipeline's recurring author touchpoints.
 
-## Companion — Capture (Phase 1 MVP)
+## Companion — Capture + Interview (Phases 1–2)
 
 The phone-first companion app from [`docs/companion-vision.md`](./docs/companion-vision.md)
-exists as its Phase 1 slice: **Capture**, at `/capture`. A single installable page (PWA)
-with one text box — type or dictate a thought, hit send, and it lands as a dated line in
-`research/inbox.md` via a commit (`spark: <first words>`), where the editorial pipeline
-treats it as first-class material. Repo-as-backend: the app owns no data.
+exists as its first two phases, installable as one PWA. Repo-as-backend: the app owns no
+data; everything reads and writes the same files the automations use.
 
-What it does:
+**Capture** (`/capture`) — "thought to repo in under 15 seconds":
 
-- **<15-second capture**: opens into the text box; OS keyboard dictation works as-is.
-  English, 中文, or mixed — one line per thought.
+- One text box; OS keyboard dictation works as-is. English, 中文, or mixed — one line
+  per thought, landing as a dated line in `research/inbox.md` (commit message
+  `spark: <first words>`).
 - **Offline queue**: sparks queue in the browser and send when back online.
 - **Share target**: on Android, share a URL or quote from any app into Capture; the
   source lands as provenance (`… ← <url>`). On iOS, an Apple Shortcut can POST to the
   same endpoint (see below).
 - **Reward loop**: after sending, the last three sparks are shown, including any
   `→ where it went` annotations once automations consume them.
+
+**Interview** (`/interview`) — "answer five questions on a commute":
+
+- The week's brief from `research/interviews/` rendered as a conversation: the
+  three-sentence idea on top, one card per question. Dictate or type; each answer
+  commits immediately into the brief's `## Author answers` section, attributed per
+  question — resumable across days, exactly as the drafter expects.
+- Skipping a question is just not answering it; **Not this topic** closes the whole
+  brief in one tap, freeing Thursday's drafter to use the fallback ladder.
+- **Tuesday push** (optional): a cron checks every Tuesday 08:30 whether the fresh
+  brief is still unanswered and wakes subscribed devices via web push. Enable it from
+  the Interview page once VAPID keys are configured.
 
 ### One-time setup
 
@@ -115,14 +127,20 @@ What it does:
    ```
 3. Deploy (`npm run build && npx wrangler deploy`), open `/capture` on the phone,
    paste the `CAPTURE_TOKEN` once (stored on-device), and add to home screen.
-4. Optional hardening: put Cloudflare Access in front of `/capture` and `/api/*`.
-5. Optional iOS share sheet: an Apple Shortcut that sends
+4. Optional web push: `node scripts/generate-vapid.mjs`, store the two values with
+   `npx wrangler secret put VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_JWK`, redeploy, then tap
+   "Enable Tuesday notifications" on `/interview` (requires the PWA to be installed on iOS).
+5. Optional hardening: put Cloudflare Access in front of `/capture`, `/interview`, and `/api/*`.
+6. Optional iOS share sheet: an Apple Shortcut that sends
    `POST /api/spark` with header `Authorization: Bearer <CAPTURE_TOKEN>` and JSON body
    `{"text": "...", "url": "..."}`.
 
-The API surface is deliberately tiny: `POST /api/spark` (the only writer, hard-coded to
-`research/inbox.md`) and `GET /api/sparks` (last three, for the reward loop). Local dev:
-put the two secrets in `.dev.vars` and run `npx wrangler dev` after a build.
+The API surface stays small, and every writable path is hard-coded in the Worker:
+`POST /api/spark` → `research/inbox.md`; `GET /api/sparks`; `GET /api/brief`,
+`POST /api/answer`, `POST /api/brief/close` → `research/interviews/*.md`;
+`GET /api/push/key`, `POST /api/push/{subscribe,unsubscribe}` →
+`research/.companion/push-subscriptions.json`. Local dev: put the secrets in
+`.dev.vars` and run `npx wrangler dev` after a build.
 
 ## Deployment
 

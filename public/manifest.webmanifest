@@ -12,6 +12,10 @@
     { "src": "/icons/capture-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "/icons/capture-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
+  "shortcuts": [
+    { "name": "Capture", "url": "/capture/" },
+    { "name": "Interview", "url": "/interview/" }
+  ],
   "share_target": {
     "action": "/capture/",
     "method": "GET",

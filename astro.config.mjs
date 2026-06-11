@@ -26,8 +26,8 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      // The Companion capture surface is the author's app, not a site page.
-      filter: (page) => !page.includes('/capture')
+      // The Companion surfaces are the author's app, not site pages.
+      filter: (page) => !page.includes('/capture') && !page.includes('/interview')
     })
   ]
 });

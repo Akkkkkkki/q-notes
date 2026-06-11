@@ -1,36 +1,40 @@
 /**
- * Companion API — Phase 1 (Capture).
+ * Companion API — Phases 1 (Capture) and 2 (Interview).
  *
- * The only writer is `POST /api/spark`, which appends a dated line to
- * `research/inbox.md` via the GitHub Contents API. The path is hard-coded:
- * this Worker is the path allowlist (docs/companion-vision.md §5).
+ * The only writable paths are hard-coded in their modules: this Worker is
+ * the path allowlist (docs/companion-vision.md §5).
+ *   - research/inbox.md                              (append-spark, below)
+ *   - research/interviews/<date>-<slug>.md           (worker/interview.ts)
+ *   - research/.companion/push-subscriptions.json    (worker/push.ts)
  *
  * Secrets (wrangler secret put …):
- *   GITHUB_TOKEN  — fine-grained PAT, this repo only, contents: read/write
- *   CAPTURE_TOKEN — shared secret the capture page / Shortcuts send as a Bearer token
+ *   GITHUB_TOKEN      — fine-grained PAT, this repo only, contents: read/write
+ *   CAPTURE_TOKEN     — shared secret the pages / Shortcuts send as a Bearer token
+ *   VAPID_PUBLIC_KEY,
+ *   VAPID_PRIVATE_JWK — optional, for Tuesday-brief web push (scripts/generate-vapid.mjs)
  */
 
-interface Env {
-  ASSETS: { fetch: typeof fetch };
-  GITHUB_TOKEN: string;
-  CAPTURE_TOKEN: string;
-  GITHUB_REPO: string;
-  SPARK_TIMEZONE: string;
-  /** Override for local testing against a mock; defaults to api.github.com. */
-  GITHUB_API?: string;
-}
+import type { Env } from './types';
+import { getFile, putFile, todayIn, collapse, json } from './github';
+import { getBrief, saveAnswer, closeBrief } from './interview';
+import { getPublicKey, subscribe, notifyIfBriefOpen } from './push';
 
 const INBOX_PATH = 'research/inbox.md';
 const MAX_SPARK_LENGTH = 2000;
+const MAX_URL_LENGTH = 500;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-
     if (url.pathname.startsWith('/api/')) {
       return handleApi(request, url, env);
     }
     return env.ASSETS.fetch(request);
+  },
+
+  // Tuesday 08:30 Asia/Shanghai (00:30 UTC), see wrangler.jsonc triggers.
+  async scheduled(_event: unknown, env: Env): Promise<void> {
+    await notifyIfBriefOpen(env);
   },
 };
 
@@ -43,13 +47,27 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
   }
 
   try {
-    if (url.pathname === '/api/spark' && request.method === 'POST') {
-      return await appendSpark(request, env);
+    const route = `${request.method} ${url.pathname}`;
+    switch (route) {
+      case 'POST /api/spark':
+        return await appendSpark(request, env);
+      case 'GET /api/sparks':
+        return await recentSparks(env);
+      case 'GET /api/brief':
+        return await getBrief(env);
+      case 'POST /api/answer':
+        return await saveAnswer(request, env);
+      case 'POST /api/brief/close':
+        return await closeBrief(request, env);
+      case 'GET /api/push/key':
+        return getPublicKey(env);
+      case 'POST /api/push/subscribe':
+        return await subscribe(request, env);
+      case 'POST /api/push/unsubscribe':
+        return await subscribe(request, env, true);
+      default:
+        return json({ error: 'Not found' }, 404);
     }
-    if (url.pathname === '/api/sparks' && request.method === 'GET') {
-      return await recentSparks(env);
-    }
-    return json({ error: 'Not found' }, 404);
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'Internal error' }, 502);
   }
@@ -78,23 +96,29 @@ async function appendSpark(request: Request, env: Env): Promise<Response> {
     return json({ error: 'Body must be JSON' }, 400);
   }
 
-  // One line per thought: collapse whatever arrives into a single line.
-  const text = (body.text ?? '').replace(/\s+/g, ' ').trim();
+  // One line per thought: collapse whatever arrives into a single line —
+  // the provenance URL included, so no client can inject extra inbox lines.
+  const text = collapse(body.text ?? '');
   if (!text) return json({ error: 'text is required' }, 400);
   if (text.length > MAX_SPARK_LENGTH) {
     return json({ error: `text exceeds ${MAX_SPARK_LENGTH} characters` }, 400);
   }
 
-  const source = (body.url ?? '').trim();
+  const source = collapse(body.url ?? '');
+  if (source.length > MAX_URL_LENGTH) {
+    return json({ error: `url exceeds ${MAX_URL_LENGTH} characters` }, 400);
+  }
+
   const date = /^\d{4}-\d{2}-\d{2}$/.test(body.date ?? '') ? body.date! : todayIn(env.SPARK_TIMEZONE);
   const line = source ? `${date} — ${text} ← ${source}` : `${date} — ${text}`;
   const message = `spark: ${text.length > 60 ? text.slice(0, 57) + '...' : text}`;
 
   // Retry once on a write conflict (a concurrent automation commit).
   for (let attempt = 0; attempt < 2; attempt++) {
-    const file = await getInbox(env);
+    const file = await getFile(env, INBOX_PATH);
+    if (!file) return json({ error: 'Inbox not found' }, 502);
     const content = file.content.endsWith('\n') ? file.content : file.content + '\n';
-    const result = await putInbox(env, content + line + '\n', message, file.sha);
+    const result = await putFile(env, INBOX_PATH, content + line + '\n', message, file.sha);
     if (result.ok) {
       return json({ ok: true, line, commit: result.commitUrl });
     }
@@ -106,79 +130,11 @@ async function appendSpark(request: Request, env: Env): Promise<Response> {
 }
 
 async function recentSparks(env: Env): Promise<Response> {
-  const file = await getInbox(env);
+  const file = await getFile(env, INBOX_PATH);
+  if (!file) return json({ sparks: [] });
   const sparks = file.content
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => /^\d{4}-\d{2}-\d{2}\s+—/.test(l));
   return json({ sparks: sparks.slice(-3).reverse() });
-}
-
-async function getInbox(env: Env): Promise<{ content: string; sha: string }> {
-  const res = await github(env, 'GET', INBOX_PATH);
-  if (!res.ok) throw new Error(`GitHub read failed (${res.status})`);
-  const data = (await res.json()) as { content: string; sha: string };
-  return { content: fromBase64(data.content), sha: data.sha };
-}
-
-async function putInbox(
-  env: Env,
-  content: string,
-  message: string,
-  sha: string
-): Promise<{ ok: boolean; status: number; commitUrl?: string }> {
-  const res = await github(env, 'PUT', INBOX_PATH, {
-    message,
-    content: toBase64(content),
-    sha,
-  });
-  if (!res.ok) return { ok: false, status: res.status };
-  const data = (await res.json()) as { commit?: { html_url?: string } };
-  return { ok: true, status: res.status, commitUrl: data.commit?.html_url };
-}
-
-function github(env: Env, method: string, path: string, body?: unknown): Promise<Response> {
-  const base = env.GITHUB_API || 'https://api.github.com';
-  return fetch(`${base}/repos/${env.GITHUB_REPO}/contents/${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'q-notes-companion',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-}
-
-function todayIn(timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: timeZone || 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
-
-function toBase64(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  }
-  return btoa(bin);
-}
-
-function fromBase64(b64: string): string {
-  const bin = atob(b64.replace(/\s/g, ''));
-  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
 }
