@@ -1,0 +1,24 @@
+{
+  "name": "Q's Notes Capture",
+  "short_name": "Capture",
+  "description": "Thought to repo in under 15 seconds.",
+  "start_url": "/capture/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/icons/capture-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/capture-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/capture-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "share_target": {
+    "action": "/capture/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

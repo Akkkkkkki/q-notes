@@ -1,8 +1,18 @@
 {
   "name": "q-notes",
   "compatibility_date": "2026-05-28",
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "GITHUB_REPO": "Akkkkkkki/q-notes",
+    "SPARK_TIMEZONE": "Asia/Shanghai"
   }
+  // Secrets (set once via `npx wrangler secret put <NAME>`):
+  //   GITHUB_TOKEN  — fine-grained PAT scoped to this repo, contents: read/write
+  //   CAPTURE_TOKEN — shared secret for the Capture page / share shortcuts
 }

@@ -51,7 +51,8 @@ npm run deploy:check # build + dry-run Wrangler deploy
 │   ├── pages/           # Routes (home, journal, posts, tags, about, RSS)
 │   ├── styles/
 │   └── utils/
-├── public/              # Static assets (fonts, images, favicon)
+├── public/              # Static assets (fonts, images, favicon, Capture PWA manifest + SW)
+├── worker/              # Companion API (Cloudflare Worker: append-spark endpoint)
 ├── astro.config.mjs
 └── wrangler.jsonc       # Cloudflare Workers deploy config
 ```
@@ -83,6 +84,45 @@ transcreation contract, and per-tier definitions of done — lives in
 summary any agent should read before drafting or editing content, and
 [`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
 companion app for the pipeline's recurring author touchpoints.
+
+## Companion — Capture (Phase 1 MVP)
+
+The phone-first companion app from [`docs/companion-vision.md`](./docs/companion-vision.md)
+exists as its Phase 1 slice: **Capture**, at `/capture`. A single installable page (PWA)
+with one text box — type or dictate a thought, hit send, and it lands as a dated line in
+`research/inbox.md` via a commit (`spark: <first words>`), where the editorial pipeline
+treats it as first-class material. Repo-as-backend: the app owns no data.
+
+What it does:
+
+- **<15-second capture**: opens into the text box; OS keyboard dictation works as-is.
+  English, 中文, or mixed — one line per thought.
+- **Offline queue**: sparks queue in the browser and send when back online.
+- **Share target**: on Android, share a URL or quote from any app into Capture; the
+  source lands as provenance (`… ← <url>`). On iOS, an Apple Shortcut can POST to the
+  same endpoint (see below).
+- **Reward loop**: after sending, the last three sparks are shown, including any
+  `→ where it went` annotations once automations consume them.
+
+### One-time setup
+
+1. Create a fine-grained GitHub PAT scoped to **this repo only**, with
+   **Contents: read and write** as its only permission.
+2. Set the Worker secrets:
+   ```bash
+   npx wrangler secret put GITHUB_TOKEN    # the PAT
+   npx wrangler secret put CAPTURE_TOKEN   # any long random string, e.g. `openssl rand -hex 24`
+   ```
+3. Deploy (`npm run build && npx wrangler deploy`), open `/capture` on the phone,
+   paste the `CAPTURE_TOKEN` once (stored on-device), and add to home screen.
+4. Optional hardening: put Cloudflare Access in front of `/capture` and `/api/*`.
+5. Optional iOS share sheet: an Apple Shortcut that sends
+   `POST /api/spark` with header `Authorization: Bearer <CAPTURE_TOKEN>` and JSON body
+   `{"text": "...", "url": "..."}`.
+
+The API surface is deliberately tiny: `POST /api/spark` (the only writer, hard-coded to
+`research/inbox.md`) and `GET /api/sparks` (last three, for the reward loop). Local dev:
+put the two secrets in `.dev.vars` and run `npx wrangler dev` after a build.
 
 ## Deployment
 

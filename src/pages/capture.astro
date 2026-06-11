@@ -1,0 +1,290 @@
+---
+// Companion Phase 1 — Capture. "Thought to repo in under 15 seconds."
+// Deliberately not on BaseLayout: this is the installable app surface,
+// not a site page. See docs/companion-vision.md §3.1.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>Capture — Q's Notes</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
+    <style>
+      @font-face {
+        font-family: 'Geist Sans';
+        src: url('/fonts/Geist-Variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: swap;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      html, body { height: 100%; }
+      body {
+        font-family: 'Geist Sans', system-ui, sans-serif;
+        background: #0a0a0a;
+        color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 1rem);
+        max-width: 40rem;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        padding-bottom: 0.75rem;
+      }
+      h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+      #status { font-size: 0.8rem; color: #8a8a8a; min-height: 1rem; }
+      #spark {
+        width: 100%;
+        flex: 0 0 auto;
+        min-height: 7.5rem;
+        font: inherit;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        color: inherit;
+        background: #161616;
+        border: 1px solid #2c2c2c;
+        border-radius: 0.75rem;
+        padding: 0.85rem;
+        resize: none;
+        outline: none;
+      }
+      #spark:focus { border-color: #555; }
+      #send {
+        margin-top: 0.75rem;
+        width: 100%;
+        padding: 0.85rem;
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0a0a0a;
+        background: #f5f5f5;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+      }
+      #send:disabled { opacity: 0.5; }
+      #source {
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        color: #8a8a8a;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #recent { margin-top: 1.75rem; }
+      #recent h2 {
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #8a8a8a;
+        margin-bottom: 0.6rem;
+      }
+      #recent ul { list-style: none; padding: 0; }
+      #recent li {
+        font-size: 0.88rem;
+        line-height: 1.45;
+        color: #c9c9c9;
+        padding: 0.5rem 0;
+        border-top: 1px solid #1f1f1f;
+        overflow-wrap: anywhere;
+      }
+      #token-row { margin-top: 1.25rem; display: none; }
+      #token-row.visible { display: block; }
+      #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
+      #token {
+        width: 100%;
+        font: inherit;
+        font-size: 0.9rem;
+        color: inherit;
+        background: #161616;
+        border: 1px solid #2c2c2c;
+        border-radius: 0.5rem;
+        padding: 0.6rem;
+        outline: none;
+      }
+      .hint { margin-top: auto; padding-top: 1.5rem; font-size: 0.72rem; color: #5a5a5a; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Capture</h1>
+      <span id="status"></span>
+    </header>
+
+    <textarea
+      id="spark"
+      autofocus
+      enterkeyhint="send"
+      placeholder="Type or dictate a thought. English, 中文, fragments — all fine."></textarea>
+    <div id="source" hidden></div>
+    <button id="send" type="button">Send to inbox</button>
+
+    <div id="token-row">
+      <label for="token">Capture token (stored on this device only)</label>
+      <input id="token" type="password" autocomplete="off" placeholder="paste CAPTURE_TOKEN, then send again" />
+    </div>
+
+    <section id="recent" hidden>
+      <h2>Last sparks</h2>
+      <ul></ul>
+    </section>
+
+    <p class="hint">One line per thought · queues offline · lands in research/inbox.md</p>
+
+    <script is:inline>
+      const $ = (id) => document.getElementById(id);
+      const sparkEl = $('spark');
+      const sendEl = $('send');
+      const statusEl = $('status');
+      const sourceEl = $('source');
+      const tokenRow = $('token-row');
+      const tokenEl = $('token');
+      const recentEl = $('recent');
+
+      const TOKEN_KEY = 'qn-capture-token';
+      const QUEUE_KEY = 'qn-spark-queue';
+
+      // Share-target prefill (?text=&url=&title= via the manifest GET target).
+      const params = new URLSearchParams(location.search);
+      let sharedUrl = params.get('url') || '';
+      const sharedText = [params.get('title'), params.get('text')].filter(Boolean).join(' — ');
+      if (sharedText) {
+        // Android often stuffs the URL into `text`; split it out as provenance.
+        const m = sharedText.match(/https?:\/\/\S+$/);
+        if (m && !sharedUrl) {
+          sharedUrl = m[0];
+          sparkEl.value = sharedText.slice(0, m.index).trim();
+        } else {
+          sparkEl.value = sharedText;
+        }
+      }
+      if (sharedUrl) {
+        sourceEl.textContent = '← ' + sharedUrl;
+        sourceEl.hidden = false;
+      }
+
+      function setStatus(msg) { statusEl.textContent = msg; }
+      function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+      function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
+      function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+      function localDate() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      async function post(spark) {
+        const res = await fetch('/api/spark', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + getToken(),
+          },
+          body: JSON.stringify(spark),
+        });
+        if (res.status === 401) throw Object.assign(new Error('unauthorized'), { unauthorized: true });
+        if (!res.ok) throw new Error('send failed (' + res.status + ')');
+        return res.json();
+      }
+
+      async function flushQueue() {
+        let queue = getQueue();
+        while (queue.length) {
+          try {
+            await post(queue[0]);
+          } catch (e) {
+            if (e.unauthorized) needToken();
+            setQueue(queue);
+            setStatus(queue.length + ' queued');
+            return false;
+          }
+          queue = queue.slice(1);
+          setQueue(queue);
+        }
+        return true;
+      }
+
+      function needToken() {
+        tokenRow.classList.add('visible');
+        setStatus('token needed');
+      }
+
+      async function send() {
+        if (tokenEl.value.trim()) {
+          localStorage.setItem(TOKEN_KEY, tokenEl.value.trim());
+          tokenEl.value = '';
+          tokenRow.classList.remove('visible');
+        }
+        const text = sparkEl.value.trim();
+        if (!text) return;
+        const spark = { text, url: sharedUrl, date: localDate() };
+
+        sendEl.disabled = true;
+        setStatus('sending…');
+        try {
+          const flushed = await flushQueue();
+          if (!flushed) throw new Error('offline');
+          await post(spark);
+          sparkEl.value = '';
+          sharedUrl = '';
+          sourceEl.hidden = true;
+          setStatus('✓ in the inbox');
+          loadRecent();
+        } catch (e) {
+          if (e.unauthorized) {
+            needToken();
+          } else {
+            const queue = getQueue();
+            queue.push(spark);
+            setQueue(queue);
+            sparkEl.value = '';
+            sharedUrl = '';
+            sourceEl.hidden = true;
+            setStatus('queued — will send when online (' + queue.length + ')');
+          }
+        } finally {
+          sendEl.disabled = false;
+          sparkEl.focus();
+        }
+      }
+
+      async function loadRecent() {
+        if (!getToken()) return;
+        try {
+          const res = await fetch('/api/sparks', { headers: { Authorization: 'Bearer ' + getToken() } });
+          if (!res.ok) return;
+          const { sparks } = await res.json();
+          if (!sparks.length) return;
+          recentEl.querySelector('ul').innerHTML = sparks
+            .map((s) => '<li>' + s.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>')
+            .join('');
+          recentEl.hidden = false;
+        } catch { /* reward loop only — never block capture */ }
+      }
+
+      sendEl.addEventListener('click', send);
+      sparkEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
+      });
+      window.addEventListener('online', () => {
+        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); });
+      });
+
+      if (!getToken()) needToken();
+      const pending = getQueue().length;
+      if (pending) setStatus(pending + ' queued');
+      flushQueue().then(() => loadRecent());
+
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
+    </script>
+  </body>
+</html>
