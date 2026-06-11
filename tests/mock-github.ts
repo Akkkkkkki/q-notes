@@ -77,7 +77,9 @@ export class MockGitHub {
     }
     if ((m = path.match(/^pulls\/(\d+)\/files$/)) && method === 'GET') {
       const pr = this.pr(Number(m[1]));
-      return pr ? ok(pr.files.map((filename) => ({ filename }))) : notFound();
+      if (!pr) return notFound();
+      const perPage = Number(url.searchParams.get('per_page') ?? 30);
+      return ok(pr.files.slice(0, perPage).map((filename) => ({ filename })));
     }
     if ((m = path.match(/^pulls\/(\d+)\/merge$/)) && method === 'PUT') {
       const pr = this.pr(Number(m[1]));

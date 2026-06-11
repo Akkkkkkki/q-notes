@@ -22,6 +22,9 @@ const CONTENT_PR_PREFIXES = [
 ];
 const SLOT_WRITABLE_PREFIXES = ['src/content/', 'drafts/'];
 const MAX_DESK_PRS = 10;
+// One Contents page; a real content PR has a handful of files, so anything
+// that fills the page is fail-closed non-content rather than paginated.
+const MAX_PR_FILES = 100;
 const MAX_COMMENT_LENGTH = 4000;
 const MAX_TITLE_LENGTH = 200;
 const MAX_LAST_LINE_LENGTH = 1000;
@@ -61,9 +64,10 @@ export async function listOpenContentPrs(
   const prs = (await res.json()) as PrSummary[];
 
   const out: Array<{ pr: PrSummary; files: string[] }> = [];
-  for (const pr of prs.filter((p) => !p.draft).slice(0, MAX_DESK_PRS)) {
+  for (const pr of prs.filter((p) => !p.draft)) {
+    if (out.length >= MAX_DESK_PRS) break;
     const files = await prFiles(env, pr.number);
-    if (files.length && files.every((f) => isContentPath(f))) {
+    if (isContentFileList(files)) {
       out.push({ pr, files });
     }
   }
@@ -221,7 +225,11 @@ export async function applySlots(request: Request, env: Env): Promise<Response> 
   if (title.length > MAX_TITLE_LENGTH) {
     return json({ error: `title exceeds ${MAX_TITLE_LENGTH} characters` }, 400);
   }
-  if (lastLine.length > MAX_LAST_LINE_LENGTH || /^#{1,6}\s|^---\s*$/m.test(lastLine)) {
+  if (
+    lastLine.length > MAX_LAST_LINE_LENGTH ||
+    /\n\s*\n/.test(lastLine) ||
+    /^#{1,6}\s|^---\s*$/m.test(lastLine)
+  ) {
     return json({ error: 'lastLine must be one short paragraph' }, 400);
   }
 
@@ -259,8 +267,17 @@ function isContentPath(path: string): boolean {
   return CONTENT_PR_PREFIXES.some((p) => path.startsWith(p)) && !path.includes('..');
 }
 
+/**
+ * Every file content-shaped, and the listing provably complete: a PR that
+ * fills the first Files page could hide code on page two, so it never
+ * qualifies — the Desk fails closed rather than paginating.
+ */
+function isContentFileList(files: string[]): boolean {
+  return files.length > 0 && files.length < MAX_PR_FILES && files.every((f) => isContentPath(f));
+}
+
 async function prFiles(env: Env, number: number): Promise<string[]> {
-  const res = await gh(env, 'GET', `pulls/${number}/files?per_page=100`);
+  const res = await gh(env, 'GET', `pulls/${number}/files?per_page=${MAX_PR_FILES}`);
   if (!res.ok) throw new Error(`GitHub PR files failed (${res.status})`);
   const data = (await res.json()) as Array<{ filename: string }>;
   return data.map((f) => f.filename);
@@ -284,7 +301,7 @@ async function contentPrOrNull(
   const pr = (await res.json()) as PrSummary & { state: string };
   if (pr.state !== 'open') return null;
   const files = await prFiles(env, n);
-  if (!files.length || !files.every((f) => isContentPath(f))) return null;
+  if (!isContentFileList(files)) return null;
   return { number: n, pr, files };
 }
 

@@ -123,6 +123,32 @@ describe('GET /api/desk', () => {
       },
     ]);
   });
+
+  it('still finds a content PR buried behind many newer code PRs', async () => {
+    const codePrs = Array.from({ length: 12 }, (_, i) => ({
+      number: 100 + i,
+      state: 'open' as const,
+      title: `code PR ${i}`,
+      body: null,
+      created_at: new Date().toISOString(),
+      head: { ref: `code-${i}`, repo: { full_name: REPO } },
+      files: ['worker/index.ts'],
+      comments: [],
+    }));
+    gh.prs.unshift(...codePrs);
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/desk');
+    expect(data.prs.map((p: any) => p.number)).toEqual([42]);
+  });
+
+  it('fails closed on a PR whose file list fills the first page', async () => {
+    gh.seedPr({
+      number: 50,
+      files: Array.from({ length: 120 }, (_, i) => `src/content/posts/post-${i}.md`),
+    });
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/desk');
+    expect(data.prs.map((p: any) => p.number)).toEqual([42]);
+    expect((await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 50 })).status).toBe(400);
+  });
 });
 
 describe('POST /api/desk/ship', () => {
@@ -250,12 +276,18 @@ describe('POST /api/desk/slots — the only src/content writer', () => {
   });
 
   it('rejects a lastLine that tries to be more than one paragraph', async () => {
-    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/slots', {
-      number: 42,
-      path: 'src/content/posts/agents-as-clis.md',
-      lastLine: '## A heading\nsneaking in structure',
-    });
-    expect(status).toBe(400);
+    for (const lastLine of [
+      '## A heading\nsneaking in structure',
+      'first paragraph\n\nsecond paragraph',
+      'first\n   \nsecond, blank line disguised with spaces',
+    ]) {
+      const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/slots', {
+        number: 42,
+        path: 'src/content/posts/agents-as-clis.md',
+        lastLine,
+      });
+      expect(status, JSON.stringify(lastLine)).toBe(400);
+    }
   });
 
   it('refuses to write to a fork branch', async () => {
