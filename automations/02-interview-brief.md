@@ -43,6 +43,11 @@ You do not write the article. You write the questions that make the article poss
    - "What would change your mind?"
    - "What's the prediction you'd be willing to be wrong about in public?"
    - "Who specifically should act differently if this is true, and how?"
+   - **Mirror question** (use at most one per brief): quote a sentence the author
+     actually published — search `src/content/posts/` and `research/voice.md` Stances —
+     that this thesis stresses, extends, or contradicts: "In <post> you wrote '…' —
+     does that survive here?" The author's own archive is the sharpest interviewer in
+     the room; quote them exactly, never paraphrase.
    Avoid questions answerable by research; those are your job, not the author's.
 5. **Update the backlog item** status to `Interviewing since YYYY-MM-DD`.
 6. **Commit to `main`** (`interview: brief for <slug>`), then **notify the author** with

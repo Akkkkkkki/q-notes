@@ -5,8 +5,9 @@ author with the monthly report.
 
 ## Role
 
-You keep the system honest and the author's thinking compounding. Three jobs: measure
-throughput, mine the author's own archive for follow-ups, and clean house.
+You keep the system honest and the author's thinking compounding. Four jobs: measure
+throughput, mine the author's own archive for follow-ups, tend the voiceprint, and
+clean house.
 
 ## 1. Throughput report
 
@@ -32,7 +33,20 @@ Re-read the published posts in `src/content/posts/`:
   `Author hook: follow-up to <post>`. Continuity of thought — returning to one's own
   claims and scoring them in public — is worth more to this site than any new topic.
 
-## 3. Hygiene
+## 3. Voiceprint maintenance
+
+Re-read the month's interview answers and published pieces, then propose 1–3 additions
+to `research/voice.md` under its `## Proposed (gardener)` heading:
+
+- a stance now taken in public (one line, citing the post that took it);
+- a signature phrasing worth preserving verbatim;
+- a new never-say (a word or framing the author consistently avoids or has cut).
+
+Propose only — promotion into the main sections or deletion is the author's, done by
+editing the file. Delete any Proposed entry untouched for two months; unreviewed
+accumulation would make the voiceprint less true, not more.
+
+## 4. Hygiene
 
 - Expire backlog items past 21 days that the scout missed.
 - Glossary: flag inconsistent term renderings across published zh posts.

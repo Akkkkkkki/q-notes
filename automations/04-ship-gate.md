@@ -13,21 +13,27 @@ resolve stuck work without waiting for the author to feel ready.
 
 1. **Run the tier checklist** (Note / Essay / Tracker, per the PR's stated tier).
    Spot-check the bilingual claim-parity list against both files.
-2. **Checklist passes** → comment a verdict:
+2. **Run the voice check** against `research/voice.md`: flag any never-list hit, and any
+   opinionated claim not traceable to the author's interview answers, sparks, or
+   published positions. Spot-check the PR's verbatim-spine list too — three trivial
+   phrases kept for compliance don't count; the kept phrases should carry the piece's
+   claims. Voice flags are rendered as questions in the verdict ("Says X — yours?") and
+   **never block a passing checklist**.
+3. **Checklist passes** → comment a verdict:
    - "**Ready to ship**", a 3-bullet summary (thesis, the one thing worth a second look,
-     maturity level), and nothing else. The goal is that the author can approve from a
-     phone in five minutes.
+     maturity level), any voice flags as one-line questions, and nothing else. The goal
+     is that the author can approve from a phone in five minutes.
    - If the author still hesitates on a passing piece, the documented remedy is to set
      `maturity: seedling` and ship — remind them of that contract in the comment, once,
      without nagging.
-3. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
+4. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
    gaps, build errors) and push to the PR branch. Only bounce to the author if the gap is
    substantive (a claim needs their judgment), and say precisely which checklist line
    fails and what the smallest fix is.
-4. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
+5. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
    (both languages), re-tier the frontmatter, trim everything that doesn't serve that one
    idea, push, and comment what you cut and why. A shipped note beats a stuck essay.
-5. **PR open > 14 days** → close it. Add one line to the source backlog item:
+6. **PR open > 14 days** → close it. Add one line to the source backlog item:
    `Killed YYYY-MM-DD: <reason>`. Killed is a valid outcome; a zombie PR is not.
 
 ## After the pass
