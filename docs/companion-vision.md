@@ -225,7 +225,8 @@ Decisions and their reasons:
   not paths — `contents: write` can touch any file in the repo — so the blast-radius
   containment lives in the Worker: it exposes ~7 narrow endpoints (`append-spark`,
   `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`, `apply-slots`), hard-codes the
-  writable paths (`research/**`, `drafts/**`), and never proxies the GitHub API
+  writable paths (`research/**`, `drafts/**`, plus one narrowly scoped `src/content/**`
+  exception granted only to `apply-slots` — next bullet), and never proxies the GitHub API
   generically. Branch protection on `main` (PRs only for `src/content/**`) backs this
   up at the repo level. If endpoint sprawl ever makes this allowlist hard to audit,
   graduate to a GitHub App with short-lived installation tokens.
