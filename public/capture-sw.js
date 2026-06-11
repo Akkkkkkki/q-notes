@@ -1,0 +1,69 @@
+// Minimal shell cache so the Companion surfaces open with no network (the
+// offline spark queue lives in the Capture page itself, in localStorage).
+// Site pages are untouched. Also handles the Tuesday-brief push: pushes are
+// sent without a payload (VAPID wake-up only), so the notification text is
+// fixed here and deep-links to /interview/.
+const CACHE = 'capture-shell-v2';
+const SHELL = ['/capture/', '/interview/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE && k.startsWith('capture-')).map((k) => caches.delete(k)))
+    )
+  );
+});
+
+function shellPath(pathname) {
+  if (pathname === '/capture' || pathname === '/capture/') return '/capture/';
+  if (pathname === '/interview' || pathname === '/interview/') return '/interview/';
+  return SHELL.includes(pathname) ? pathname : null;
+}
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.origin !== location.origin || event.request.method !== 'GET') return;
+  const path = shellPath(url.pathname);
+  if (!path) return;
+
+  // Network first (fresh deploys win), cache fallback (subway-proof).
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(path, copy));
+        return res;
+      })
+      .catch(() => caches.match(path))
+  );
+});
+
+self.addEventListener('push', (event) => {
+  event.waitUntil(
+    self.registration.showNotification("Q's Notes", {
+      body: 'This week’s interview brief is ready. 15–30 min, any language, fragments welcome.',
+      icon: '/icons/capture-192.png',
+      badge: '/icons/capture-192.png',
+      tag: 'qnotes-brief',
+      data: { url: '/interview/' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/interview/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+      for (const win of wins) {
+        if (new URL(win.url).pathname === url && 'focus' in win) return win.focus();
+      }
+      return clients.openWindow(url);
+    })
+  );
+});

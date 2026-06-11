@@ -1,8 +1,27 @@
 {
   "name": "q-notes",
   "compatibility_date": "2026-05-28",
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "binding": "ASSETS",
+    // "/__scheduled" only exists in `wrangler dev --test-scheduled`; in
+    // production it falls through to the 404 page like any unknown path.
+    "run_worker_first": ["/api/*", "/__scheduled"]
+  },
+  "vars": {
+    "GITHUB_REPO": "Akkkkkkki/q-notes",
+    "SPARK_TIMEZONE": "Asia/Shanghai"
+  },
+  // Tuesday 08:30 Asia/Shanghai: nudge the phone if the week's interview
+  // brief (written Tue 08:00 by routine 02) is still unanswered.
+  "triggers": {
+    "crons": ["30 0 * * 2"]
   }
+  // Secrets (set once via `npx wrangler secret put <NAME>`):
+  //   GITHUB_TOKEN      — fine-grained PAT scoped to this repo, contents: read/write
+  //   CAPTURE_TOKEN     — shared secret for the Capture/Interview pages and shortcuts
+  //   VAPID_PUBLIC_KEY,
+  //   VAPID_PRIVATE_JWK — optional, web push (node scripts/generate-vapid.mjs)
 }
