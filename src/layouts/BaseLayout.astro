@@ -29,6 +29,9 @@ const langSwitch = lang === 'zh'
   ? { href: '/', label: 'EN' }
   : { href: '/zh/', label: '中文' };
 
+const homeHref = lang === 'zh' ? '/zh/' : '/';
+const journalHref = lang === 'zh' ? '/zh/journal' : '/journal';
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = image.startsWith('/') ? new URL(image, Astro.site) : image;
 const siteName = "Q's Notes";
@@ -131,13 +134,13 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
     <div class="bg-white dark:bg-black transition-colors duration-300">
       <header class="mx-auto max-w-4xl py-8">
         <div class="flex items-center justify-between">
-          <a href="/" class="text-2xl font-semibold" transition:animate="fade">Q's Notes</a>
+          <a href={homeHref} class="text-2xl font-semibold" transition:animate="fade">Q's Notes</a>
 
           <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center gap-6">
             <nav class="flex items-center gap-6">
-              <a href="/" class="nav-link">Home</a>
-              <a href="/journal" class="nav-link">Journal</a>
+              <a href={homeHref} class="nav-link">Home</a>
+              <a href={journalHref} class="nav-link">Journal</a>
               <a href="/about" class="nav-link">About</a>
               <a href={langSwitch.href} class="nav-link">{langSwitch.label}</a>
             </nav>
@@ -166,8 +169,8 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
 
         <!-- Mobile Navigation -->
         <nav id="mobile-menu" class="hidden md:hidden mt-6 pt-4 border-t border-gray-200 dark:border-gray-800 space-y-1">
-          <a href="/" class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Home</a>
-          <a href="/journal" class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Journal</a>
+          <a href={homeHref} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Home</a>
+          <a href={journalHref} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Journal</a>
           <a href="/about" class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">About</a>
           <a href={langSwitch.href} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">{langSwitch.label}</a>
         </nav>
@@ -183,8 +186,8 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
               Q's Notes
             </div>
             <nav class="flex items-center gap-4">
-              <a href="/" class="nav-link-footer">Home</a>
-              <a href="/journal" class="nav-link-footer">Journal</a>
+              <a href={homeHref} class="nav-link-footer">Home</a>
+              <a href={journalHref} class="nav-link-footer">Journal</a>
               <a href="/about" class="nav-link-footer">About</a>
             </nav>
           </div>
