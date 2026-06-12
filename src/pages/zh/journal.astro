@@ -1,10 +1,10 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PostListWithThumbnails from '../components/PostListWithThumbnails.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostListWithThumbnails from '../../components/PostListWithThumbnails.astro';
 import { getCollection } from 'astro:content';
 
-// Get all blog posts and sort them by date
-const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
+// Get all Chinese posts and sort them by date
+const allPosts = await getCollection('posts', ({ data }) => data.lang === 'zh');
 const sortedPosts = allPosts.sort((a, b) => {
   return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
 });
@@ -12,22 +12,22 @@ const sortedPosts = allPosts.sort((a, b) => {
 // Format posts for the PostList component
 const posts = sortedPosts.map(post => ({
   ...post,
-  url: `/posts/${post.data.translationKey}`,
+  url: `/zh/posts/${post.data.translationKey}`,
   frontmatter: post.data
 }));
 ---
 
-<BaseLayout title="Journal">
+<BaseLayout title="文章" lang="zh">
   <div class="max-w-3xl mx-auto">
     <header class="mb-12 text-center" transition:animate="fade">
-      <h1 class="text-5xl mb-4">Journal</h1>
+      <h1 class="text-5xl mb-4">文章</h1>
       <p class="text-xl text-muted-foreground">
-        Notes, reviews, and other things
+        笔记、随想，以及其他想写的东西
       </p>
     </header>
 
     <div transition:animate="fade">
-      <PostListWithThumbnails posts={posts} showTags={true} title="All Posts" />
+      <PostListWithThumbnails posts={posts} showTags={true} title="全部文章" />
     </div>
   </div>
 </BaseLayout>

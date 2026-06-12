@@ -3,7 +3,10 @@ title: "AI will not just replace junior consultants. It will expose what consult
 date: 2026-04-18
 excerpt: "AI is unbundling what consulting really sold. The pyramid is becoming a barbell — generic analysis squeezed, judgment-heavy work repriced upward."
 image: /images/consulting-barbell.jpg
-tags: ["English", "AI", "Notes"]
+tags: ["AI", "Notes"]
+lang: en
+translationKey: consulting-barbell
+maturity: growing
 ---
 
 The standard story about AI and consulting is that the analyst layer goes first, the partner layer hangs on, and everyone in between holds out hope of being one of the survivors. That story is directionally correct and analytically lazy. It treats the consulting pyramid as a hierarchy of seniority when it is actually a bundle of services — and what AI is doing is unbundling the bundle.

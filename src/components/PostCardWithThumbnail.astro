@@ -12,6 +12,7 @@ interface Props {
       excerpt: string;
       image?: string;
       tags?: string[];
+      lang?: 'en' | 'zh';
     };
   };
   showExcerpt?: boolean;
@@ -19,7 +20,7 @@ interface Props {
 }
 
 const { post, showExcerpt = true, showTags = true } = Astro.props;
-const { title, date, excerpt, image, tags } = post.frontmatter;
+const { title, date, excerpt, image, tags, lang } = post.frontmatter;
 
 // Ensure image path is optimized
 const optimizedImagePath = image ? optimizeImagePath(image) : null;
@@ -52,24 +53,30 @@ const optimizedImagePath = image ? optimizeImagePath(image) : null;
             {title}
           </a>
         </h2>
-        <time 
+        <time
           datetime={new Date(date).toISOString()}
           class="text-gray-500 text-sm shrink-0 sm:ml-4 sm:text-right"
         >
-          {formatDate(date)}
+          {formatDate(date, lang)}
         </time>
       </div>
-      
+
       {showTags && tags && tags.length > 0 && (
         <div class="flex flex-wrap gap-2 mb-2" aria-label="Tags">
           {tags.map((tag) => (
-            <a
-              href={`/tags/${tag}`}
-              class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              aria-label={`View all posts tagged ${tag}`}
-            >
-              {tag}
-            </a>
+            lang === 'en' ? (
+              <a
+                href={`/tags/${tag}`}
+                class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                aria-label={`View all posts tagged ${tag}`}
+              >
+                {tag}
+              </a>
+            ) : (
+              <span class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                {tag}
+              </span>
+            )
           ))}
         </div>
       )}

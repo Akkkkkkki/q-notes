@@ -413,6 +413,21 @@
   bdo {
     @apply px-1;
   }
+
+  /* CJK typography adjustments */
+  :lang(zh) p,
+  :lang(zh) li {
+    line-height: 1.9;
+  }
+
+  :lang(zh) h1,
+  :lang(zh) h2,
+  :lang(zh) h3,
+  :lang(zh) h4,
+  :lang(zh) h5,
+  :lang(zh) h6 {
+    letter-spacing: normal;
+  }
 }
 
 /* Override the specific tag styles from PostCard.astro */

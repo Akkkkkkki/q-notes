@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+  translationKey: string;
+  currentLang: 'en' | 'zh';
+}
+
+const { translationKey, currentLang } = Astro.props;
+
+const targetLang = currentLang === 'en' ? 'zh' : 'en';
+const posts = await getCollection('posts', ({ data }) =>
+  data.translationKey === translationKey && data.lang === targetLang
+);
+const sibling = posts[0];
+const siblingUrl = sibling
+  ? targetLang === 'zh'
+    ? `/zh/posts/${sibling.data.translationKey}`
+    : `/posts/${sibling.data.translationKey}`
+  : null;
+const label = targetLang === 'zh' ? '中文' : 'English';
+---
+
+{siblingUrl && (
+  <a href={siblingUrl} class="tag" aria-label={`Read this post in ${targetLang === 'zh' ? 'Chinese' : 'English'}`}>
+    {label}
+  </a>
+)}

@@ -2,7 +2,7 @@ import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 
 export async function GET(context) {
-  const posts = await getCollection('posts', ({ data }) => data.lang === 'en');
+  const posts = await getCollection('posts', ({ data }) => data.lang === 'zh');
 
   // Sort posts by date (most recent first)
   const sortedPosts = posts.sort((a, b) =>
@@ -10,15 +10,15 @@ export async function GET(context) {
   );
 
   return rss({
-    title: "Q's Notes",
-    description: 'Notes, essays, and opinions on AI, technology, business, and the occasional aside.',
+    title: "Q的笔记",
+    description: '关于 AI、技术、商业的笔记、文章与观点，偶尔也写点别的。',
     site: context.site,
     items: sortedPosts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.date,
       description: post.data.excerpt,
-      link: `/posts/${post.data.translationKey}/`,
+      link: `/zh/posts/${post.data.translationKey}/`,
     })),
-    customData: `<language>en-us</language>`,
+    customData: `<language>zh-cn</language>`,
   });
 }

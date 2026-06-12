@@ -3,14 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PostList from '../components/PostList.astro';
 import { getCollection } from 'astro:content';
 
-const allPosts = await getCollection('posts');
+const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
 const sortedPosts = allPosts.sort((a, b) => {
   return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
 });
 
 const posts = sortedPosts.slice(0, 5).map(post => ({
   ...post,
-  url: `/posts/${post.id}`,
+  url: `/posts/${post.data.translationKey}`,
   frontmatter: post.data
 }));
 ---

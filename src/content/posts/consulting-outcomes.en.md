@@ -3,7 +3,10 @@ title: "From slide factory to outcome factory: why consulting economics are chan
 date: 2026-04-25
 excerpt: "AI breaks the day-rate convention. The question is no longer whether consultants use AI but whether firms can stop selling effort and start underwriting results."
 image: /images/consulting-outcomes.jpg
-tags: ["English", "AI", "Notes"]
+tags: ["AI", "Notes"]
+lang: en
+translationKey: consulting-outcomes
+maturity: growing
 ---
 
 For most of consulting's modern era, the unit of value has been the *day rate*. A firm sold smart people for a slice of time, multiplied that slice by a project plan, and the bill arrived as a function of effort. Outcomes mattered to the firm's reputation, but the meter ran on input. Almost every other piece of the consulting business model — utilization targets, leverage ratios, the partnership pyramid itself — flowed downstream from that one pricing convention.

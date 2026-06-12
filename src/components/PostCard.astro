@@ -12,6 +12,7 @@ interface Props {
       excerpt: string;
       image?: string;
       tags?: string[];
+      lang?: 'en' | 'zh';
     };
   };
   showImage?: boolean;
@@ -20,7 +21,7 @@ interface Props {
 }
 
 const { post, showImage = true, showExcerpt = true, showTags = true } = Astro.props;
-const { title, date, excerpt, image, tags } = post.frontmatter;
+const { title, date, excerpt, image, tags, lang } = post.frontmatter;
 
 // Ensure image path is optimized
 const optimizedImagePath = image ? optimizeImagePath(image) : null;
@@ -34,11 +35,11 @@ const optimizedImagePath = image ? optimizeImagePath(image) : null;
           {title}
         </a>
       </h2>
-      <time 
+      <time
         datetime={new Date(date).toISOString()}
         class="text-gray-500 text-sm shrink-0 sm:ml-4 sm:text-right self-center"
       >
-        {formatDate(date)}
+        {formatDate(date, lang)}
       </time>
     </div>
     
