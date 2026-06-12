@@ -22,3 +22,8 @@ same PR as the post that introduced them. Rules of thumb:
 | pipeline (editorial) | 流程 / 工作流 | Avoid 管道 in editorial contexts. |
 | note / essay / tracker (content tiers) | 笔记 / 文章 / 预测追踪 | |
 | seedling / growing / evergreen (maturity) | 幼苗 / 生长中 / 常青 | Shown to readers; keep gentle, not cute. |
+| barbell (strategy shape) | 杠铃 / 杠铃结构 | "Barbell" as in barbell strategy — squeezed middle, repriced extremes. |
+| conversion layer | 转化层 | Coined in the "consulting barbell" essay for the analyst/manager/EM tier that converts ambiguity into standard outputs. |
+| service-as-software | 服务即软件 | Keep English term in parentheses on first mention. |
+| outcome underwriting / outcome pricing | 结果担保 / 结果定价 | "Underwrite outcomes" → 为结果提供担保. |
+| skin in the game | 切身利益 | Keep English in parentheses on first mention. |

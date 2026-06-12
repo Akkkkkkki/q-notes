@@ -1,10 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
-import PostLayout from '../../layouts/PostLayout.astro';
+import PostLayout from '../../../layouts/PostLayout.astro';
 
-// Generate static paths for all posts
+// Generate static paths for all Chinese posts
 export async function getStaticPaths() {
-  const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
+  const allPosts = await getCollection('posts', ({ data }) => data.lang === 'zh');
 
   // Sortiere Posts nach Datum (neueste zuerst)
   const sortedPosts = allPosts.sort((a, b) =>
@@ -15,14 +15,14 @@ export async function getStaticPaths() {
     // Bestimme vorherigen und nächsten Post
     const prevPost = sortedPosts[index - 1]
       ? {
-          url: `/posts/${sortedPosts[index - 1].data.translationKey}`,
+          url: `/zh/posts/${sortedPosts[index - 1].data.translationKey}`,
           title: sortedPosts[index - 1].data.title
         }
       : null;
 
     const nextPost = sortedPosts[index + 1]
       ? {
-          url: `/posts/${sortedPosts[index + 1].data.translationKey}`,
+          url: `/zh/posts/${sortedPosts[index + 1].data.translationKey}`,
           title: sortedPosts[index + 1].data.title
         }
       : null;

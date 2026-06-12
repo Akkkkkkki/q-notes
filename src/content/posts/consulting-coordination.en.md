@@ -3,7 +3,10 @@ title: "The real AI bottleneck is not intelligence. It is coordination."
 date: 2026-05-02
 excerpt: "Most enterprise AI value is lost not to model limits but to the organisation around the model. Coordination, not intelligence, is the binding constraint."
 image: /images/consulting-coordination.jpg
-tags: ["English", "AI", "Notes"]
+tags: ["AI", "Notes"]
+lang: en
+translationKey: consulting-coordination
+maturity: growing
 ---
 
 A useful way to summarise the last eighteen months of enterprise AI is that the question quietly changed. In late 2024 the question most enterprises asked was *can the model do this?* By mid-2026 the question is *can our organisation safely turn what the model can do into work?* These sound similar. They are not.

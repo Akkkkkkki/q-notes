@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('posts', ({ data }) => data.lang === 'zh');
+const sortedPosts = allPosts.sort((a, b) => {
+  return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
+});
+
+const posts = sortedPosts.slice(0, 5).map(post => ({
+  ...post,
+  url: `/zh/posts/${post.data.translationKey}`,
+  frontmatter: post.data
+}));
+---
+
+<BaseLayout title="首页" lang="zh">
+  <div class="max-w-4xl mx-auto">
+    <section class="text-center py-[8vh]" transition:animate="fade">
+      <h1 class="text-7xl mb-8 font-bold">Q的笔记</h1>
+      <p class="text-2xl text-muted-foreground max-w-3xl mx-auto mb-14">
+        一个记录个人想法的博客——有时关于 AI 或工作，有时关于游戏、书籍、电影、旅行，或其他任何想写下来的东西。
+      </p>
+    </section>
+
+    <section class="mx-auto" transition:animate="fade">
+      <PostList posts={posts} showImages={false} showExcerpt={false} showSeparators={true} showTags={false}/>
+
+      <div class="text-center mt-24">
+        <a href="/zh/journal" class="text-lg font-medium text-black dark:text-white py-2 px-4 rounded-md inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:underline">
+          查看全部文章 <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

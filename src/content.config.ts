@@ -9,6 +9,9 @@ const postsCollection = defineCollection({
     excerpt: z.string(),
     image: z.string().optional(),
     tags: z.array(z.string()).default([]),
+    lang: z.enum(['en', 'zh']),
+    translationKey: z.string(),
+    maturity: z.enum(['seedling', 'growing', 'evergreen']),
   }),
 });
 
