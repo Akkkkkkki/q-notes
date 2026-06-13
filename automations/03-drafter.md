@@ -49,6 +49,12 @@ Produce the highest rung available:
   Optimise for insight per sentence, not vocabulary. Hold the transcreation to the same
   bar: if the zh version reaches for a plainer word than the en (or vice versa), level
   both down to the plain one.
+- Keep sentences short and readable. One idea per sentence by default; break any long,
+  dense run-on that stacks several clauses, mid-sentence parentheticals, or back-to-back
+  statistics into separate sentences. Claim parity is at the claim/number level, not the
+  sentence level — so splitting a sentence for readability is always allowed and never a
+  parity violation, in either language. Long sentences are earned only when walking
+  through one mechanism.
 - Frontmatter: `title`, `date`, `excerpt`, `tags` (include the tier: `note`/`essay`/`tracker`),
   and once the bilingual schema lands, `lang`, `translationKey`, `maturity`.
   Default `maturity: seedling` for Notes, `growing` for Essays.

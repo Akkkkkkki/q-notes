@@ -17,9 +17,11 @@ resolve stuck work without waiting for the author to feel ready.
    opinionated claim not traceable to the author's interview answers, sparks, or
    published positions. This includes the plain-language never-entries — fancy words,
    insider jargon, or clever-but-empty coinage where a plain word would carry the same
-   meaning (the tier checklist also gates this). Deliberately reused keywords and
-   `research/glossary.md` terms are exempt. If a plain swap is unambiguous, just make it
-   and push; only surface it as a question when the term might be load-bearing. Spot-check
+   meaning (the tier checklist also gates this), plus any long, dense run-on sentence that
+   can't be parsed in one pass — split it into one-idea-per-sentence. Deliberately reused
+   keywords and `research/glossary.md` terms are exempt. If a plain swap or a sentence
+   split is unambiguous, just make it and push; only surface it as a question when the
+   term might be load-bearing. Spot-check
    the PR's verbatim-spine list too — three trivial phrases kept for compliance don't
    count; the kept phrases should carry the piece's claims. Voice flags are rendered as
    questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
