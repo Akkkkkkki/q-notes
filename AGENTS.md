@@ -28,6 +28,7 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 - Open with the strongest claim or tension; avoid throat-clearing.
 - Use short sections with meaningful headings.
 - Make the argument sharper during revision: remove generic framing, reduce caveats that do not change the conclusion, and replace abstractions with concrete examples.
+- Write in plain language. Prefer the common word over the fancy one; cut any term that sounds clever but adds no meaning a smart non-specialist couldn't already follow (e.g. "metabolise" → "absorb", "bifurcated" → "two-tier", "the read-across" → "the parallel"). The only exception is a deliberately reused keyword or a `research/glossary.md` term: coin those sparingly, define them on first use, then reuse them on purpose. The measure of a piece is insight conveyed, not vocabulary.
 - Preserve the author's vivid phrases from interview answers and inbox sparks verbatim where usable, and follow `research/voice.md` (stances, signature moves, never-say terms). Every opinion in a draft must trace to the author's input or published positions; an untraceable judgment gets cut or recast as an open question.
 - End with a memorable implication, question, or prediction tracker when useful.
 - Draft posts under `src/content/posts/` with frontmatter compatible with the site's content collection.

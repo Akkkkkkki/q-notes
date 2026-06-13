@@ -193,6 +193,7 @@ A piece ships when its tier checklist passes — not when it feels finished.
 - [ ] One arguable claim a reader could repeat in one sentence.
 - [ ] One concrete example or mechanism (not just assertion).
 - [ ] One acknowledged counterpoint, even if only a sentence.
+- [ ] Plain language: no jargon or clever coinage a smart non-specialist couldn't follow, and no wording that sounds smart but adds no meaning. Deliberately reused keywords and glossary terms are the only exceptions, and they're defined on first use.
 - [ ] Both language versions present and claim-equivalent.
 - [ ] Build passes.
 

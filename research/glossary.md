@@ -8,6 +8,10 @@ same PR as the post that introduced them. Rules of thumb:
   translations; keep widely-used English terms in English where that is the natural usage
   (e.g., "prompt", "token" often stay untranslated in running text).
 - Record deliberate non-translations too, so they stay deliberate.
+- Terms listed here are the sanctioned "deliberate keywords" exempt from the plain-language
+  rule (`AGENTS.md`, `docs/pipeline.md` §5): define them on first use, then reuse on
+  purpose. A coinage that isn't a reused keyword and isn't here should be a plain word
+  instead.
 
 | English | 中文 | Notes |
 |---|---|---|

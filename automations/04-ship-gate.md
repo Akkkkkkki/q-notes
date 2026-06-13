@@ -15,10 +15,14 @@ resolve stuck work without waiting for the author to feel ready.
    Spot-check the bilingual claim-parity list against both files.
 2. **Run the voice check** against `research/voice.md`: flag any never-list hit, and any
    opinionated claim not traceable to the author's interview answers, sparks, or
-   published positions. Spot-check the PR's verbatim-spine list too — three trivial
-   phrases kept for compliance don't count; the kept phrases should carry the piece's
-   claims. Voice flags are rendered as questions in the verdict ("Says X — yours?") and
-   **never block a passing checklist**.
+   published positions. This includes the plain-language never-entries — fancy words,
+   insider jargon, or clever-but-empty coinage where a plain word would carry the same
+   meaning (the tier checklist also gates this). Deliberately reused keywords and
+   `research/glossary.md` terms are exempt. If a plain swap is unambiguous, just make it
+   and push; only surface it as a question when the term might be load-bearing. Spot-check
+   the PR's verbatim-spine list too — three trivial phrases kept for compliance don't
+   count; the kept phrases should carry the piece's claims. Voice flags are rendered as
+   questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
 3. **Checklist passes** → comment a verdict:
    - "**Ready to ship**", a 3-bullet summary (thesis, the one thing worth a second look,
      maturity level), any voice flags as one-line questions, and nothing else. The goal

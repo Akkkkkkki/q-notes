@@ -42,6 +42,13 @@ Produce the highest rung available:
 - Respect the voiceprint's **Never** list, and lean on its signature moves and rhythm
   notes; the goal is a draft the author reads and thinks "I said this," not "this is
   fine."
+- Write in plain language. Prefer the common word over the fancy one and cut any phrase
+  that sounds clever but conveys no meaning a smart non-specialist couldn't already
+  follow. The only sanctioned exceptions are a deliberately reused keyword and the terms
+  in `research/glossary.md` — coin sparingly, define on first use, then reuse on purpose.
+  Optimise for insight per sentence, not vocabulary. Hold the transcreation to the same
+  bar: if the zh version reaches for a plainer word than the en (or vice versa), level
+  both down to the plain one.
 - Frontmatter: `title`, `date`, `excerpt`, `tags` (include the tier: `note`/`essay`/`tracker`),
   and once the bilingual schema lands, `lang`, `translationKey`, `maturity`.
   Default `maturity: seedling` for Notes, `growing` for Essays.
