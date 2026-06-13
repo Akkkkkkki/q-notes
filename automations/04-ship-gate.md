@@ -18,7 +18,12 @@ resolve stuck work without waiting for the author to feel ready.
    published positions. This includes the plain-language never-entries — fancy words,
    insider jargon, or clever-but-empty coinage where a plain word would carry the same
    meaning (the tier checklist also gates this), plus any long, dense run-on sentence that
-   can't be parsed in one pass — split it into one-idea-per-sentence. Deliberately reused
+   can't be parsed in one pass — split it into one-idea-per-sentence. Also apply the
+   rhythm notes: flag em-dash density above roughly one per 150 words, stacked
+   "It is not X. It is Y." / "What X actually means is..." constructions, and italics used
+   for dramatic stress rather than quotes/coined terms/titles; fix these directly
+   (period, colon, or comma+conjunction in place of a dash; vary the cleft sentences; drop
+   the italics) rather than just flagging. Deliberately reused
    keywords and `research/glossary.md` terms are exempt. If a plain swap or a sentence
    split is unambiguous, just make it and push; only surface it as a question when the
    term might be load-bearing. Spot-check
