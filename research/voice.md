@@ -44,6 +44,7 @@ Words, framings, and hedges the author would not use. The ship gate flags these.
 Sentence-level texture, per language and for the 中英 mix.
 
 - Plain words carry the weight; reserve a coined term for an idea the piece reuses, and define it on first use.
+- Short sentences by default; break any sentence that stacks multiple clauses, parentheticals, or numbers. Length is earned only when walking through one mechanism.
 
 <!-- Example: short declaratives for claims; longer sentences only when walking through a mechanism -->
 

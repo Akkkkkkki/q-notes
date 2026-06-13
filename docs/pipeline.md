@@ -194,6 +194,7 @@ A piece ships when its tier checklist passes — not when it feels finished.
 - [ ] One concrete example or mechanism (not just assertion).
 - [ ] One acknowledged counterpoint, even if only a sentence.
 - [ ] Plain language: no jargon or clever coinage a smart non-specialist couldn't follow, and no wording that sounds smart but adds no meaning. Deliberately reused keywords and glossary terms are the only exceptions, and they're defined on first use.
+- [ ] Readable sentences: no long, dense, multi-clause run-ons; one idea per sentence by default, and stacked clauses, parentheticals, or statistics are split into their own sentences.
 - [ ] Both language versions present and claim-equivalent.
 - [ ] Build passes.
 
