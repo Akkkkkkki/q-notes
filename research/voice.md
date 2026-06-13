@@ -45,6 +45,9 @@ Sentence-level texture, per language and for the 中英 mix.
 
 - Plain words carry the weight; reserve a coined term for an idea the piece reuses, and define it on first use.
 - Short sentences by default; break any sentence that stacks multiple clauses, parentheticals, or numbers. Length is earned only when walking through one mechanism.
+- Em-dash discipline: cap at roughly one per 150 words (about half the density of early drafts). An em-dash is not the default way to close a sentence with a "reveal" — use a period, or a comma with "and"/"but". Use a colon, not a dash, to introduce a definition or explanation. Reserve — / —— for genuine mid-sentence appositive lists (e.g. "the consulting business model — utilization targets, leverage ratios, the pyramid itself — flowed downstream"). In Chinese, don't mirror English dash placement mechanically; 。/，/而/但/因为/也就是说 usually read more naturally than ——.
+- "It is not X. It is Y." and "What X actually means/looks like is..." are signature moves, not defaults — stacking them every paragraph turns emphasis into noise. Mix in plain direct statements.
+- Italics for emphasis (*word*) should be earned: reserve for direct quotes, a coined/glossary term on first use, and titles. Don't italicize a word purely for dramatic stress.
 
 <!-- Example: short declaratives for claims; longer sentences only when walking through a mechanism -->
 
