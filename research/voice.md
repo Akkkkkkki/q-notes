@@ -31,12 +31,19 @@ Phrasings, structures, and openings that are characteristically the author's.
 
 Words, framings, and hedges the author would not use. The ship gate flags these.
 
+- Fancy Latinate words where a plain one carries the same meaning — write "absorb," not "metabolise"; "two-tier," not "bifurcated."
+- Insider jargon used unironically and undefined — "the read-across," "harness-engineered," "rebated to billable hours" — say it plainly or define it once.
+- Clever one-off metaphors that sound smart but add nothing a plain word wouldn't (e.g. "internal weather" for office politics). Reused keyword metaphors are the exception — coin them on purpose, then reuse.
+- Vocabulary doing the work that insight should — if a sentence's only payload is its phrasing, cut or replace it.
+
 <!-- Example: "delve", "in today's fast-paced world", "it's important to note" -->
 <!-- Example: hedging both sides so thoroughly the piece takes no position -->
 
 ## Rhythm notes
 
 Sentence-level texture, per language and for the 中英 mix.
+
+- Plain words carry the weight; reserve a coined term for an idea the piece reuses, and define it on first use.
 
 <!-- Example: short declaratives for claims; longer sentences only when walking through a mechanism -->
 
