@@ -31,7 +31,7 @@ Technical failures, when they happen, are addressed by better models, better eva
 
 The historical analogy most economists reach for, and which Sivulka develops at length in the essay above, is electrification. Factories did not become more productive when they replaced steam engines with electric motors. They became more productive twenty years later, when they redesigned the factory floor around the new fact that motors no longer needed to be near a central power source. The motor change was the easy part. The factory redesign was the hard part. AI is currently in the motor-change phase. The factory redesign is what most enterprises have not started.
 
-This matters for consulting because the factory redesign (operating model change, role redesign, governance, evaluation, change management) is exactly what consulting has historically been good at and software companies have historically been bad at. The opportunity for the firms that figure this out is large. The risk for the firms that do not is that they get stuck selling AI deployment services into a market that has already learned deployment is not the bottleneck.
+This matters for consulting because the factory redesign — operating model change, role redesign, governance, evaluation, change management — is exactly what consulting has historically been good at and software companies have historically been bad at. The opportunity for the firms that figure this out is large. The risk for the firms that do not is that they get stuck selling AI deployment services into a market that has already learned deployment is not the bottleneck.
 
 ## Multi-agent systems: the debate, simplified
 
