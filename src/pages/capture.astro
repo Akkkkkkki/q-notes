@@ -198,7 +198,10 @@
           body: JSON.stringify(spark),
         });
         if (res.status === 401) throw Object.assign(new Error('unauthorized'), { unauthorized: true });
-        if (!res.ok) throw new Error('send failed (' + res.status + ')');
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw Object.assign(new Error(body.error || 'send failed (' + res.status + ')'), { serverError: true });
+        }
         return res.json();
       }
 
@@ -210,7 +213,12 @@
           } catch (e) {
             if (e.unauthorized) needToken();
             setQueue(queue);
-            setStatus(queue.length + ' queued');
+            if (e.serverError) {
+              setStatus(e.message);
+              tokenRow.classList.add('visible');
+            } else {
+              setStatus(queue.length + ' queued');
+            }
             return false;
           }
           queue = queue.slice(1);
@@ -248,6 +256,9 @@
         } catch (e) {
           if (e.unauthorized) {
             needToken();
+          } else if (e.serverError) {
+            setStatus(e.message);
+            tokenRow.classList.add('visible');
           } else {
             const queue = getQueue();
             queue.push(spark);
