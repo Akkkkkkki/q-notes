@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "Q's Notes",
+  "short_name": "Q's Notes",
+  "description": "A personal blog by Q.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
