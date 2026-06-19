@@ -213,12 +213,8 @@
           } catch (e) {
             if (e.unauthorized) needToken();
             setQueue(queue);
-            if (e.serverError) {
-              setStatus(e.message);
-              tokenRow.classList.add('visible');
-            } else {
-              setStatus(queue.length + ' queued');
-            }
+            if (e.serverError) throw e;
+            setStatus(queue.length + ' queued');
             return false;
           }
           queue = queue.slice(1);
@@ -293,13 +289,15 @@
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
       });
       window.addEventListener('online', () => {
-        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); });
+        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); })
+          .catch((e) => { if (e.serverError) { setStatus(e.message); tokenRow.classList.add('visible'); } });
       });
 
       if (!getToken()) needToken();
       const pending = getQueue().length;
       if (pending) setStatus(pending + ' queued');
-      flushQueue().then(() => loadRecent());
+      flushQueue().then(() => loadRecent())
+        .catch((e) => { if (e.serverError) { setStatus(e.message); tokenRow.classList.add('visible'); } });
 
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
     </script>

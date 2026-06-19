@@ -313,9 +313,9 @@
           render();
           setupNotifyButton();
         } catch (e) {
-          if (e.message !== ‘unauthorized’) showEmpty(‘Couldn’t load the brief: ‘ + e.message);
-          $(‘token-row’).classList.add(‘visible’);
-          setStatus(‘’);
+          if (e.message !== 'unauthorized') showEmpty('Couldn’t load the brief: ' + e.message);
+          $('token-row').classList.add('visible');
+          setStatus('');
         }
       }
 
