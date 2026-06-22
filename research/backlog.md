@@ -27,7 +27,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-28 — Test suites are becoming the product manager
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** Long-horizon coding agents do not just need better models; they need oversight systems because automated tests are becoming the only product manager they actually obey.
 
@@ -49,7 +49,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-28 — Agent security is about reversibility, not obedience
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** The practical security boundary for agentic AI is not "make the model follow instructions"; it is making every consequential action reversible, scoped, and externally auditable.
 
@@ -71,7 +71,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-28 — AI labs are rebuilding consulting
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** OpenAI's Deployment Company suggests the scarce layer in enterprise AI is no longer model access; it is workflow redesign, political buy-in, and forward-deployed implementation.
 
@@ -93,7 +93,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-28 — Humanoid robots need boring proof, not magic demos
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** The important humanoid-robotics shift is not robots looking more human; it is startups trying to prove utilization with boring, auditable warehouse throughput.
 
@@ -115,7 +115,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-28 — Gaming AI has a value-trust problem
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** In games, generative AI will not be accepted because it is efficient; it will be accepted only when players and developers can feel a new kind of play that is worth the trust cost.
 
@@ -137,7 +137,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-29 — Helpful coding agents are an authorization bug
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** The next serious coding-agent failure is not malicious prompt injection; it is a helpful agent completing the task and quietly doing extra work the user never authorized.
 
@@ -158,7 +158,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-29 — Agent skills are executable supply chain
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** `SKILL.md`, MCP wrappers, and agent tool manifests should be treated less like documentation and more like package dependencies with authority over an agent's behavior.
 
@@ -180,7 +180,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-29 — Vibe coding is now a bad policy word
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** The phrase "vibe coding" has become too semantically overloaded to govern anything; serious teams need to distinguish disposable no-review software from agentic programming with maintained-code ownership.
 
@@ -202,7 +202,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-29 — Game studios are hiding AI where taste cannot see it
 
-**Status:** Backlog
+**Status:** Expired (2026-06-22)
 
 **One-line thesis:** The emerging compromise in game AI is not AI-generated content; it is AI for QA, debugging, and internal evaluation, where studios can capture efficiency without asking players to trust machine taste.
 
@@ -221,3 +221,87 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** Medium, because it has a strong AI x gaming angle but should be written carefully around unconfirmed Ubisoft reporting.
 
 **Suggested tags:** `ai`, `gaming`, `media`
+
+## 2026-06-22 — The scarce part of an AI loop is knowing when to stop
+
+**Status:** Backlog
+
+**One-line thesis:** "Loop engineering" turns managerial judgment into termination conditions: if a team cannot define evidence that the work is done, an autonomous agent loop only automates scope creep.
+
+**Why this is interesting now:** The June discussion around loop engineering is moving coding-agent practice beyond one-shot prompts toward persistent loops with makers, checkers, memory, and explicit exit conditions. The under-synthesized point is that this does not remove management work. It forces teams to encode the hardest managerial question: what observable state is good enough to stop spending.
+
+**Potential author angle:** Push past "prompt engineering is dead" and argue that the real successor is acceptance-criteria engineering. The valuable human is not the person with the cleverest instruction. It is the person who can define a falsifiable finish line, choose the right checker, and decide when another iteration has negative value.
+
+**Author hook:** This extends the published position in [The real AI bottleneck is not intelligence. It is coordination.](../src/content/posts/consulting-coordination.en.md): AI works best where ground truth is cheap, while judgment-heavy work resists automated review. A loop is therefore a coordination system whose quality is bounded by its definition of done.
+
+**Evidence checked:**
+- [Addy Osmani: Loop Engineering](https://addyosmani.com/blog/loop-engineering/) — June 7 practitioner synthesis of the maker/checker pattern, fresh context per iteration, persistent memory, and explicit exit conditions; useful as the clearest current statement of the practice rather than proof that it works universally.
+- [Coding Agents Don't Know When to Act](https://arxiv.org/abs/2605.07769) — May 8 FixedBench paper showing agents proposed undesirable code changes in 35–65% of tasks where no change was needed, which supports the claim that stopping and abstention are first-class evaluation problems.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary report on monitoring one million coding-agent tasks; most flagged events came from misinterpretation or overeagerness rather than adversarial intent.
+
+**Counterargument / risk:** Strong teams already write tests, acceptance criteria, and budgets, so "loop engineering" may be a new label for continuous integration plus a retry script. The thesis becomes false if general-purpose agents learn reliable abstention and stopping from ordinary task context without teams investing in explicit checkers or finish conditions.
+
+**Two interview questions:**
+1. In your own use of coding automations, where did the agent keep improving the wrong thing because "done" was underspecified?
+2. Which business decisions have no affordable checker, and therefore should never be put inside an autonomous loop?
+
+**Draftability:** High, because it turns a fashionable workflow term into a concrete operating claim with an obvious test: show the stopping condition.
+
+**Suggested tags:** `ai`, `software`, `management`
+
+## 2026-06-22 — Humanoid is an interface standard, not a body plan
+
+**Status:** Backlog
+
+**One-line thesis:** General-purpose robots will copy the parts of humans that buildings and tools require, especially reach and hands, while discarding expensive anatomy such as legs whenever wheels can do the job.
+
+**Why this is interesting now:** Genesis AI introduced Eno on June 16 as a wheeled robot with two arms, five-finger hands, and a human-scale torso. That combination is a useful counter-signal to the industry's fixation on bipedal silhouettes. The early idea is that "humanoid" may settle into a compatibility standard for a world built around human bodies, not a requirement to reproduce the entire body.
+
+**Potential author angle:** Separate human compatibility from human imitation. Doors, shelves, tools, and workstations create a strong reason to keep human-like reach and manipulation. They do not automatically justify the cost, instability, and energy demands of legs on flat factory or household floors.
+
+**Author hook:** None. It still earns a slot because it offers a specific mechanism-level robotics thesis that can be tested across new commercial designs, and it is meaningfully different from the expired backlog item about proving warehouse utilization.
+
+**Evidence checked:**
+- [Genesis AI: Meet Eno](https://www.genesis.ai/press/meet-eno) — June 16 primary announcement describing a wheeled base, adjustable human-scale height, articulated arms, and human-shaped hands; company performance claims remain unverified.
+- [The Verge: The next humanoid robot might not look human at all](https://www.theverge.com/ai-artificial-intelligence/951283/genesis-ai-humanoid-robot-eno) — June 17 near-primary reporting on the design rationale and the choice to prioritize human capability over human appearance.
+- [Do Robots Really Need Anthropomorphic Hands?](https://arxiv.org/abs/2508.05415) — older mechanism source arguing that five-finger human mimicry adds complexity and cost, and that a four-finger design can preserve much of the useful capability.
+- [X2-N: A Wheel-Legged Humanoid Robot](https://arxiv.org/abs/2604.21541) — April 2026 research example combining wheels and legs to gain flat-ground efficiency without giving up obstacle-crossing ability, supporting a spectrum of compatibility choices rather than one canonical humanoid form.
+- [SyLink: A Modular Anthropomorphic Robotic Hand](https://arxiv.org/abs/2606.14250) — June 16 primary research signal showing the opposite design pressure: high-fidelity human compatibility can justify 22 degrees of freedom when dexterous tool use is the target.
+
+**Counterargument / risk:** Stairs, curbs, clutter, and human expectations may make legs and a familiar silhouette commercially valuable outside controlled floors. The thesis is false if customers consistently pay more for fully bipedal robots because environmental coverage and social acceptance outweigh cost and reliability penalties.
+
+**Two interview questions:**
+1. Which parts of the human body are genuinely an API for the built world, and which are robotics companies copying mainly because the demo looks convincing?
+2. Would you trust a less human-looking robot more if its design made its limits obvious?
+
+**Draftability:** High, because the argument is visual, concrete, and falsifiable as commercial robots reveal which pieces of the humanoid template survive.
+
+**Suggested tags:** `robotics`, `ai`, `design`, `business`
+
+## 2026-06-22 — AI can automate creative work faster than industries can reproduce taste
+
+**Status:** Backlog
+
+**One-line thesis:** The deepest labor risk in games and other creative fields is not that AI replaces taste, but that it removes the low-risk repetitions through which juniors acquire taste, leaving senior talent productive but non-renewable.
+
+**Why this is interesting now:** A June 17 feature based on interviews with 32 game developers found broad agreement that AI will reshape production but sharp disagreement over whether it expands creativity or degrades craft. The more specific signal sits underneath that debate: entry-level roles are already scarce, and the production tasks most likely to be automated are also the practice ground from which future art directors, designers, and technical leads emerge.
+
+**Potential author angle:** Extend the author's consulting "apprenticeship problem" into a creative industry where the missing skill is not just correctness but taste. The uncomfortable claim is that a studio can improve short-run output per employee while quietly liquidating the training process that renews its senior bench.
+
+**Author hook:** This directly extends [The apprenticeship problem](../src/content/posts/consulting-barbell.en.md#the-apprenticeship-problem), which argues that removing grunt work can break the path from junior repetition to senior judgment. Games make the mechanism easier to see because the output depends on accumulated aesthetic and technical taste.
+
+**Evidence checked:**
+- [GamesRadar: Why so many game developers don't want to use generative AI](https://www.gamesradar.com/games/why-so-many-game-developers-dont-want-to-use-generative-ai/) — June 17 feature based on 32 interviews, including direct concerns from David Gaider and Rami Ismail that eliminating entry-level work breaks the next-generation talent pipeline.
+- [Creative Bloq: Are junior creative roles really disappearing?](https://www.creativebloq.com/professional-development/creative-careers/are-junior-creative-roles-really-disappearing) — June 5 reporting that the share of surveyed agencies employing graduate trainees fell from 56% to 43.4%, while only 13% of a 100-listing sample was entry-level; interviewees stress that AI is not the only cause.
+- [From Help to Harm: Rethinking AI Assistance in Complex Software Tasks](https://arxiv.org/abs/2602.00496) — February 2026 mixed-method study of 57 developers finding that AI assistance helped novices on simpler tasks but hurt them on more complex work, while experts remained better able to detect and correct bad guidance.
+- [No Regrets: Investigating and Mitigating Hindsight Bias in AI-Assisted Software Development](https://arxiv.org/abs/2601.20245) — January 2026 experiment finding that junior developers were more likely to accept incorrect AI-generated explanations, while senior developers corrected errors more consistently; an older cross-domain mechanism source, not direct evidence about games.
+
+**Counterargument / risk:** AI can also increase the number and speed of practice cycles, let small teams attempt work previously reserved for large studios, and expose juniors to higher-level decisions sooner. The thesis weakens if AI-native juniors develop independent taste faster, or if studios replace production apprenticeship with deliberate critique, rotation, and reverse-engineering programs.
+
+**Two interview questions:**
+1. Which boring tasks in your own career looked disposable at the time but later turned out to be where your judgment formed?
+2. If a junior can produce senior-looking work with AI, what evidence would convince you that they understand why it is good rather than merely recognizing the output?
+
+**Draftability:** High, because it connects consulting, software, and games through one sharp mechanism while preserving a serious counter-case.
+
+**Suggested tags:** `ai`, `gaming`, `work`, `culture`
