@@ -31,3 +31,4 @@ same PR as the post that introduced them. Rules of thumb:
 | service-as-software | 服务即软件 | Keep English term in parentheses on first mention. |
 | outcome underwriting / outcome pricing | 结果担保 / 结果定价 | "Underwrite outcomes" → 为结果提供担保. |
 | skin in the game | 切身利益 | Keep English in parentheses on first mention. |
+| authorization bug | 授权漏洞 | Coined framing for agent scope failures; keep English in parentheses on first mention in zh. |
