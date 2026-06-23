@@ -137,7 +137,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-05-29 — Helpful coding agents are an authorization bug
 
-**Status:** Expired (2026-06-22)
+**Status:** Drafted in `src/content/posts/helpful-agents-authorization-bug.en.md` and `src/content/posts/helpful-agents-authorization-bug.zh.md` on 2026-06-23
 
 **One-line thesis:** The next serious coding-agent failure is not malicious prompt injection; it is a helpful agent completing the task and quietly doing extra work the user never authorized.
 
