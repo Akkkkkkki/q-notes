@@ -305,3 +305,85 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** High, because it connects consulting, software, and games through one sharp mechanism while preserving a serious counter-case.
 
 **Suggested tags:** `ai`, `gaming`, `work`, `culture`
+
+## 2026-06-25 — Cheap agent action creates expensive coordination debt
+
+**Status:** Backlog
+
+**One-line thesis:** AI agents lower the cost of producing code and analysis faster than organizations lower the cost of deciding what should exist, so the first enterprise agent crisis may look like more output and less visible progress.
+
+**Why this is interesting now:** Axios reported on June 25 that Codex usage is shifting from chat toward delegated work, with non-developers the fastest-growing user group and heavy users issuing tasks estimated to represent substantial human work. That makes the author's June 19 inbox spark feel early rather than abstract: individual developers can create more proofs of concept, but the org shape may still turn that speed into tech debt, silo conflicts, and confused executives.
+
+**Potential author angle:** Argue against the lazy productivity story. The bottleneck is not whether one person can make software faster. It is whether the organization has evolved its architecture, product judgment, review capacity, and ownership model quickly enough to absorb the extra work.
+
+**Author hook:** Directly anchored to the 2026-06-19 inbox spark about software companies generating more code, more silos, and more conflict while leadership sees less real progress. It also extends [The real AI bottleneck is not intelligence. It is coordination.](../src/content/posts/consulting-coordination.en.md).
+
+**Evidence checked:**
+- [Axios: AI agents are here for real this time](https://www.axios.com/2026/06/25/codex-agents-growth-openai) — June 25 report on Codex adoption, high-intensity delegated tasks, and non-developers as the fastest-growing user group; useful as current market signal, not as proof of productivity.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary source saying a million coding-agent trajectories found many flagged events came from agent misinterpretation or overeagerness, supporting the claim that cheap action needs operational control.
+- [MarketBench: Evaluating AI Agents as Market Participants](https://arxiv.org/abs/2604.23897) — older mechanism source finding agents were miscalibrated about success probability and token usage, so agent labor cannot yet reliably price or allocate itself.
+- [AI Coding Agents Can Reproduce Social Science Findings](https://arxiv.org/abs/2606.11447) — June 9 paper showing agents can execute many reproducible computational workflows, while also warning that prompt framing can nudge confirmatory specification search.
+
+**Counterargument / risk:** The counterargument is that better platforms may route work through issue trackers, reviews, architecture gates, and ownership rules before the debt accumulates. The thesis weakens if organizations adopt agents without a visible rise in duplicate systems, abandoned prototypes, or review bottlenecks.
+
+**Two interview questions:**
+1. Where have you seen AI make one person's output look impressive while making the whole company's direction less legible?
+2. What is the smallest organizational change that would let agent-generated work compound instead of fragmenting into more code nobody owns?
+
+**Draftability:** High, because it is anchored in the author's firsthand observation and turns a broad agent-adoption story into a concrete management mechanism.
+
+**Suggested tags:** `ai`, `software`, `management`, `business`
+
+## 2026-06-25 — Agent memory turns bugs into policy
+
+**Status:** Backlog
+
+**One-line thesis:** Persistent memory is the part of agent safety that can quietly turn a one-time mistake into a standing rule, making bad context more dangerous than a bad answer.
+
+**Why this is interesting now:** A June 11 paper audits LangChain, AutoGPT, and OpenAI Agents SDK against containment principles and finds no native compliance, including no observed memory-integrity guarantee. Days later, DeepMind framed internal agents as systems that need monitors, permissions, and response levels rather than only better alignment. The under-synthesized point is that memory makes agent failures durable.
+
+**Potential author angle:** Push the agent-security conversation away from cinematic prompt injection and toward institutional risk. A normal software bug is often local. A poisoned agent memory can preserve aggregate accuracy while targeting one class of user, policy, or workflow over and over.
+
+**Author hook:** This extends the site's agent-governance line without duplicating the expired "reversibility" item: reversibility asks what happens after the model is wrong; memory integrity asks whether the system remembers the wrong thing as policy.
+
+**Evidence checked:**
+- [The Containment Gap: How Deployed Agentic AI Frameworks Fail Public-Facing Safety Requirements](https://arxiv.org/abs/2606.12797) — June 11 paper auditing LangChain, AutoGPT, and OpenAI Agents SDK; reports no native compliance with six containment principles and no observed memory-integrity defense.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary source describing AI control as defense in depth, with monitoring, prevention, response, and capability-based security levels for internal agents.
+- [When Agents Handle Secrets: A Survey of Confidential Computing for Agentic AI](https://arxiv.org/abs/2605.03213) — older mechanism source mapping agent threats across perception, planning, memory, action, and coordination layers, including context exfiltration and inter-agent message poisoning.
+
+**Counterargument / risk:** The strongest counterargument is that the cited containment paper uses a simulated benefits agent and may overstate risk for narrow enterprise tools with short-lived context. The thesis weakens if production platforms move quickly toward signed memory writes, provenance, scoped recall, and easy deletion.
+
+**Two interview questions:**
+1. What should an agent be allowed to remember without asking, and what should require a signed policy-like commit?
+2. Which is more dangerous in a company: an agent that forgets useful context or one that remembers the wrong context too faithfully?
+
+**Draftability:** High, because it names a concrete mechanism and gives a memorable test: what does the agent treat as institutional memory?
+
+**Suggested tags:** `ai`, `security`, `software`, `governance`
+
+## 2026-06-25 — AI disclosure is becoming a craft-risk premium in games
+
+**Status:** Backlog
+
+**One-line thesis:** In games, disclosed AI use may be turning into a market signal that players use to price the risk of low craft, even when they are not consciously boycotting AI.
+
+**Why this is interesting now:** Fresh June coverage resurfaced Game Oracle's Steam analysis just as studios keep arguing that AI will unlock creativity. The interesting bit is not "players hate AI." It is that AI disclosure may function like a risk premium: for weak games it changes little, but for high-potential games it can make players suspect the studio cut corners where craft matters.
+
+**Potential author angle:** Refuse both easy stories. Anti-AI moral panic misses useful internal tools. Executive efficiency theater misses that games are inspected as craft objects, not just consumed as content. A Steam disclosure is not only a compliance note; it can become a trust cue.
+
+**Author hook:** This sharpens the expired gaming backlog items with measurable market data. It also connects to the active apprenticeship/taste candidate: if AI hides the practice that builds taste, disclosure may expose the trust cost of that shortcut.
+
+**Evidence checked:**
+- [Game Oracle: AI in Games: The Impact On Sales](https://www.game-oracle.com/blog/ai-part2) — primary data analysis of 9,879 commercial Steam releases from January to October 2025; estimates a roughly 52.6% reduction in first-month reviews for AI-disclosing games after controls, while stressing unmeasured confounders.
+- [PC Gamer: Data analyst finds "AI stigma" on Steam can reduce reviews by around 53%](https://www.pcgamer.com/software/ai/data-analyst-finds-ai-stigma-on-steam-can-reduce-the-number-of-reviews-a-game-gets-by-around-53-percent-and-the-reviews-it-does-get-are-more-negative/) — June 21 near-primary coverage that surfaced the study in current industry discussion and notes successful counterexamples such as The Finals.
+- [Generative AI in Game Development: A Qualitative Research Synthesis](https://arxiv.org/abs/2509.11898) — older mechanism source synthesizing how generative AI is used in production and why adoption is not reducible to asset generation alone.
+
+**Counterargument / risk:** Steam reviews are an imperfect sales proxy, disclosure is messy, and undisclosed AI use may distort the sample. The thesis is false if high-quality AI-assisted games keep succeeding after disclosure and players learn to distinguish useful tools from cheap substitution.
+
+**Two interview questions:**
+1. When a game discloses AI use, what exactly do you suspect got worse: art, writing, labor ethics, or the studio's judgment?
+2. Would a studio earn more trust by disclosing the boring internal uses of AI and explicitly ruling out AI in the parts players inspect as craft?
+
+**Draftability:** Medium, because the data is useful but the piece must avoid overstating causality from Steam-review proxies.
+
+**Suggested tags:** `ai`, `gaming`, `business`, `media`
