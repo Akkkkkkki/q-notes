@@ -334,33 +334,6 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 **Suggested tags:** `ai`, `software`, `management`, `business`
 
-## 2026-06-25 — Science agents are replication machinery before they are scientists
-
-**Status:** Backlog
-
-**One-line thesis:** The credible near-term role for AI research agents is not autonomous discovery; it is turning reproducible scientific work into cheaper, inspectable execution infrastructure.
-
-**Why this is interesting now:** Two June papers create a useful tension. Agents can reproduce a large share of selected social-science findings when data and code are available, but a broader science-agent benchmark finds they still struggle with open-ended exploration and genuinely novel insight. That is more interesting than another "AI scientist" headline because it separates execution from judgment.
-
-**Potential author angle:** Make the distinction plain: a research agent is most valuable when the question, materials, and checks already exist. The moment it has to decide what question is worth asking, the work becomes less like automation and more like taste, skepticism, and agenda-setting.
-
-**Author hook:** This connects to the site's recurring claim that AI performs best where ground truth is cheap. Scientific replication has checks. Scientific taste often does not.
-
-**Evidence checked:**
-- [AI Coding Agents Can Reproduce Social Science Findings](https://arxiv.org/abs/2606.11447) — June 9 benchmark of 221 social-science reproduction tasks, finding Claude Code and Codex can reproduce many findings when original materials are available; also notes prompt framing can bias agents toward confirmatory specification search.
-- [Benchmarking AI Agents for Addressing Scientific Challenges Across Scales](https://arxiv.org/abs/2606.12736) — June 10 SciAgentArena paper with roughly 200 real-world scientific tasks; finds agents help on well-specified data-analysis workflows but struggle with novel insight, self-directed exploration, and open-ended solution formulation.
-- [AIRS-Bench: a Suite of Tasks for Frontier AI Research Science Agents](https://arxiv.org/abs/2602.06855) — older mechanism source showing agents can exceed human SOTA on some research tasks while failing to match it on most, suggesting uneven progress rather than a clean "AI scientist" arrival.
-
-**Counterargument / risk:** The counterargument is that replication is often where real discovery starts: a tireless agent may find anomalies and alternative specifications humans miss. The thesis is false if agents repeatedly generate new research questions that survive expert review without being seeded by human framing.
-
-**Two interview questions:**
-1. Which parts of research would you happily outsource to an agent, and which parts would you treat as the actual intellectual work?
-2. Is a reproduction agent more like a junior researcher, an audit function, or a compiler for methods sections?
-
-**Draftability:** Medium, because the mechanism is strong but the piece needs a clear non-academic payoff for q-notes readers.
-
-**Suggested tags:** `ai`, `science`, `software`, `research`
-
 ## 2026-06-25 — Agent memory turns bugs into policy
 
 **Status:** Backlog
