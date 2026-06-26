@@ -308,7 +308,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-06-25 — Cheap agent action creates expensive coordination debt
 
-**Status:** Backlog
+**Status:** Drafted in `src/content/posts/agent-coordination-debt.en.md` and `src/content/posts/agent-coordination-debt.zh.md` on 2026-06-26
 
 **One-line thesis:** AI agents lower the cost of producing code and analysis faster than organizations lower the cost of deciding what should exist, so the first enterprise agent crisis may look like more output and less visible progress.
 
