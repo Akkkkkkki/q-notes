@@ -387,3 +387,87 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** Medium, because the data is useful but the piece must avoid overstating causality from Steam-review proxies.
 
 **Suggested tags:** `ai`, `gaming`, `business`, `media`
+
+## 2026-06-26 — AI pull requests are becoming knowledge imports
+
+**Status:** Backlog
+
+**One-line thesis:** As coding agents make outside patches cheap, the real review question shifts from "should we merge this diff?" to "what knowledge, intent, and risk should this project absorb?"
+
+**Why this is interesting now:** Several June 24-25 papers converge on the same uncomfortable point from different angles: agent-generated code increases the amount of software activity, but it does not make understanding, trust, or long-term ownership cheap. The early signal is that pull requests may split into two artifacts: a proposed implementation and a project-owned understanding of what should change.
+
+**Potential author angle:** Connect this to the author's coordination thesis: cheap code is not cheap progress. In agent-heavy software work, the scarce act may become translating an external contribution into project-owned intent before letting any code cross the boundary.
+
+**Author hook:** This extends the 2026-06-19 inbox spark about companies producing more code, more silos, and less visible progress. It also sharpens [The real AI bottleneck is not intelligence. It is coordination.](../src/content/posts/consulting-coordination.en.md) around a concrete software workflow: the pull request.
+
+**Evidence checked:**
+- [Knowledge-Based Pull Requests: A Trusted Workflow for Agent-Mediated Knowledge Collaboration](https://arxiv.org/abs/2606.26721) — June 25 paper proposing that external code, tests, and cleaned agent traces should be treated as knowledge sources, with project-owned agents regenerating code inside the trusted environment.
+- [Augmentation with Dilution: A Large-Scale Empirical Study of Human Contributor Ecosystems After AI Coding Agent Adoption](https://arxiv.org/abs/2606.26289) — June 24 study of 11,097 GitHub repositories from January 2023 to May 2026; reports lower human contributor density, a 3.7 percentage-point decline in newcomer share, and a 5.3% increase in review depth after agent adoption.
+- [The Verification Horizon: No Silver Bullet for Coding Agent Rewards](https://arxiv.org/abs/2606.26300) — June 24 paper arguing that generating candidate solutions is becoming easier than faithfully verifying whether they satisfy underspecified human intent.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary source framing agent oversight as monitoring, prevention, response, and capability-based controls rather than model quality alone.
+
+**Counterargument / risk:** Traditional pull requests may survive if provenance tooling, test coverage, and reviewer UI improve enough that project maintainers can safely evaluate agent-written diffs directly. The thesis weakens if trusted-regeneration workflows add too much friction or if contributors refuse to package intent separately from code.
+
+**Two interview questions:**
+1. When reviewing AI-generated work, what part of the contribution do you trust least: the code, the tests, the stated intent, or the missing context?
+2. Would you rather accept an outside agent's patch or accept its reasoning and have your own agent reimplement it?
+
+**Draftability:** High, because it turns a technical workflow proposal into a broader argument about ownership, trust, and coordination in software.
+
+**Suggested tags:** `ai`, `software`, `open-source`, `governance`
+
+## 2026-06-26 — The best agent interface may be the codebase map
+
+**Status:** Backlog
+
+**One-line thesis:** Coding agents do not only need bigger context windows or better prompts; they need deterministic maps of the codebase so their search, scope, and review path stop being stochastic.
+
+**Why this is interesting now:** June 25 research papers are moving from "agent does task" benchmarks toward the plumbing around the agent: structural annotations, spec graphs, verification cascades, and feature-reduction milestones. The under-synthesized point is that the codebase itself is becoming an interface, and many repositories are badly designed for machine collaborators.
+
+**Potential author angle:** Argue that agent-readiness is not an AI skill. It is software architecture made explicit enough for a probabilistic worker to navigate without inventing the map. This lets the author push against prompt-centric advice and return to engineering basics: ownership paths, contracts, tests, and small vertical slices.
+
+**Author hook:** This extends the site's existing line on tests, loop engineering, and coordination, but adds a more concrete mechanism: the repo must provide stable waypoints before agent autonomy can compound.
+
+**Evidence checked:**
+- [How Much Static Structure Do Code Agents Need? A Study of Deterministic Anchoring](https://arxiv.org/abs/2606.26979) — June 25 study showing lightweight call and inheritance topology can improve localization, reduce interaction rounds, roughly halve run-to-run variance, and raise Pass@1 on medium-scale repositories at about 10% more input tokens.
+- [The Spec Growth Engine: Spec-Anchored, Code-Coupled, Drift-Enforced Architecture for AI-Assisted Software Development](https://arxiv.org/abs/2606.27045) — June 25 proposal for a machine-readable spec graph, scoped context assembler, vertical-slice growth protocol, and merge-blocking drift gate.
+- [Mostly Automatic Translation of Language Interpreters from C to Safe Rust](https://arxiv.org/abs/2606.27122) — June 25 Reboot paper showing feature reduction and testable milestones improved validation pass rates by 6-20 percentage points compared with multi-agent translation alone.
+- [NOVA: A Verification-Aware Agent Harness for Architecture Evolution in Industrial Recommender Systems](https://arxiv.org/abs/2606.27243) — June 25 industrial recommender-system paper using verification cascades and risk-level routing; reports reduced silent failures and a 13x shorter literature-to-production cycle in human-attended time for one task.
+
+**Counterargument / risk:** The strongest objection is that these results may overfit to structured domains where static topology, specs, or verification signals are available. The thesis weakens if general agents become good enough to infer project structure cheaply from ordinary files and human-language instructions.
+
+**Two interview questions:**
+1. Which parts of your repositories are obvious to humans only because of social memory, not because the code explains them?
+2. If an agent keeps touching the wrong files, is that an AI failure or a codebase legibility failure?
+
+**Draftability:** High, because the essay can make a practical, memorable claim: the future coding-agent moat may be boring repo cartography.
+
+**Suggested tags:** `ai`, `software`, `engineering`
+
+## 2026-06-26 — Robot training is turning humans into coaches
+
+**Status:** Backlog
+
+**One-line thesis:** The next useful robotics interface may not be better teleoperation or bigger video datasets, but human coaching that marks the few physical moments where the task actually becomes learnable.
+
+**Why this is interesting now:** June robotics papers are clustering around ways to extract more value from sparse, structured human input: one demonstration plus a critical interaction window, robot-free VR demonstrations, pressure/contact signals, and runtime-editable behavior systems. The interesting mechanism is not "robots learn from humans." It is that human judgment compresses the task before learning begins.
+
+**Potential author angle:** Separate imitation from coaching. A demo says "copy this." A coach says "this 20cm of motion is where the outcome is decided." That distinction gives the author a way to write about robotics without getting trapped in humanoid hype or vague embodiment language.
+
+**Author hook:** This pairs naturally with the active humanoid-interface backlog item: robots are adapting to human-built environments, but the learning loop may also adapt to how humans teach physical skill.
+
+**Evidence checked:**
+- [TaskNPoint: How to Teach Your Humanoid to Hit a Backhand in Minutes](https://arxiv.org/abs/2606.26215) — June 24 paper arguing that dynamic skills hinge on short interaction windows; uses one human demonstration per skill plus a coach-specified critical window and goal to train Unitree G1 behaviors without per-task reward tuning.
+- [HumanoidUMI: Bridging Robot-Free Demonstrations and Humanoid Whole-Body Manipulation](https://arxiv.org/abs/2606.27239) — June 25 paper proposing portable VR and gripper-based robot-free demonstrations for whole-body humanoid manipulation.
+- [PressMimic: Pressure-Guided Motion Capture and Control for Humanoid Robot Imitation](https://arxiv.org/abs/2606.26741) — June 25 paper using pressure as a physical grounding signal to improve motion estimation, contact patterns, and execution stability.
+- [A System for Fast, Resilient, and Adaptable Loco-Manipulation Behaviors on Humanoid Robots](https://arxiv.org/abs/2606.26425) — June 24 dissertation describing runtime-editable behavior authoring, monitoring, and repair across door, exploration, obstacle-clearing, and manipulation tasks on multiple humanoid platforms.
+
+**Counterargument / risk:** Fleet-scale data and self-supervised simulation may still dominate once robot hardware is deployed widely enough. The thesis is false if cheap autonomous practice beats structured human coaching across messy real-world tasks without losing safety, data quality, or sample efficiency.
+
+**Two interview questions:**
+1. Where does a human coach add the most value: showing the full motion, naming the failure mode, or identifying the moment that matters?
+2. If humanoid robots become useful, will the scarce labor be operators, task designers, or people who know how to teach physical judgment?
+
+**Draftability:** Medium, because the mechanism is strong but the piece needs care to stay grounded in what the papers demonstrate rather than broad claims about robotics progress.
+
+**Suggested tags:** `robotics`, `ai`, `work`, `design`
