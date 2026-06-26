@@ -299,8 +299,19 @@ interviewer, ship gate, and gardener. A calendar connector blocking a weekly 30-
 "author hour" (Tue or Wed) is optional but recommended.
 
 Start order: enable 01 + 02 first week; add 03 + 04 the second week once one interview
-has answers; add 05 after the first month. Unschedule the old `.codex` routines when 01
-goes live.
+has answers; add 05 after the first month. The old `.codex` routines are retired (see
+`.codex/automations/RETIRED.md`); unschedule them in your scheduler so only `01–05` run.
+Running a second drafter in parallel is what let unreviewed posts reach the site.
+
+### Hard gate: Content gate CI
+
+The ship gate (routine 04) is the *editorial* review, but it is a prompt — it can be
+skipped. `.github/workflows/content-gate.yml` is the *mechanical* gate that cannot:
+on every PR touching `src/content/posts/**` it runs `scripts/content-gate.mjs`
+(tier tag present, bilingual pair on disk, essays carry a source link, plus advisory
+word-count / em-dash / run-on warnings) and a full `npm run build`. Make it a **required
+status check** in branch protection on `main` so no content PR can merge until it passes.
+The gate vets only the posts a PR changes, so legacy posts are never re-litigated.
 
 ## 9. Health metrics
 

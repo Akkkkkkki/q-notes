@@ -1,0 +1,34 @@
+name: Content gate
+
+# Vets every PR that touches published content before it can merge. Two checks:
+# the structural gate (scripts/content-gate.mjs — tier tag, bilingual pair,
+# essay sources) and a full build (frontmatter schema + site builds). Make this
+# a required status check in branch protection so a merge can't skip it.
+on:
+  pull_request:
+    paths:
+      - 'src/content/posts/**'
+      - 'src/content.config.ts'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/content-gate.mjs'
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the gate diffs against the PR base
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Content gate (structural checks on changed posts)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/content-gate.mjs
+      - name: Build (schema + full site)
+        run: npm run build
