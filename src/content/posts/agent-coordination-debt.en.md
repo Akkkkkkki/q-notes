@@ -42,7 +42,7 @@ Agents do not remove those questions. They multiply the number of moments when t
 
 This is what I mean by coordination debt: the backlog of unresolved decisions created when action becomes cheaper than alignment. It is not the same as technical debt, though it often shows up as code. Technical debt says, "we made an engineering shortcut." Coordination debt says, "we created something before the organization agreed where it fits."
 
-The author's June inbox spark put it more bluntly: individual developers are now creating high-value proofs of concept faster, while the org shape has not evolved. Within a month or two, some companies have more code, more silos, more conflict between special engineering teams and the rest of the business, and less visible progress to executives.
+I keep coming back to a blunter version of this: individual developers are now creating high-value proofs of concept faster, while the org shape has not evolved. Within a month or two, some companies have more code, more silos, more conflict between special engineering teams and the rest of the business, and less visible progress to executives.
 
 That pattern is not a contradiction. It is the point. Everyone can be locally productive while the company becomes globally less legible.
 
