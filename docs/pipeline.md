@@ -307,11 +307,13 @@ Running a second drafter in parallel is what let unreviewed posts reach the site
 
 The ship gate (routine 04) is the *editorial* review, but it is a prompt — it can be
 skipped. `.github/workflows/content-gate.yml` is the *mechanical* gate that cannot:
-on every PR touching `src/content/posts/**` it runs `scripts/content-gate.mjs`
-(tier tag present, bilingual pair on disk, essays carry a source link, plus advisory
+on every PR it runs `scripts/content-gate.mjs` (tier tag present, bilingual pair on
+disk including orphaning by deletion, essays carry a source link, plus advisory
 word-count / em-dash / run-on warnings) and a full `npm run build`. Make it a **required
 status check** in branch protection on `main` so no content PR can merge until it passes.
-The gate vets only the posts a PR changes, so legacy posts are never re-litigated.
+The workflow runs on every PR with no `paths` filter — a skipped path-filtered check
+stays Pending and would block non-content PRs once required — and the gate vets only the
+posts a PR changes, so non-content PRs pass cheaply and legacy posts are never re-litigated.
 
 ## 9. Health metrics
 

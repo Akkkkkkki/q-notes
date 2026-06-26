@@ -170,11 +170,12 @@ The API surface stays small, and every writable path is hard-coded in the Worker
 
 ## Content gate (CI)
 
-`.github/workflows/content-gate.yml` runs on every PR that touches
-`src/content/posts/**`. It runs `scripts/content-gate.mjs` over the posts the PR
-changes — checking the tier tag, the bilingual pair, and that essays carry a source
-link (plus advisory word-count / em-dash / run-on warnings) — and then a full
-`npm run build`. Errors block; warnings don't.
+`.github/workflows/content-gate.yml` runs on every PR. It runs
+`scripts/content-gate.mjs` over the posts the PR adds, changes, or deletes —
+checking the tier tag, the bilingual pair (including orphaning by deletion), and
+that essays carry a source link (plus advisory word-count / em-dash / run-on
+warnings) — and then a full `npm run build`. Errors block; warnings don't. A PR
+that changes no posts passes cheaply, so it's safe to make this a required check.
 
 To make review-before-publish a hard rule, set this as a **required status check** in
 GitHub branch protection for `main` (Settings → Branches → Add rule → require the

@@ -1,18 +1,14 @@
 name: Content gate
 
-# Vets every PR that touches published content before it can merge. Two checks:
-# the structural gate (scripts/content-gate.mjs — tier tag, bilingual pair,
-# essay sources) and a full build (frontmatter schema + site builds). Make this
-# a required status check in branch protection so a merge can't skip it.
+# Vets every PR before it can merge. Two checks: the structural gate
+# (scripts/content-gate.mjs — tier tag, bilingual pair, essay sources) and a
+# full build (frontmatter schema + site builds). Runs on every PR with no
+# `paths` filter on purpose: a path-filtered workflow that gets skipped leaves
+# its check stuck in Pending, which would permanently block any non-content PR
+# once this is a required status check. The gate script no-ops when a PR changes
+# no posts, so non-content PRs pass cheaply.
 on:
   pull_request:
-    paths:
-      - 'src/content/posts/**'
-      - 'src/content.config.ts'
-      - 'astro.config.mjs'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'scripts/content-gate.mjs'
 
 jobs:
   gate:
