@@ -31,9 +31,13 @@ resolve stuck work without waiting for the author to feel ready.
    count; the kept phrases should carry the piece's claims. Voice flags are rendered as
    questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
 3. **Checklist passes** → comment a verdict:
-   - "**Ready to ship**", a 3-bullet summary (thesis, the one thing worth a second look,
-     maturity level), any voice flags as one-line questions, and nothing else. The goal
-     is that the author can approve from a phone in five minutes.
+   - First check cadence: the site publishes **at most one post per 7 days** (quality
+     over quantity). If a post was published (merged to `main`) within the last 7 days,
+     the verdict is "**Ready — queued**": the piece passed, but hold the merge until the
+     7-day window clears, and say the date it frees up. The author can always override.
+   - Otherwise "**Ready to ship**", a 3-bullet summary (thesis, the one thing worth a
+     second look, maturity level), any voice flags as one-line questions, and nothing
+     else. The goal is that the author can approve from a phone in five minutes.
    - If the author still hesitates on a passing piece, the documented remedy is to set
      `maturity: seedling` and ship — remind them of that contract in the comment, once,
      without nagging.

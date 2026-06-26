@@ -168,6 +168,21 @@ The API surface stays small, and every writable path is hard-coded in the Worker
 `research/.companion/push-subscriptions.json`. Local dev: put the secrets in
 `.dev.vars` and run `npx wrangler dev` after a build.
 
+## Content gate (CI)
+
+`.github/workflows/content-gate.yml` runs on every PR. It runs
+`scripts/content-gate.mjs` over the posts the PR adds, changes, or deletes —
+checking the tier tag, the bilingual pair (including orphaning by deletion), and
+that essays carry a source link (plus advisory word-count / em-dash / run-on
+warnings) — and then a full `npm run build`. Errors block; warnings don't. A PR
+that changes no posts passes cheaply, so it's safe to make this a required check.
+
+To make review-before-publish a hard rule, set this as a **required status check** in
+GitHub branch protection for `main` (Settings → Branches → Add rule → require the
+`Content gate / gate` check). Then a content PR cannot merge until the gate passes, and
+the only path to the live site is through a PR — reviewed on the `/desk` surface or on
+GitHub. Run it locally before pushing with `node scripts/content-gate.mjs <files>`.
+
 ## Deployment
 
 The site builds to static files (`npm run build`) and deploys to Cloudflare Workers
