@@ -38,9 +38,9 @@ const formattedPosts = sortedPosts.map(post => ({
 ---
 
 <BaseLayout title={`Posts tagged with "${tag}"`}>
-  <div class="max-w-3xl mx-auto">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
     <header class="mb-12 text-center">
-      <h1 class="text-5xl mb-4">Tag: {tag}</h1>
+      <h1 class="text-3xl sm:text-4xl md:text-5xl mb-4">Tag: {tag}</h1>
       <p class="text-xl text-muted-foreground">
         {posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged with "{tag}"
       </p>
