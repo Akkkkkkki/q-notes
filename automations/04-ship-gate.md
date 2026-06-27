@@ -24,7 +24,11 @@ resolve stuck work without waiting for the author to feel ready.
    for dramatic stress rather than quotes/coined terms/titles; fix these directly
    (period, colon, or comma+conjunction in place of a dash; vary the cleft sentences; drop
    the italics) rather than just flagging. Deliberately reused
-   keywords and `research/glossary.md` terms are exempt. If a plain swap or a sentence
+   keywords and `research/glossary.md` terms are exempt. For bilingual pairs, glance at
+   whether the zh opening is a syntax-mirror of the en opening (same macro set-up or series
+   recap, merely translated); if so, raise it as a one-line question ("zh opens like the en —
+   enter from a concrete scene instead?") rather than rewriting it yourself. Advisory only —
+   like other voice flags, it never blocks a passing checklist. If a plain swap or a sentence
    split is unambiguous, just make it and push; only surface it as a question when the
    term might be load-bearing. Spot-check
    the PR's verbatim-spine list too — three trivial phrases kept for compliance don't

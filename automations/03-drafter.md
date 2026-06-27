@@ -65,6 +65,12 @@ Produce the highest rung available:
 - Identical across versions: thesis, section structure, every factual claim, number, and
   source link. Adaptable: idioms, rhythm, and titles (each title should be strong in its
   own language, not a translation).
+- Don't let the zh version read as the en version's syntax translated. This matters most
+  at the opening: where the en leads with macro framing or a series recap, the zh should
+  prefer entering from one concrete situation, a problem the reader has likely seen, or a
+  firsthand observation — same claim, number, and sources, different entry and sentence
+  shape. Break the en's long set-up runs into shorter zh sentences. This is a preference,
+  not a quota: don't manufacture doubt or scene-setting where the author's material has none.
 - Use `research/glossary.md` for recurring term renderings; append any new term decisions
   you made to the glossary in the same PR.
 - File placement depends on whether the Phase 2 bilingual site work (`docs/pipeline.md`
