@@ -23,6 +23,30 @@ const WORD_BANDS = { note: [300, 700], essay: [800, 1500] }; // tracker: any
 const EM_DASH_PER_WORDS = 150; // flag denser than ~1 em dash / 150 words
 const RUN_ON_WORDS = 60; // flag a single sentence longer than this
 
+// --- Chinese advisory thresholds (lenient: warn only, never block) ----------
+// These mirror the English style warnings for zh posts, where the gate was
+// previously silent. Tuned loose on purpose — they exist to make a reviewer
+// look, not to dictate prose. See docs/pipeline.md §5–6.
+const ZH_RUN_ON_CHARS = 90; // a single sentence longer than this (Han chars)
+const ZH_ABSTRACT_PER_SENTENCE = 4; // distinct abstract nouns stacked in one sentence
+const ZH_SCENE_PER_CHARS = 900; // expect at least one concrete-scene word per this many Han chars
+const ZH_DASH_PER_CHARS = 200; // —— denser than one per this many Han chars
+const ZH_MAX_REPORTED = 3; // cap repeat warnings of the same kind to keep the report readable
+// Abstract nouns that, stacked, read as translation-ese rather than a concrete claim.
+const ZH_ABSTRACT = ['机制', '能力', '系统', '组织', '价值', '模式', '边界', '结构', '流程', '框架', '逻辑'];
+// Concrete work-scene words — their presence is the signal a stretch is grounded.
+const ZH_SCENE = ['团队', '客户', '会议', 'PR', '代码', '报告', '老板', '董事会', '工单', '原型', '同事', 'Slack', '项目', '工具'];
+// English left in running zh prose that usually has a natural Chinese rendering.
+// Kept short on purpose; glossary terms and sanctioned non-translations are exempt.
+const ZH_ENGLISH_RESIDUE = ['dashboard', 'PoC', 'roadmap', 'backlog', 'stakeholder', 'alignment'];
+// Template sentences that signal the draft is "proving" rather than thinking.
+const ZH_TEMPLATE = [
+  { re: /这很重要，因为/, label: '"这很重要，因为…"' },
+  { re: /这并不矛盾。\s*这正是/, label: '"这并不矛盾。这正是…"' },
+  { re: /更好的[^，。、]{0,8}很简单/, label: '"更好的…很简单"' },
+];
+const countHan = (s) => (s.match(/[一-鿿]/g) || []).length;
+
 const errors = [];
 const warnings = [];
 const err = (file, msg) => errors.push(`${file}: ${msg}`);
@@ -159,6 +183,64 @@ for (const file of targets) {
       if (n > RUN_ON_WORDS) {
         warn(name, `long sentence (${n} words): "${sentence.trim().split(/\s+/).slice(0, 8).join(' ')}…"`);
       }
+    }
+  }
+
+  // Chinese style warnings (advisory) — the gate used to be silent on zh, which
+  // let translation-ese through. All lenient, all warn-only; glossary terms are exempt.
+  if (fm.lang === 'zh') {
+    const glossary = existsSync('research/glossary.md')
+      ? readFileSync('research/glossary.md', 'utf8').toLowerCase()
+      : '';
+    const prose = body.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]*`/g, ' ');
+    const hanTotal = countHan(prose);
+    const sentences = prose.split(/(?<=[。！？；\n])/).map((s) => s.trim()).filter(Boolean);
+
+    // 1. Over-long sentences (mirror the English run-on check, by Han count).
+    let longCount = 0;
+    for (const s of sentences) {
+      if (countHan(s) > ZH_RUN_ON_CHARS && longCount < ZH_MAX_REPORTED) {
+        longCount++;
+        warn(name, `long zh sentence (${countHan(s)} Han chars): "${s.slice(0, 16)}…"`);
+      }
+    }
+
+    // 2. Abstract-noun stacking inside one sentence — reads as a framework, not a claim.
+    let abstractCount = 0;
+    for (const s of sentences) {
+      const hits = ZH_ABSTRACT.filter((w) => s.includes(w));
+      if (hits.length >= ZH_ABSTRACT_PER_SENTENCE && abstractCount < ZH_MAX_REPORTED) {
+        abstractCount++;
+        warn(name, `abstract-noun stack (${hits.join('/')}) — consider a concrete example: "${s.slice(0, 16)}…"`);
+      }
+    }
+
+    // 3. "Proving" template sentences.
+    for (const t of ZH_TEMPLATE) {
+      if (t.re.test(prose)) warn(name, `template phrasing ${t.label} — say it plainer or cut`);
+    }
+    // Heavily stacked 不是…而是… (the zh form of "It is not X. It is Y." — fine once, noise repeated).
+    const cleft = (prose.match(/不是[^，。、]{1,20}而是/g) || []).length;
+    if (cleft >= 3) warn(name, `"不是…而是…" used ${cleft}× — vary the rhythm (voice.md §Rhythm)`);
+
+    // 4. English residue that has a natural Chinese rendering (glossary terms exempt).
+    for (const w of ZH_ENGLISH_RESIDUE) {
+      if (new RegExp(`\\b${w}\\b`, 'i').test(prose) && !glossary.includes(w.toLowerCase())) {
+        warn(name, `English term "${w}" in zh prose — render it in Chinese or add to glossary`);
+      }
+    }
+
+    // 5. Concrete-scene density — a grounded piece names real work, not just systems.
+    const sceneHits = ZH_SCENE.reduce((n, w) => n + (prose.split(w).length - 1), 0);
+    const expected = Math.floor(hanTotal / ZH_SCENE_PER_CHARS);
+    if (expected > 0 && sceneHits < expected) {
+      warn(name, `only ${sceneHits} concrete-scene word(s) in ${hanTotal} Han chars (≈${expected} expected) — the piece may read abstract`);
+    }
+
+    // 6. Dash density — don't mirror English em-dash placement mechanically (voice.md §48).
+    const dashes = (prose.match(/——|—/g) || []).length;
+    if (dashes > 0 && hanTotal / dashes < ZH_DASH_PER_CHARS) {
+      warn(name, `${dashes} dashes in ${hanTotal} Han chars (denser than 1/${ZH_DASH_PER_CHARS}) — 。/，/而/但 often read better in zh`);
     }
   }
 }
