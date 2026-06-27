@@ -60,16 +60,18 @@ const publishDate = new Date(date);
     </header>
 
     {optimizedImagePath && (
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 mb-10 feature-image" transition:name={`image-${slug}`}>
-        <img
-          src={optimizedImagePath}
-          alt={`Featured image for "${title}"`}
-          class="w-full h-full object-cover"
-          loading="eager"
-          decoding="async"
-          width="1200"
-          height="675"
-        />
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 mb-10">
+        <div class="feature-image" transition:name={`image-${slug}`}>
+          <img
+            src={optimizedImagePath}
+            alt={`Featured image for "${title}"`}
+            class="w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
+            width="1200"
+            height="675"
+          />
+        </div>
       </div>
     )}
 
