@@ -418,7 +418,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-06-26 — The best agent interface may be the codebase map
 
-**Status:** Backlog
+**Status:** Drafted in `src/content/posts/codebase-maps-are-agent-interfaces.en.md` and `src/content/posts/codebase-maps-are-agent-interfaces.zh.md` on 2026-07-07
 
 **One-line thesis:** Coding agents do not only need bigger context windows or better prompts; they need deterministic maps of the codebase so their search, scope, and review path stop being stochastic.
 
