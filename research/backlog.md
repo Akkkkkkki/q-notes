@@ -471,3 +471,115 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** Medium, because the mechanism is strong but the piece needs care to stay grounded in what the papers demonstrate rather than broad claims about robotics progress.
 
 **Suggested tags:** `robotics`, `ai`, `work`, `design`
+
+## 2026-07-03 — Agent rollouts spread through coworkers before policy catches up
+
+**Status:** Backlog
+
+**One-line thesis:** Enterprise coding-agent adoption is starting to look less like normal software procurement and more like workplace contagion: people copy visible peers before the organization knows what behavior it has actually approved.
+
+**Why this is interesting now:** A July 1 Microsoft rollout study found first use of command-line coding agents spread primarily through social networks, while a June 25 Codex usage paper showed agentic workflows growing fastest outside the original developer audience. The under-synthesized point is that agent adoption may outrun governance because the convincing demo is a coworker getting work done, not a policy deck or license rollout.
+
+**Potential author angle:** Connect this to the author's coordination thesis: companies may think they are deploying a tool, but they are really changing who can initiate work, how much work appears, and which informal norms decide what is acceptable. The uncomfortable claim is that agent governance starts at the team habit layer, not the enterprise platform layer.
+
+**Author hook:** This extends the 2026-06-19 inbox spark about developers creating more work faster while the org shape stays the same. It also pairs with the drafted coordination-debt post without repeating it: the new focus is how adoption spreads before the org can absorb it.
+
+**Evidence checked:**
+- [Adoption and Impact of Command-Line AI Coding Agents: A Study of Microsoft's Early 2026 Rollout of Claude Code and GitHub Copilot CLI](https://arxiv.org/abs/2607.01418) — July 1 study of tens of thousands of Microsoft engineers; reports social-network-driven first use, retention tied more to coding activity than demographics, and roughly 24% more merged pull requests for adopters, while warning that merged PRs are only an output proxy.
+- [The Shift to Agentic AI: Evidence from Codex](https://arxiv.org/abs/2606.26959) — June 25 OpenAI/Columbia/Duke/Penn paper finding Codex active users grew more than fivefold in the first half of 2026, fastest outside the initial developer audience, with more than 10% of users managing three or more concurrent agents in some weeks.
+- [Axios: AI agents are here for real this time](https://www.axios.com/2026/06/25/codex-agents-growth-openai) — near-primary report on the Codex study, including the framing that agents reduce the psychological cost of starting substantial tasks.
+- [Human-AI Synergy in Agentic Code Review](https://arxiv.org/abs/2603.15911) — older mechanism source showing humans add understanding, testing, and knowledge-transfer feedback that agent reviewers lack, so increased agent output still depends on social review capacity.
+
+**Counterargument / risk:** The strongest counterargument is that Microsoft and OpenAI are unusually technical environments, so peer-driven adoption may not generalize to ordinary enterprises. The thesis weakens if formal rollout design, cost controls, and default platform permissions prove stronger than local team imitation.
+
+**Two interview questions:**
+1. In companies you have seen, does AI adoption start because leadership mandates it or because one respected person makes everyone else feel slow?
+2. What should a manager measure when a team suddenly starts producing 20% more pull requests: output, review load, abandoned work, or changed ownership?
+
+**Draftability:** High, because it turns adoption data into a concrete management claim: the first governance surface is the coworker people copy.
+
+**Suggested tags:** `ai`, `software`, `management`, `business`
+
+## 2026-07-03 — Agent labor needs a meter before it needs a manager
+
+**Status:** Backlog
+
+**One-line thesis:** AI-agent work will not become organizationally boring until teams can price it per useful outcome, because token spend turns invisible delegation into an unmanaged budget line.
+
+**Why this is interesting now:** Late-June reporting on Accenture and other enterprises shows companies starting to throttle AI use because token bills are rising faster than value measurement. A current Microsoft rollout paper also frames token spend as potentially millions of dollars annually, while an April agent-cost paper shows frontier agents are bad at predicting their own token usage. The early signal is that agent adoption is becoming a finance and governance problem, not just a productivity story.
+
+**Potential author angle:** Write against both hype and austerity. The issue is not that agents are too expensive or obviously worth it. The issue is that organizations are still measuring consumption because they do not know how to meter delegated work by business value, rework avoided, or coordination cost created.
+
+**Author hook:** This extends the author's professional-services angle: billable hours were a crude but legible meter for human labor. Agent work may be cheaper per action but harder to connect to accountability, scope, and value.
+
+**Evidence checked:**
+- [ITPro: Accenture tells staff to stop using AI for unnecessary tasks amid surging costs](https://www.itpro.com/technology/artificial-intelligence/what-were-seeing-right-now-is-just-rapid-escalation-in-ai-token-spend-accenture-tells-staff-to-stop-using-ai-for-unnecessary-tasks-amid-surging-costs) — June 29 reporting, based on 404 Media's leaked audio, that Accenture leaders pushed back on non-engineer token use and worried executives still could not see value for spend.
+- [How Do AI Agents Spend Your Money? Analyzing and Predicting Token Consumption in Agentic Coding Tasks](https://arxiv.org/abs/2604.22750) — April mechanism paper finding agentic coding tasks consume roughly 1000x more tokens than code chat/reasoning, can vary up to 30x on the same task, and frontier models systematically underestimate their own costs.
+- [Adoption and Impact of Command-Line AI Coding Agents: A Study of Microsoft's Early 2026 Rollout of Claude Code and GitHub Copilot CLI](https://arxiv.org/abs/2607.01418) — July 1 paper noting organizational-scale token spend can reach millions of dollars annually and that output proxies such as merged PRs do not equal delivered value.
+- [Axios: AI agents are here for real this time](https://www.axios.com/2026/06/25/codex-agents-growth-openai) — current adoption signal that a growing share of users delegate tasks estimated to take experienced humans more than 30 minutes, making spend governance more than a chatbot-cost issue.
+
+**Counterargument / risk:** The counterargument is that model costs may fall quickly enough that today's token panic looks like a temporary cloud-bill scare. The thesis stays relevant only if lower unit costs are offset by more autonomous retries, subagents, longer context, and broader employee access.
+
+**Two interview questions:**
+1. Would you rather give a team a fixed AI budget, a fixed number of agent actions, or a rule that every agent task needs a named owner?
+2. In consulting or software work, what is the smallest useful unit of agent output that could be priced honestly?
+
+**Draftability:** High, because it gives a practical frame for agent economics: before managing agent labor, define the meter.
+
+**Suggested tags:** `ai`, `business`, `consulting`, `software`
+
+## 2026-07-03 — Clean setup is becoming the new supply-chain attack
+
+**Status:** Backlog
+
+**One-line thesis:** Coding-agent security is moving upstream from malicious code to harmless-looking setup rituals, because an agent can be exploited by the normal developer instinct to make a project initialize cleanly.
+
+**Why this is interesting now:** Mozilla's 0din team demonstrated a late-June attack pattern in which a clean-looking repository and ordinary setup steps could lead a coding agent toward a reverse shell through layers of indirection. That is more interesting than another prompt-injection story: the dangerous moment is not the model reading hostile text; it is the model deciding that failed setup deserves one more helpful command.
+
+**Potential author angle:** Argue that "do not run unknown code" is too weak for agent work. Humans often clone, install, retry, and debug. Agents make that habit faster, more patient, and less suspicious. The review boundary has to move from the diff to the initialization path: package scripts, README commands, DNS lookups, and recovery behavior after errors.
+
+**Author hook:** This continues the site's agent-governance line but keeps it concrete. The piece can ask a sharper question than "are agents secure?": who is allowed to debug a stranger's setup script on your machine?
+
+**Evidence checked:**
+- [Tom's Hardware: AI coding agents can be tricked into installing malware via clean GitHub repositories](https://www.tomshardware.com/tech-industry/cyber-security/ai-coding-agents-can-be-tricked-into-installing-malware-via-clean-github-repositories-mozillas-0din-team-shows-how-claude-code-can-be-exploited-by-its-own-helpfulness) — June 28 near-primary report on Mozilla 0din's proof of concept using a clean-looking repo, fake package initialization, DNS TXT indirection, and a reverse shell.
+- [Agent Skills are a New Vector for Supply-Chain Attacks](https://arxiv.org/abs/2606.13776) — June mechanism paper on agent skills as executable behavioral dependencies, useful for connecting setup instructions, skills, and tooling manifests as one trust surface.
+- [The Containment Gap: How Deployed Agentic AI Frameworks Fail Public-Facing Safety Requirements](https://arxiv.org/abs/2606.12797) — June 11 audit of LangChain, AutoGPT, and OpenAI Agents SDK against containment principles, supporting the claim that framework-level controls remain thin.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary source framing agent safety as defense in depth with monitoring, prevention, response, and capability tiers.
+
+**Counterargument / risk:** The attack is a proof of concept and may be blocked by tight sandboxing, deny-by-default networking, locked dependency installation, or enterprise egress controls. The thesis is false if mainstream agent tools make setup execution visibly transactional, scoped, and auditable by default.
+
+**Two interview questions:**
+1. When you ask an agent to "get this repo running," what actions do you think you authorized: reading docs, installing packages, retrying failed commands, or opening network connections?
+2. Should coding agents treat every setup failure as a security checkpoint rather than a debugging puzzle?
+
+**Draftability:** High, because it has a memorable mechanism and a clean practical test: follow the setup path, not just the code diff.
+
+**Suggested tags:** `ai`, `security`, `software`, `engineering`
+
+## 2026-07-03 — AI-native games need rules more than generation
+
+**Status:** Backlog
+
+**One-line thesis:** The hard part of AI-native games is not making infinite content; it is turning open-ended generation into rules, goals, state, feedback, and player agency that still feel like a game.
+
+**Why this is interesting now:** A July 1 survey of AI-native games proposes a useful counterfactual test: if the generative system can be removed without changing the core loop, the game is only AI-augmented. Sony's July 2 AI comments point in the same tension from the industry side, with AI discussed as both development infrastructure and future player-facing experience. The under-synthesized point is that "more dynamic content" is not a design thesis.
+
+**Potential author angle:** Push against the lazy gaming-AI story from both sides. Skeptics are right that generated dialogue and quests can become mush. Executives are right that AI could create new play. The deciding mechanism is whether the AI output is constrained by legible rules that make choices matter.
+
+**Author hook:** This extends the site's existing AI x gaming interest without repeating the disclosure-risk item. The piece can argue that the player will forgive AI only when it creates a mechanic they can learn, exploit, and remember.
+
+**Evidence checked:**
+- [AI Native Games: A Survey and Roadmap](https://arxiv.org/abs/2607.00527) — July 1 paper defining AI-native games by whether runtime generative AI is constitutive of the core loop; analyzes 53 public games/prototypes and argues the core design problem is organizing semantic openness into stable gameplay.
+- [GamesRadar: Sony says AI is exciting, great for synthetic assets, and foundational to its strategy](https://www.gamesradar.com/games/sony-says-ai-is-exciting-great-for-synthetic-assets-and-an-important-foundational-technology-supporting-our-strategy/) — July 2 reporting on Sony's games and network services Q&A, including AI for development efficiency, player experience, content discovery, synthetic placeholder assets, and AI-first initiatives.
+- [Creative Bloq: AI slop has become a harmful insult hurled around with no evidence](https://www.creativebloq.com/ai/ai-slop-has-become-a-harmful-insult-hurled-around-with-no-evidence-game-developers-claim) — June 29 current discussion showing that player trust around AI is noisy and often evidence-poor, which raises the bar for proving AI as a real mechanic rather than a cheapness cue.
+- [Generative Agents: Interactive Simulacra of Human Behavior](https://arxiv.org/abs/2304.03442) — older mechanism source on believable agent behavior in simulated worlds, useful as background but not evidence that open-ended agents automatically make good games.
+
+**Counterargument / risk:** Some players may value novelty, chat, and social role-play even without tight game structure, so the rule-based standard may be too narrow. The thesis weakens if successful AI-native titles emerge where the pleasure is precisely the absence of stable rules.
+
+**Two interview questions:**
+1. What would make you call an AI game a real game rather than a chatbot with art: scoring, failure, mastery, surprise, or shared stories?
+2. If a generative NPC can say anything, what stops that freedom from making the player's choices matter less?
+
+**Draftability:** High, because it gives a crisp test for AI x gaming: remove the model and ask whether the game collapses.
+
+**Suggested tags:** `ai`, `gaming`, `design`, `media`
