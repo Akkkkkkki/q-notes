@@ -15,6 +15,7 @@
   ],
   "shortcuts": [
     { "name": "Capture", "url": "/capture/" },
+    { "name": "Flow", "url": "/flow/" },
     { "name": "Interview", "url": "/interview/" },
     { "name": "Desk", "url": "/desk/" }
   ],

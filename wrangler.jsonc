@@ -14,6 +14,13 @@
     "GITHUB_REPO": "Akkkkkkki/q-notes",
     "SPARK_TIMEZONE": "Asia/Shanghai"
   },
+  // Every `wrangler deploy` — including git-triggered Workers Builds on merge
+  // to main — replaces the deployed vars with the block above, silently
+  // deleting any variable added in the dashboard. That is how tokens saved as
+  // dashboard *Text* variables kept disappearing. keep_vars preserves them.
+  // Still store the tokens as Secrets (see below) — secrets survive deploys
+  // by design. Full runbook: docs/ops-runbook.md.
+  "keep_vars": true,
   // Tuesday 08:30 Asia/Shanghai: nudge the phone if the week's interview
   // brief (written Tue 08:00 by routine 02) is still unanswered.
   // Friday 08:30 Asia/Shanghai: desk push if the ship gate (Fri 08:00,

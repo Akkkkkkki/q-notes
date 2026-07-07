@@ -4,8 +4,8 @@
 // without a payload (VAPID wake-up only), so the text is fixed here. Two
 // crons exist — Tuesday brief and Friday desk — and a payload-less push
 // can't say which fired, so the weekday picks the notification.
-const CACHE = 'capture-shell-v3';
-const SHELL = ['/capture/', '/interview/', '/desk/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
+const CACHE = 'capture-shell-v4';
+const SHELL = ['/capture/', '/flow/', '/interview/', '/desk/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
@@ -22,6 +22,7 @@ self.addEventListener('activate', (event) => {
 
 function shellPath(pathname) {
   if (pathname === '/capture' || pathname === '/capture/') return '/capture/';
+  if (pathname === '/flow' || pathname === '/flow/') return '/flow/';
   if (pathname === '/interview' || pathname === '/interview/') return '/interview/';
   if (pathname === '/desk' || pathname === '/desk/') return '/desk/';
   return SHELL.includes(pathname) ? pathname : null;

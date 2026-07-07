@@ -20,6 +20,7 @@ import type { Env } from './types';
 import { getFile, putFile, todayIn, collapse, json } from './github';
 import { getBrief, saveAnswer, closeBrief } from './interview';
 import { listDesk, shipPr, commentPr, killPr, applySlots } from './desk';
+import { getFlow } from './flow';
 import { getPublicKey, subscribe, notifyIfBriefOpen, notifyIfDeskOpen } from './push';
 
 const INBOX_PATH = 'research/inbox.md';
@@ -47,6 +48,20 @@ export default {
 };
 
 async function handleApi(request: Request, url: URL, env: Env): Promise<Response> {
+  // Health is deliberately unauthenticated and answers before the secrets
+  // check: it exists precisely for the state where the secrets are gone
+  // (a deploy wiped dashboard vars) and every other endpoint 503s. It
+  // reports presence booleans only, never values.
+  if (request.method === 'GET' && url.pathname === '/api/health') {
+    return json({
+      ok: !!(env.GITHUB_TOKEN && env.CAPTURE_TOKEN),
+      secrets: {
+        GITHUB_TOKEN: !!env.GITHUB_TOKEN,
+        CAPTURE_TOKEN: !!env.CAPTURE_TOKEN,
+        webPush: !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_JWK),
+      },
+    });
+  }
   if (!env.GITHUB_TOKEN || !env.CAPTURE_TOKEN) {
     return json({ error: 'Worker secrets not configured' }, 503);
   }
@@ -69,6 +84,8 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await closeBrief(request, env);
       case 'GET /api/desk':
         return await listDesk(env);
+      case 'GET /api/flow':
+        return await getFlow(env);
       case 'POST /api/desk/ship':
         return await shipPr(request, env);
       case 'POST /api/desk/comment':

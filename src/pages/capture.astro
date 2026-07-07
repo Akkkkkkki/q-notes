@@ -100,6 +100,16 @@
         border-top: 1px solid #1f1f1f;
         overflow-wrap: anywhere;
       }
+      #config-banner {
+        margin-top: 1.25rem;
+        background: #2a1215;
+        border: 1px solid #5c2328;
+        border-radius: 0.75rem;
+        padding: 0.8rem 0.9rem;
+        font-size: 0.85rem;
+        color: #f0c0c4;
+      }
+      #config-banner a { color: #f0c0c4; }
       #token-row { margin-top: 1.25rem; display: none; }
       #token-row.visible { display: block; }
       #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
@@ -120,6 +130,7 @@
   <body>
     <header>
       <nav>
+        <a href="/flow/">Flow</a>
         <a href="/capture/" class="here">Capture</a>
         <a href="/interview/">Interview</a>
         <a href="/desk/">Desk</a>
@@ -134,6 +145,15 @@
       placeholder="Type or dictate a thought. English, 中文, fragments — all fine."></textarea>
     <div id="source" hidden></div>
     <button id="send" type="button">Send to inbox</button>
+
+    <div id="config-banner" hidden>
+      <strong>The server lost its secrets</strong> — the Worker is missing
+      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code>, so it rejects everything.
+      Re-pasting your token on this phone cannot fix it: re-add both on Cloudflare as type
+      <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
+      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.
+      Sparks you send meanwhile queue on this device.
+    </div>
 
     <div id="token-row">
       <label for="token">Capture token (stored on this device only)</label>
@@ -198,11 +218,19 @@
           body: JSON.stringify(spark),
         });
         if (res.status === 401) throw Object.assign(new Error('unauthorized'), { unauthorized: true });
+        // 503 means the *Worker* lost its secrets — a Cloudflare-side problem
+        // no amount of re-pasting the token on this device can fix.
+        if (res.status === 503) throw Object.assign(new Error('server secrets missing'), { serverError: true, config: true });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw Object.assign(new Error(body.error || 'send failed (' + res.status + ')'), { serverError: true });
         }
         return res.json();
+      }
+
+      function showConfig() {
+        $('config-banner').hidden = false;
+        tokenRow.classList.remove('visible');
       }
 
       async function flushQueue() {
@@ -233,6 +261,7 @@
           localStorage.setItem(TOKEN_KEY, tokenEl.value.trim());
           tokenEl.value = '';
           tokenRow.classList.remove('visible');
+          setStatus('token saved ✓');
         }
         const text = sparkEl.value.trim();
         if (!text) return;
@@ -252,9 +281,19 @@
         } catch (e) {
           if (e.unauthorized) {
             needToken();
+          } else if (e.config) {
+            // Don't lose the thought: queue it like an offline send, and say
+            // plainly that the fix lives on Cloudflare, not on this phone.
+            const queue = getQueue();
+            queue.push(spark);
+            setQueue(queue);
+            sparkEl.value = '';
+            sharedUrl = '';
+            sourceEl.hidden = true;
+            showConfig();
+            setStatus('queued until the server is fixed (' + queue.length + ')');
           } else if (e.serverError) {
             setStatus(e.message);
-            tokenRow.classList.add('visible');
           } else {
             const queue = getQueue();
             queue.push(spark);
@@ -288,16 +327,26 @@
       sparkEl.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
       });
+      function flushFailed(e) {
+        if (e.config) showConfig();
+        else if (e.serverError) setStatus(e.message);
+      }
       window.addEventListener('online', () => {
         flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); })
-          .catch((e) => { if (e.serverError) { setStatus(e.message); tokenRow.classList.add('visible'); } });
+          .catch(flushFailed);
       });
 
       if (!getToken()) needToken();
       const pending = getQueue().length;
       if (pending) setStatus(pending + ' queued');
       flushQueue().then(() => loadRecent())
-        .catch((e) => { if (e.serverError) { setStatus(e.message); tokenRow.classList.add('visible'); } });
+        .catch(flushFailed);
+
+      // Non-blocking health probe: if the Worker lost its secrets, say so up
+      // front instead of letting the next send fail confusingly.
+      fetch('/api/health').then((r) => r.json())
+        .then((h) => { if (!h.ok) showConfig(); })
+        .catch(() => {});
 
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
     </script>
