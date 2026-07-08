@@ -38,7 +38,8 @@ npm test             # Companion Worker API test suite (vitest)
 ├── automations/        # Editorial pipeline prompts (scout, interview, drafter, ship gate, gardener)
 ├── docs/
 │   ├── pipeline.md          # Editorial pipeline design - source of truth
-│   └── companion-vision.md  # Vision for a phone-first companion app
+│   ├── companion-vision.md  # Vision for a phone-first companion app
+│   └── ops-runbook.md       # Worker secrets: setup, health check, why tokens vanish
 ├── research/
 │   ├── backlog.md           # Topic backlog
 │   ├── inbox.md             # Author's raw idea inbox
@@ -88,11 +89,26 @@ summary any agent should read before drafting or editing content, and
 [`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
 companion app for the pipeline's recurring author touchpoints.
 
-## Companion — Capture + Interview + Desk (Phases 1–3)
+## Companion — Flow + Capture + Interview + Desk
 
 The phone-first companion app from [`docs/companion-vision.md`](./docs/companion-vision.md)
-exists as its first three phases, installable as one PWA. Repo-as-backend: the app owns no
-data; everything reads and writes the same files the automations use.
+exists as its first three phases plus a pipeline overview, installable as one PWA.
+Repo-as-backend: the app owns no data; everything reads and writes the same files the
+automations use.
+
+**Flow** (`/flow`) — the whole pipeline at a glance:
+
+- **Needs you now**: a prioritized list computed from the pipeline's clocks — PRs the
+  ship gate marked ready, PRs approaching the 7-day downgrade / 14-day close, the
+  week's half-answered brief (with days until Thursday's drafter), backlog items
+  within 5 days of their 21-day expiry, and one aged unconsumed spark resurfaced as a
+  "still true?" question.
+- **The stage rail**: Sparks → Backlog → Interview → On the desk → Published, each
+  with counts, items, and the schedule of the automation that moves things along
+  (scout Mon, interviewer Tue, drafter Thu, gate Fri).
+- **Quick capture**: a one-line spark box riding the same `POST /api/spark` writer.
+- Everything read-only otherwise (`GET /api/flow`); items deep-link into Capture /
+  Interview / Desk for the actual actions.
 
 **Capture** (`/capture`) — "thought to repo in under 15 seconds":
 
@@ -148,6 +164,10 @@ data; everything reads and writes the same files the automations use.
    npx wrangler secret put GITHUB_TOKEN    # the PAT
    npx wrangler secret put CAPTURE_TOKEN   # any long random string, e.g. `openssl rand -hex 24`
    ```
+   **As Secrets, never as dashboard Text variables** — every deploy (including
+   git-triggered ones) replaces Text variables with the `vars` block in
+   `wrangler.jsonc`, which is how tokens silently disappear. Check any time with
+   `curl https://<site>/api/health`. Full story: [`docs/ops-runbook.md`](./docs/ops-runbook.md).
 3. Deploy (`npm run build && npx wrangler deploy`), open `/capture` on the phone,
    paste the `CAPTURE_TOKEN` once (stored on-device), and add to home screen.
 4. Optional web push: `node scripts/generate-vapid.mjs`, store the two values with
@@ -160,7 +180,9 @@ data; everything reads and writes the same files the automations use.
    `{"text": "...", "url": "..."}`.
 
 The API surface stays small, and every writable path is hard-coded in the Worker:
-`POST /api/spark` → `research/inbox.md`; `GET /api/sparks`; `GET /api/brief`,
+`GET /api/health` (unauthenticated presence booleans, for diagnosing lost secrets);
+`POST /api/spark` → `research/inbox.md`; `GET /api/sparks`; `GET /api/flow`
+(read-only aggregation); `GET /api/brief`,
 `POST /api/answer`, `POST /api/brief/close` → `research/interviews/*.md`;
 `GET /api/desk`; `POST /api/desk/{ship,comment,kill}` → content PRs only;
 `POST /api/desk/slots` → `src/content/**` / `drafts/**` on PR branches only;

@@ -30,6 +30,8 @@ export class MockGitHub {
   prs: MockPr[] = [];
   /** Commit messages of every contents write, in order. */
   commits: Array<{ path: string; message: string; branch?: string }> = [];
+  /** Repo history served by GET /commits (the Flow "published" rail). */
+  repoCommits: Array<{ message: string; date: string }> = [];
   /** Force the next N contents writes to fail with 409 (concurrent-commit simulation). */
   putConflicts = 0;
 
@@ -71,6 +73,13 @@ export class MockGitHub {
     }
 
     let m: RegExpMatchArray | null;
+    if (path === 'commits' && method === 'GET') {
+      return ok(
+        this.repoCommits.map((c) => ({
+          commit: { message: c.message, committer: { date: c.date } },
+        }))
+      );
+    }
     if (path === 'pulls' && method === 'GET') {
       const state = url.searchParams.get('state') ?? 'open';
       return ok(this.prs.filter((p) => p.state === state).map((p) => this.prJson(p)));

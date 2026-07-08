@@ -1,0 +1,80 @@
+# Companion ops runbook — tokens, secrets, and the health check
+
+The Companion has exactly two secrets, both living **on the Cloudflare Worker**,
+never on the phone:
+
+| Secret | What it is | Who uses it |
+|---|---|---|
+| `GITHUB_TOKEN` | Fine-grained PAT scoped to this repo (contents + pull requests, read/write) | The Worker, to read/write repo files and PRs |
+| `CAPTURE_TOKEN` | Any long random string (`openssl rand -hex 24`) | Your phone sends it as `Authorization: Bearer …`; the Worker compares it |
+
+The phone stores only `CAPTURE_TOKEN`, in `localStorage`, once. Everything else
+is server-side.
+
+## Why the tokens kept "disappearing"
+
+This repo deploys automatically: a merge to `main` triggers a build that runs
+`wrangler deploy` (and manual `npx wrangler deploy` does the same). **Every
+such deploy replaces the Worker's plain-text environment variables with the
+`vars` block in `wrangler.jsonc`.** So a token added in the Cloudflare
+dashboard as a **Text** variable survives only until the next merge — often a
+scout or drafter PR you didn't even touch — and then silently vanishes. That
+is the "I added it multiple times and it kept disappearing without any manual
+effort" mystery: nothing was removing it maliciously; every routine deploy was.
+
+Two defenses are now in place, but the first rule matters most:
+
+1. **Always store the tokens as *Secrets*, never as Text variables.**
+   Encrypted secrets are not touched by deploys, by design.
+2. `wrangler.jsonc` now sets `"keep_vars": true`, so even a Text variable
+   added in the dashboard survives a deploy. Treat this as a seatbelt, not an
+   invitation — secrets belong in Secrets.
+
+## Setting the secrets (the reliable way)
+
+From a machine with wrangler auth (`npx wrangler login`):
+
+```bash
+npx wrangler secret put GITHUB_TOKEN    # paste the fine-grained PAT
+npx wrangler secret put CAPTURE_TOKEN   # paste the shared secret
+```
+
+Or in the dashboard: Workers & Pages → `q-notes` → Settings → Variables and
+Secrets → Add → **type: Secret** (this is the crucial dropdown — "Text" is the
+trap) → Deploy.
+
+No redeploy of the code is needed afterwards; secrets attach to the Worker.
+
+## Verifying in 10 seconds
+
+The Worker exposes an unauthenticated health check that reports *presence*
+booleans only (never values):
+
+```bash
+curl -s https://notes.qiuyue.dev/api/health
+# {"ok":true,"secrets":{"GITHUB_TOKEN":true,"CAPTURE_TOKEN":true,"webPush":false}}
+```
+
+- `ok: false` → the server side is broken; fix the secrets as above.
+- `ok: true` but the phone still says **token needed** (HTTP 401) → the token
+  on that device really doesn't match `CAPTURE_TOKEN`; re-paste it once.
+
+The Companion pages call this endpoint themselves: when the server has lost
+its secrets they show a red **"The server lost its secrets"** banner instead
+of asking for your token, because re-pasting the token cannot fix a 503.
+
+## Symptom → cause table
+
+| Symptom | Meaning | Fix |
+|---|---|---|
+| Red banner "server lost its secrets" / `/api/health` says `ok:false` | A deploy wiped dashboard Text vars, or secrets were never set | Re-add both as **Secrets** (above) |
+| "token needed" keeps reappearing, health says `ok:true` | This device's stored token ≠ `CAPTURE_TOKEN` | Paste the current token once; it sticks |
+| Sparks say "queued" | Phone offline, or server 503 | They flush automatically once send succeeds |
+| Everything 401s right after rotating `CAPTURE_TOKEN` | Expected — each device holds the old token | Paste the new one on each device |
+
+## Rotation
+
+Rotate either secret any time: set the new value (`wrangler secret put`), then
+paste the new `CAPTURE_TOKEN` once on each device. The GitHub PAT has an
+expiry — when GitHub emails you about it, mint a new fine-grained PAT with the
+same two permissions and `wrangler secret put GITHUB_TOKEN` again.

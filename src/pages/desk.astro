@@ -187,12 +187,21 @@
   <body>
     <header>
       <nav>
+        <a href="/flow/">Flow</a>
         <a href="/capture/">Capture</a>
         <a href="/interview/">Interview</a>
         <a href="/desk/" class="here">Desk</a>
       </nav>
       <span id="status"></span>
     </header>
+
+    <div id="config-banner" style="display:none; background:#2a1215; border:1px solid #5c2328; border-radius:0.75rem; padding:0.8rem 0.9rem; font-size:0.85rem; color:#f0c0c4; margin-bottom:1rem;">
+      <strong>The server lost its secrets</strong> — the Worker is missing
+      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code>, so it rejects everything.
+      Re-pasting your token on this phone cannot fix it: re-add both on Cloudflare as type
+      <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
+      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener" style="color:#f0c0c4">the runbook</a>.
+    </div>
 
     <div id="token-row">
       <label for="token">Capture token (stored on this device only)</label>
@@ -214,6 +223,10 @@
         $('token-row').classList.add('visible');
         setStatus('token needed');
       }
+      function showConfig() {
+        $('config-banner').style.display = 'block';
+        $('token-row').classList.remove('visible');
+      }
 
       async function api(path, body) {
         const res = await fetch(path, {
@@ -225,6 +238,8 @@
           body: body !== undefined ? JSON.stringify(body) : undefined,
         });
         if (res.status === 401) { needToken(); throw new Error('unauthorized'); }
+        // Worker lost its secrets — a Cloudflare problem, not a token problem.
+        if (res.status === 503) { showConfig(); throw new Error('server-config'); }
         if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed (' + res.status + ')');
         return res.json();
       }
@@ -428,8 +443,13 @@
           $('empty').hidden = true;
           for (const pr of prs) cards.appendChild(renderCard(pr));
         } catch (e) {
-          if (e.message !== 'unauthorized') showEmpty('Couldn’t load the desk: ' + e.message);
-          $('token-row').classList.add('visible');
+          if (e.message === 'unauthorized') {
+            // needToken() already opened the token row.
+          } else if (e.message === 'server-config') {
+            showEmpty('The desk can’t load until the Worker secrets are restored (see above).');
+          } else {
+            showEmpty('Couldn’t load the desk: ' + e.message);
+          }
           setStatus('');
         }
       }

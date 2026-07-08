@@ -109,6 +109,33 @@ export async function listDesk(env: Env): Promise<Response> {
   return json({ prs: cards });
 }
 
+/** Light PR summary for the Flow overview — no last-line reads, one comment fetch. */
+export interface DeskSummary {
+  number: number;
+  title: string;
+  url: string;
+  ageDays: number;
+  tier: string | null;
+  verdict: 'ready' | 'attention' | 'none';
+}
+
+export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
+  const open = await listOpenContentPrs(env);
+  const out: DeskSummary[] = [];
+  for (const { pr } of open) {
+    const verdict = latestVerdict(await prComments(env, pr.number));
+    out.push({
+      number: pr.number,
+      title: pr.title,
+      url: pr.html_url,
+      ageDays: Math.floor((Date.now() - Date.parse(pr.created_at)) / 86400000),
+      tier: parsePrBody(pr.body ?? '').tier,
+      verdict: verdict ? (/ready to ship/i.test(verdict) ? 'ready' : 'attention') : 'none',
+    });
+  }
+  return out;
+}
+
 export async function shipPr(request: Request, env: Env): Promise<Response> {
   const body = await readJson<{ number?: number }>(request);
   if (!body) return json({ error: 'Body must be JSON' }, 400);
