@@ -583,3 +583,113 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** High, because it gives a crisp test for AI x gaming: remove the model and ask whether the game collapses.
 
 **Suggested tags:** `ai`, `gaming`, `design`, `media`
+
+## 2026-07-08 — Agent teammates need merge traffic control
+
+**Status:** Backlog
+
+**One-line thesis:** The first practical failure mode of many coding agents may not be bad code; it may be uncoordinated good-enough patches colliding faster than humans can sequence the work.
+
+**Why this is interesting now:** A July 6 paper moved agent PR discussion from anecdotes to concurrency data: in a large GitHub sample, co-active agent PRs were common, most co-activity came from the same agent, and cross-agent pairs had much higher textual merge-conflict rates. The under-synthesized mechanism is that "more agents" changes repository work from review queue management into traffic control: branch ownership, work claiming, merge order, and conflict budgets become product infrastructure.
+
+**Potential author angle:** Extend the author's coordination-debt line into a concrete software workflow. The useful warning is not "agents write bugs." It is that agent output can be locally reasonable and still make the shared codebase less governable if nobody owns sequencing.
+
+**Author hook:** This directly extends the 2026-06-19 inbox spark about individual developers creating more work while the organization cannot absorb it. It also pairs with the drafted coordination-debt post without repeating it: the new focus is repository-level contention, not company-level confusion.
+
+**Evidence checked:**
+- [AI Agent Pull Requests on GitHub: Frequency, Structure, and Merge Conflict Rates](https://arxiv.org/abs/2607.04697) — July 6 paper using 33,596 PRs across 2,807 repositories; reports exact-overlap co-active agent PR pairs in 40.2% of repositories, one-week co-activity in 53.4%, and higher textual conflict rates for cross-agent pairs than intra-agent pairs (41.7% vs. 19.8%).
+- [Do AI Coding Agents Log Like Humans? An Empirical Study](https://arxiv.org/abs/2604.09409) — April mechanism source showing that humans performed 72.5% of post-generation log repairs, suggesting agent PRs also create hidden maintenance labor after the diff looks mergeable.
+- [Augmentation with Dilution: A Large-Scale Empirical Study of Human Contributor Ecosystems After AI Coding Agent Adoption](https://arxiv.org/abs/2606.26289) — June source on repository ecosystem effects after agent adoption, useful as broader context for review depth and contributor dilution.
+
+**Counterargument / risk:** Textual merge conflict is a narrow proxy and can be managed by smaller PRs, queues, feature flags, and better agent work-claiming. The thesis weakens if agent platforms quickly add reliable repo-level schedulers that prevent overlapping ownership before humans see the work.
+
+**Two interview questions:**
+1. If a team suddenly has ten agent-authored PRs waiting, who should own the merge order: the requester, the reviewer, the agent platform, or the code owner?
+2. Have you seen a technically fine change become organizationally expensive because it arrived at the wrong time or touched the wrong shared surface?
+
+**Draftability:** High, because it gives a concrete operating claim for agent-heavy software teams: review is not enough once autonomous contributors overlap.
+
+**Suggested tags:** `ai`, `software`, `engineering`, `management`
+
+## 2026-07-08 — The web is becoming a border checkpoint for agents
+
+**Status:** Backlog
+
+**One-line thesis:** As browser agents learn to act like users, websites will stop asking "is this human?" and start asking "which delegated authority does this agent represent?"
+
+**Why this is interesting now:** A June 29 web-agent fingerprinting paper tested LLM-based agents against honeysites protected by robots.txt, CAPTCHAs, proof-of-work, and Cloudflare defenses. The striking result is double-edged: some agents bypassed all evaluated defenses, yet all were distinguishable from humans and from one another. That points to a near-term web that is neither open nor fully blocked, but negotiated through identity, permission, and pricing layers.
+
+**Potential author angle:** Push against the shallow "AI agents will browse for us" story. Browsing is not just navigation; it is a trust relationship among user, agent, website, and intermediary. The web may need agent passports before it needs better anti-bot puzzles.
+
+**Author hook:** This connects to the site's agent-governance line and to the author's interest in business models. The essay can ask what happens when a personal assistant, scraper, crawler, and attacker all arrive through similar browser automation.
+
+**Evidence checked:**
+- [On the Internet, Nobody Knows You're an LLM Bot: Unmasking Web Agents with Multi-Layer Fingerprinting](https://arxiv.org/abs/2606.30119) — June 29 paper finding some web agents bypassed all evaluated anti-bot mechanisms, while multi-layer fingerprinting still distinguished every evaluated agent from humans and from each other.
+- [Cloudflare Is Blocking AI Crawlers by Default](https://www.wired.com/story/cloudflare-blocks-ai-crawlers-default) — near-primary July 2025 reporting on Cloudflare's default AI crawler blocking and Pay Per Crawl beta, useful as the infrastructure/business-model backdrop.
+- [Pay-Per-Crawl Pricing for AI: The LM-Tree Agent](https://arxiv.org/abs/2604.01416) — April mechanism paper arguing that crawler access pricing has to account for heterogeneous page value rather than a flat crawl fee.
+- [Disentangling Answer Engine Optimization from Platform Growth](https://arxiv.org/abs/2606.04362) — June source showing that answer-engine referral growth can be mostly platform tailwind, which matters because agent/web access negotiations will be priced on measurement claims.
+
+**Counterargument / risk:** Websites may not need a new trust layer if platform-level browsers, payment networks, or cloud vendors centralize verification. The thesis is false if most valuable agent traffic remains inside a few closed ecosystems where individual sites never negotiate with agents directly.
+
+**Two interview questions:**
+1. When your agent visits a site, should it identify as you, as the model provider, as the browser vendor, or as a new kind of delegated actor?
+2. Would you rather have websites block unknown agents by default, or allow them by default but make every meaningful action auditable?
+
+**Draftability:** High, because it reframes the agentic web as a governance and business-model problem, not a CAPTCHA arms race.
+
+**Suggested tags:** `ai`, `web`, `security`, `business`
+
+## 2026-07-08 — AI scientists climb local hills
+
+**Status:** Backlog
+
+**One-line thesis:** Current AI research agents look better at exploiting a known research direction than choosing a strange new one, so the scarce human role may be taste in problem selection rather than experiment execution.
+
+**Why this is interesting now:** Recent science-agent papers are splitting into two signals that sound contradictory but fit together. One line shows multi-agent systems improving long-running computational experiments by preserving failed directions and critiquing proposals. Another shows AI-generated research ideas clustering closer to seed literature than human follow-on work. The mechanism is that agents can search hard inside a frame while still inheriting the frame.
+
+**Potential author angle:** Push against both "AI will automate science" and "science is uniquely human" slogans. The sharper claim is that AI may turn many scientific workflows into faster local search, which makes the original choice of question more valuable, not less.
+
+**Author hook:** This extends the author's preference for coordination, judgment, and falsifiable finish lines. It also gives a bridge between software-agent governance and research work: the key question is not whether the agent can run the loop, but who chooses the search space.
+
+**Evidence checked:**
+- [AI Research Agents Narrow Scientific Exploration](https://arxiv.org/abs/2605.27905) — May 27 paper generating 37,802 scientific ideas and finding AI ideas more concentrated, closer to seed literature, and more often recombinations of existing methods than new research questions.
+- [AutoScientists: Self-Organizing Agent Teams for Long-Running Scientific Experimentation](https://arxiv.org/abs/2605.28655) — May 27 paper showing decentralized agent teams can improve over prior agents across biomedical ML, language-model training optimization, and protein fitness prediction by preserving shared state, critiquing proposals, and avoiding redundant exploration.
+- [Benchmarking AI Agents for Addressing Scientific Challenges Across Scales](https://arxiv.org/abs/2606.12736) — June 10 benchmark finding agents help with well-specified data-analysis workflows but struggle with novel insights, self-directed exploration, and open-ended research questions.
+
+**Counterargument / risk:** The narrow-exploration result is based on AI/ML ideation and may not generalize to domains where simulation, lab automation, or foundation models expose genuinely new search spaces. The thesis weakens if autonomous systems start selecting research questions that later humans treat as surprising and valuable, not just faster variants of existing work.
+
+**Two interview questions:**
+1. In your own work, which mattered more: doing the analysis faster, or noticing that the original question was the wrong one?
+2. What evidence would convince you that an AI scientist had taste rather than just persistence?
+
+**Draftability:** High, because it has a clean tension and a falsifiable prediction: AI will improve local research throughput before it reliably expands research taste.
+
+**Suggested tags:** `ai`, `science`, `research`, `software`
+
+## 2026-07-08 — Robotic hands turn embodiment into a data problem
+
+**Status:** Backlog
+
+**One-line thesis:** The robotics bottleneck is shifting from making hands cheap enough to giving them touch-rich experience, because manipulation depends on pressure, contact, and timing that video alone does not capture.
+
+**Why this is interesting now:** Fresh reporting on China's dexterous-hand startups suggests hardware cost and manufacturing capacity are improving quickly, with companies focusing narrowly on hands and drawing from China's electronics and EV supply chain. But the same reporting says the harder problem is teaching the hands what humans feel. That is the interesting split: embodiment may become less about humanoid spectacle and more about tactile data pipelines.
+
+**Potential author angle:** Separate the robot body from the robot apprenticeship. A cheap five-fingered hand is only a platform. The real moat may be the loop that captures human touch, converts it into useful training signal, and teaches robots when pressure matters.
+
+**Author hook:** This complements the active humanoid-interface and robot-coaching backlog items without duplicating them. The narrower angle is tactile data as the bridge between hardware abundance and useful manipulation.
+
+**Evidence checked:**
+- [The Guardian: China wants to solve the hardest problem in robotics - making hands](https://www.theguardian.com/technology/ng-interactive/2026/jul/06/china-dextrous-robotic-hands-humanoid) — July 6 near-primary reporting on Chinese dexterous-hand startups, LinkerBot production claims, Wuji's sensor glove, supply-chain advantages, and the unresolved software/control problem.
+- [DexLink Hand: A Compact, Affordable, 16-DOF Linkage-Driven Hand with Human-Like Dexterity](https://arxiv.org/abs/2606.17418) — June 16 paper proposing a human-hand-sized prototype below USD 400, useful as evidence that compact low-cost dexterous hardware is becoming more plausible.
+- [Towards Robotic Dexterous Hand Intelligence: A Survey](https://arxiv.org/abs/2605.13925) — May survey connecting hardware, sensing, datasets, control, and evaluation challenges, useful for avoiding a hardware-only reading of the hand race.
+- [GenDexHand: Generative Simulation for Dexterous Hands](https://arxiv.org/abs/2511.01791) — older mechanism source framing data scarcity as a bottleneck and proposing generated simulation tasks for dexterous manipulation.
+
+**Counterargument / risk:** Hardware may remain the bottleneck longer than reporting suggests, especially around durability, maintenance, safety, and cost at industrial duty cycles. The thesis is false if cheap hands scale before tactile data and control improve enough to create reliable real-world manipulation.
+
+**Two interview questions:**
+1. Is the useful robot hand a hardware product, a data-collection device, or a training interface for human touch?
+2. Which human skill is hardest to teach a robot: where to move, how hard to press, or when to stop?
+
+**Draftability:** Medium, because the mechanism is strong and visual, but the piece must avoid turning company production claims into proof of useful deployment.
+
+**Suggested tags:** `robotics`, `ai`, `hardware`, `business`
