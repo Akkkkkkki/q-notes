@@ -62,7 +62,7 @@
         background: #161616;
         border: 1px solid #2c2c2c;
         border-radius: 0.75rem;
-        padding: 0.85rem 3.2rem 0.85rem 0.85rem;
+        padding: 0.85rem 0.85rem 3.4rem 0.85rem;
         resize: none;
         outline: none;
       }
@@ -86,6 +86,26 @@
         cursor: pointer;
       }
       #mic.available { display: inline-flex; }
+      #lang {
+        position: absolute;
+        bottom: 0.6rem;
+        right: 3.35rem;
+        height: 2.4rem;
+        min-width: 2.4rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.5rem;
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #c9c9c9;
+        background: #232323;
+        border: 1px solid #3a3a3a;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      #lang.available { display: inline-flex; }
       #mic.on {
         color: #fff;
         background: #b3261e;
@@ -183,8 +203,10 @@
       <textarea
         id="spark"
         autofocus
+        maxlength="2000"
         enterkeyhint="send"
         placeholder="e.g. “consulting outcomes are unfalsifiable” — half-formed is fine. English, 中文, or both."></textarea>
+      <button id="lang" type="button" aria-label="Dictation language" title="Dictation language">EN</button>
       <button id="mic" type="button" aria-label="Dictate">🎙</button>
     </div>
     <div id="source" hidden></div>
@@ -216,6 +238,7 @@
       const sparkEl = $('spark');
       const sendEl = $('send');
       const micEl = $('mic');
+      const langEl = $('lang');
       const statusEl = $('status');
       const sourceEl = $('source');
       const tokenRow = $('token-row');
@@ -291,7 +314,7 @@
         if (res.status === 503) throw Object.assign(new Error('server secrets missing'), { serverError: true, config: true });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw Object.assign(new Error(body.error || 'send failed (' + res.status + ')'), { serverError: true });
+          throw Object.assign(new Error(body.error || 'send failed (' + res.status + ')'), { serverError: true, status: res.status });
         }
         return res.json();
       }
@@ -357,8 +380,13 @@
             showConfig();
             flashSaved('✓ Saved here');
             setStatus('will sync once the server is back (' + getQueue().length + ' waiting)');
+          } else if (e.serverError && e.status >= 400 && e.status < 500) {
+            // A validation failure (e.g. too long): retrying can't help, so show the
+            // server's own actionable message and keep the thought in the box to edit.
+            setStatus(e.message);
           } else if (e.serverError) {
-            // Keep the thought in the box so a tap retries; never show raw server text.
+            // Network / 5xx: retrying may help. Keep the thought in the box; don't
+            // surface the opaque server/proxy text.
             console.error('spark send failed:', e.message);
             setStatus("couldn't reach the server — tap Send to try again");
           } else {
@@ -398,14 +426,28 @@
       // API where present; the button stays hidden where it isn't, so no broken
       // control ever shows and OS-keyboard dictation still works as the fallback.
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const LANG_KEY = 'qn-capture-lang';
       if (SR) {
         const recognition = new SR();
         recognition.continuous = true;
         recognition.interimResults = true;
-        // Language left to the OS default so English + 中文 both work (vision §3.1).
         let listening = false;
         let dictBase = '';
         micEl.classList.add('available');
+        langEl.classList.add('available');
+        // The Web Speech API recognises one language per session (and defaults to the
+        // page's lang="en", so 中文 needs to be set explicitly). Offer a quick toggle,
+        // seeded from the device locale, and remember the choice.
+        let dictLang = localStorage.getItem(LANG_KEY)
+          || ((navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US');
+        const renderLang = () => { langEl.textContent = dictLang.startsWith('zh') ? '中' : 'EN'; };
+        renderLang();
+        langEl.addEventListener('click', () => {
+          dictLang = dictLang.startsWith('zh') ? 'en-US' : 'zh-CN';
+          localStorage.setItem(LANG_KEY, dictLang);
+          renderLang();
+          if (listening) recognition.stop();
+        });
         recognition.addEventListener('result', (e) => {
           let interim = '';
           for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -425,6 +467,7 @@
         micEl.addEventListener('click', () => {
           if (listening) { recognition.stop(); return; }
           dictBase = sparkEl.value.trim();
+          recognition.lang = dictLang;
           try {
             recognition.start();
             listening = true;
