@@ -44,6 +44,13 @@
       nav a.here { color: #f5f5f5; font-weight: 600; }
       nav a + a { margin-left: 0.9rem; }
       #status { font-size: 0.8rem; color: #8a8a8a; min-height: 1rem; }
+      #lede {
+        font-size: 0.95rem;
+        line-height: 1.45;
+        color: #b4b4b4;
+        padding-bottom: 0.9rem;
+      }
+      #composer { position: relative; }
       #spark {
         width: 100%;
         flex: 0 0 auto;
@@ -55,11 +62,37 @@
         background: #161616;
         border: 1px solid #2c2c2c;
         border-radius: 0.75rem;
-        padding: 0.85rem;
+        padding: 0.85rem 3.2rem 0.85rem 0.85rem;
         resize: none;
         outline: none;
       }
       #spark:focus { border-color: #555; }
+      #mic {
+        position: absolute;
+        bottom: 0.6rem;
+        right: 0.6rem;
+        width: 2.4rem;
+        height: 2.4rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 1.1rem;
+        line-height: 1;
+        color: #c9c9c9;
+        background: #232323;
+        border: 1px solid #3a3a3a;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      #mic.available { display: inline-flex; }
+      #mic.on {
+        color: #fff;
+        background: #b3261e;
+        border-color: #b3261e;
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes pulse { 50% { box-shadow: 0 0 0 0.35rem rgba(179, 38, 30, 0.25); } }
       #send {
         margin-top: 0.75rem;
         width: 100%;
@@ -74,6 +107,7 @@
         cursor: pointer;
       }
       #send:disabled { opacity: 0.5; }
+      #send.saved { background: #1f7a3d; color: #fff; }
       #source {
         margin-top: 0.5rem;
         font-size: 0.78rem;
@@ -100,6 +134,9 @@
         border-top: 1px solid #1f1f1f;
         overflow-wrap: anywhere;
       }
+      #recent li.empty { color: #8a8a8a; border-top: none; }
+      #recent li.eg { color: #5a5a5a; font-style: italic; border-top: none; padding-top: 0; }
+      #recent li.pending { color: #8a8a8a; }
       #config-banner {
         margin-top: 1.25rem;
         background: #2a1215;
@@ -110,6 +147,7 @@
         color: #f0c0c4;
       }
       #config-banner a { color: #f0c0c4; }
+      #config-banner .ops { display: block; margin-top: 0.5rem; font-size: 0.78rem; color: #c99; }
       #token-row { margin-top: 1.25rem; display: none; }
       #token-row.visible { display: block; }
       #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
@@ -138,39 +176,46 @@
       <span id="status"></span>
     </header>
 
-    <textarea
-      id="spark"
-      autofocus
-      enterkeyhint="send"
-      placeholder="Type or dictate a thought. English, 中文, fragments — all fine."></textarea>
+    <p id="lede">Catch a thought before it escapes. Type or talk — it's saved to your
+      notes inbox as one line. That's the whole job.</p>
+
+    <div id="composer">
+      <textarea
+        id="spark"
+        autofocus
+        enterkeyhint="send"
+        placeholder="e.g. “consulting outcomes are unfalsifiable” — half-formed is fine. English, 中文, or both."></textarea>
+      <button id="mic" type="button" aria-label="Dictate">🎙</button>
+    </div>
     <div id="source" hidden></div>
     <button id="send" type="button">Send to inbox</button>
 
     <div id="config-banner" hidden>
-      <strong>The server lost its secrets</strong> — the Worker is missing
-      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code>, so it rejects everything.
-      Re-pasting your token on this phone cannot fix it: re-add both on Cloudflare as type
-      <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
-      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.
-      Sparks you send meanwhile queue on this device.
+      <strong>Can't reach the server right now.</strong> Your thoughts are safe on this
+      device and will sync automatically once it's back.
+      <span class="ops">Fix: the Worker is missing its
+      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code> secrets — re-add both on
+      Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>), see
+      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.</span>
     </div>
 
     <div id="token-row">
-      <label for="token">Capture token (stored on this device only)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="paste CAPTURE_TOKEN, then send again" />
+      <label for="token">One-time access token (stored on this device only, never sent to the repo)</label>
+      <input id="token" type="password" autocomplete="off" placeholder="paste your token, then Send again" />
     </div>
 
     <section id="recent" hidden>
-      <h2>Last sparks</h2>
+      <h2>Recent thoughts</h2>
       <ul></ul>
     </section>
 
-    <p class="hint">One line per thought · queues offline · lands in research/inbox.md</p>
+    <p class="hint">One thought per line · saved offline too · nothing is lost</p>
 
     <script is:inline>
       const $ = (id) => document.getElementById(id);
       const sparkEl = $('spark');
       const sendEl = $('send');
+      const micEl = $('mic');
       const statusEl = $('status');
       const sourceEl = $('source');
       const tokenRow = $('token-row');
@@ -200,9 +245,32 @@
       }
 
       function setStatus(msg) { statusEl.textContent = msg; }
+      function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+      // One clear confirmation right on the button the thumb just pressed —
+      // grey text in the header corner reads as "did anything happen?".
+      let savedTimer;
+      function flashSaved(label) {
+        sendEl.textContent = label || '✓ Saved';
+        sendEl.classList.add('saved');
+        clearTimeout(savedTimer);
+        savedTimer = setTimeout(() => {
+          sendEl.textContent = 'Send to inbox';
+          sendEl.classList.remove('saved');
+        }, 1800);
+      }
       function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
       function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
       function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+      // Stash the thought locally and clear the box, so a failed send never loses it.
+      function queueSpark(spark) {
+        const q = getQueue();
+        q.push(spark);
+        setQueue(q);
+        sparkEl.value = '';
+        sharedUrl = '';
+        sourceEl.hidden = true;
+        loadRecent();
+      }
       function localDate() {
         const d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -242,7 +310,7 @@
             if (e.unauthorized) needToken();
             setQueue(queue);
             if (e.serverError) throw e;
-            setStatus(queue.length + ' queued');
+            setStatus(queue.length + ' waiting to sync');
             return false;
           }
           queue = queue.slice(1);
@@ -253,7 +321,7 @@
 
       function needToken() {
         tokenRow.classList.add('visible');
-        setStatus('token needed');
+        setStatus('access token needed — see below');
       }
 
       async function send() {
@@ -276,32 +344,27 @@
           sparkEl.value = '';
           sharedUrl = '';
           sourceEl.hidden = true;
-          setStatus('✓ in the inbox');
+          flashSaved('✓ Saved');
+          setStatus('in your inbox');
           loadRecent();
         } catch (e) {
           if (e.unauthorized) {
             needToken();
           } else if (e.config) {
-            // Don't lose the thought: queue it like an offline send, and say
-            // plainly that the fix lives on Cloudflare, not on this phone.
-            const queue = getQueue();
-            queue.push(spark);
-            setQueue(queue);
-            sparkEl.value = '';
-            sharedUrl = '';
-            sourceEl.hidden = true;
+            // Don't lose the thought: queue it like an offline send. To the user
+            // it's simply "saved" — the Cloudflare-side fix is the ops banner's job.
+            queueSpark(spark);
             showConfig();
-            setStatus('queued until the server is fixed (' + queue.length + ')');
+            flashSaved('✓ Saved here');
+            setStatus('will sync once the server is back (' + getQueue().length + ' waiting)');
           } else if (e.serverError) {
-            setStatus(e.message);
+            // Keep the thought in the box so a tap retries; never show raw server text.
+            console.error('spark send failed:', e.message);
+            setStatus("couldn't reach the server — tap Send to try again");
           } else {
-            const queue = getQueue();
-            queue.push(spark);
-            setQueue(queue);
-            sparkEl.value = '';
-            sharedUrl = '';
-            sourceEl.hidden = true;
-            setStatus('queued — will send when online (' + queue.length + ')');
+            queueSpark(spark);
+            flashSaved('✓ Saved');
+            setStatus('will sync when back online (' + getQueue().length + ' waiting)');
           }
         } finally {
           sendEl.disabled = false;
@@ -310,17 +373,65 @@
       }
 
       async function loadRecent() {
-        if (!getToken()) return;
-        try {
-          const res = await fetch('/api/sparks', { headers: { Authorization: 'Bearer ' + getToken() } });
-          if (!res.ok) return;
-          const { sparks } = await res.json();
-          if (!sparks.length) return;
-          recentEl.querySelector('ul').innerHTML = sparks
-            .map((s) => '<li>' + s.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>')
-            .join('');
-          recentEl.hidden = false;
-        } catch { /* reward loop only — never block capture */ }
+        const ul = recentEl.querySelector('ul');
+        recentEl.hidden = false;
+        // Locally-queued thoughts (not yet synced) sit on top as proof the box works,
+        // even before a token exists.
+        const pending = getQueue().map(
+          (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · syncing…</li>'
+        );
+        let synced = [];
+        if (getToken()) {
+          try {
+            const res = await fetch('/api/sparks', { headers: { Authorization: 'Bearer ' + getToken() } });
+            if (res.ok) synced = (await res.json()).sparks || [];
+          } catch { /* reward loop only — never block capture */ }
+        }
+        const rows = pending.concat(synced.map((s) => '<li>' + esc(s) + '</li>')).slice(0, 3);
+        ul.innerHTML = rows.length
+          ? rows.join('')
+          : '<li class="empty">Your captured thoughts will show up here — try one above.</li>'
+            + '<li class="eg">2026-07-08 — consulting outcomes are unfalsifiable</li>';
+      }
+
+      // Voice-first: a visible dictation button (vision §3.1, §6). Uses the Web Speech
+      // API where present; the button stays hidden where it isn't, so no broken
+      // control ever shows and OS-keyboard dictation still works as the fallback.
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR) {
+        const recognition = new SR();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        // Language left to the OS default so English + 中文 both work (vision §3.1).
+        let listening = false;
+        let dictBase = '';
+        micEl.classList.add('available');
+        recognition.addEventListener('result', (e) => {
+          let interim = '';
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) dictBase = (dictBase + ' ' + t).trim();
+            else interim += t;
+          }
+          sparkEl.value = (dictBase + ' ' + interim).trim();
+        });
+        const stopUi = () => {
+          listening = false;
+          micEl.classList.remove('on');
+          if (statusEl.textContent === 'listening…') setStatus('');
+        };
+        recognition.addEventListener('end', stopUi);
+        recognition.addEventListener('error', stopUi);
+        micEl.addEventListener('click', () => {
+          if (listening) { recognition.stop(); return; }
+          dictBase = sparkEl.value.trim();
+          try {
+            recognition.start();
+            listening = true;
+            micEl.classList.add('on');
+            setStatus('listening…');
+          } catch { /* start() throws if already running — ignore */ }
+        });
       }
 
       sendEl.addEventListener('click', send);
@@ -329,18 +440,18 @@
       });
       function flushFailed(e) {
         if (e.config) showConfig();
-        else if (e.serverError) setStatus(e.message);
+        else if (e.serverError) { console.error('sync failed:', e.message); setStatus("couldn't reach the server"); }
       }
       window.addEventListener('online', () => {
-        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); })
-          .catch(flushFailed);
+        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); loadRecent(); })
+          .catch((e) => { flushFailed(e); loadRecent(); });
       });
 
       if (!getToken()) needToken();
       const pending = getQueue().length;
-      if (pending) setStatus(pending + ' queued');
+      if (pending) setStatus(pending + ' waiting to sync');
       flushQueue().then(() => loadRecent())
-        .catch(flushFailed);
+        .catch((e) => { flushFailed(e); loadRecent(); });
 
       // Non-blocking health probe: if the Worker lost its secrets, say so up
       // front instead of letting the next send fail confusingly.
