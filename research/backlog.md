@@ -586,7 +586,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-07-08 — Agent teammates need merge traffic control
 
-**Status:** Backlog
+**Status:** Drafted in `src/content/posts/agent-prs-need-traffic-control.en.md` and `src/content/posts/agent-prs-need-traffic-control.zh.md` on 2026-07-10
 
 **One-line thesis:** The first practical failure mode of many coding agents may not be bad code; it may be uncoordinated good-enough patches colliding faster than humans can sequence the work.
 
