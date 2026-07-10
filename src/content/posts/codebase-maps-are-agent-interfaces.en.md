@@ -1,97 +1,78 @@
 ---
 title: "The best agent interface is a map"
 date: 2026-07-07
-excerpt: "Coding agents do not only need bigger context windows; they need codebases that expose where work should happen."
+excerpt: "Coding agents need more than context; they need codebases that make the right place to work clear."
 tags: ["ai", "software", "engineering", "essay"]
 lang: en
 translationKey: codebase-maps-are-agent-interfaces
 maturity: growing
 ---
 
-The next useful interface for coding agents may not look like chat. It may look like a map.
+Coding agents often fail before they write bad code. They fail when they cannot tell where the work belongs.
 
-Coding agents often fail before they write the wrong code. They fail when they enter a repository and cannot tell where the work belongs.
+A senior engineer knows which module owns a feature, which tests define the contract, and which directory only looks relevant. Much of that knowledge is not in the code. It sits in people's heads, old pull requests, and review habits.
 
-Humans call this "getting familiar with the codebase." A senior engineer knows which files are public surface and which are plumbing, which tests are trusted, which abstractions are dead, and which directory looks relevant but is actually legacy. Most of that map is not in the code. It is in people's heads, old pull requests, Slack threads, and review habits.
+An agent does not share that history. If the repository does not show its structure, the agent must guess from search results and nearby files.
 
-An agent does not have that social memory. If the repository does not expose its structure, the agent has to infer it from search results and nearby text. That turns navigation into guesswork.
+The point is simple: an agent-ready codebase is not one with a longer prompt. It is one that makes the right place to work clear.
 
-The thesis is simple: agent-ready software is not software with more prompt instructions pasted on top. It is software whose structure is explicit enough for a probabilistic worker to navigate without inventing the map.
+## More context is not a map
 
-## Search is not orientation
+The July 2 revision of [*How Much Static Structure Do Code Agents Need?*](https://arxiv.org/abs/2606.26979) tested a practical idea. The researchers gave coding agents simple information about call relationships, inheritance, and configuration dependencies.
 
-The freshest evidence comes from a July 2 revision of [*How Much Static Structure Do Code Agents Need?*](https://arxiv.org/abs/2606.26979). The paper studies what happens when code agents get lightweight structural anchors: call relationships, inheritance links, and configuration dependencies added as plain-text comments.
+The gains were not huge, but they were useful. Function-level localization improved by 2.2 percentage points, agent runs became 1.6 interaction rounds shorter, and results varied less between runs. On medium-sized repositories, Pass@1 improved by 3.4 percentage points at the cost of about 10% more input tokens.
 
-The important result is not that static analysis makes agents magically intelligent. The authors say the benefit is more boring and more useful: structure makes navigation disciplined and reproducible.
+This was not a large jump in intelligence. It was a reduction in wasted movement.
 
-The reported gains are modest but telling. Lightweight call and inheritance topology improved function-level localization by 2.2 percentage points and shortened trajectories by 1.6 interaction rounds. Structural tags raised link-following rates from roughly 0.15-0.18 to 0.21-0.24, roughly halved run-to-run variance, and improved Pass@1 by 3.4 percentage points on medium repositories, at about 10% more input tokens.
+That matters because many teams still treat agent failure as a prompt problem. They add instructions, paste more files, or ask the model to reason for longer. These steps can help, but a larger context window does not explain who owns a decision or which test is the real contract.
 
-Those are not "replace the engineer" numbers. They are "stop wandering" numbers.
+When an agent keeps editing the wrong files, the repository may be the problem.
 
-That distinction matters. A lot of agent advice still treats failure as a prompting problem: give a better instruction, add a README, paste more context, ask the model to think harder. But a codebase is not a document. It is a working system with routes, ownership boundaries, hidden coupling, and old decisions.
+## The codebase is the interface
 
-If the agent keeps touching the wrong files, the first question should not be whether the prompt was clever enough. It should be whether the repository has a visible map.
+For a human, a good codebase already works like an interface. Names, folders, module boundaries, tests, and architecture records show where to look and what not to change.
 
-## The map is part of the product
+Agents make gaps in that interface easier to see. They struggle with parts of the system that only long-serving team members understand.
 
-For humans, a good codebase already behaves like an interface. Naming, directory shape, module boundaries, tests, comments, and review norms tell the engineer where to look and what not to touch.
+A useful codebase map does not need to be a new visual tool. It can be a set of clear answers:
 
-Agents make that interface more literal. They expose which parts of the repository were only understandable because a person had been around long enough to know the story.
+1. Which module owns this behavior?
+2. What calls this function?
+3. Which configuration controls it?
+4. Which tests define the contract?
+5. Which decision record explains the tradeoff?
+6. Who should review the change?
 
-This is why "just give the agent the whole repo" is a weak answer. Bigger context can help, but a larger pile of files is not the same as orientation. A city map does not work by showing every brick. It works by deciding which relationships matter at the current scale.
+This is ordinary engineering work. The difference is that agents make its value easier to measure.
 
-The same is true in software. A useful agent map might include who calls this function, which config owns this behavior, which tests define the contract, which ADR explains the tradeoff, and which owner should review the change. That is not glamorous. It is also close to the work good engineering organizations already claim to do.
+## Plans and checks are part of the map
 
-## Specs are maps too
+The [*Spec Growth Engine*](https://arxiv.org/abs/2606.27045) paper approaches the same problem through specifications. It argues that agent work creates two risks: too much context and quiet drift between the code and the original plan. Its proposed system gives the agent only the relevant part of a machine-readable specification and blocks a merge when code and specification move apart.
 
-The June 25 [*Spec Growth Engine*](https://arxiv.org/abs/2606.27045) paper makes the same point from another angle. It argues that coding agents create two structural failures: context explosion and silent drift between code and specification. Its proposed answer is a machine-readable spec graph, a scoped context assembler, vertical-slice growth, and a drift gate that blocks merges when code and spec separate.
+The full framework may be more than most teams need. The core idea is enough: an agent needs to know both where to work and what the change is allowed to mean.
 
-You do not have to buy the whole framework to accept the mechanism. The agent needs a path through the system. It also needs a way to know when that path has diverged from the project's stated intent.
+The same pattern appears in larger technical tasks. [Reboot](https://arxiv.org/abs/2606.27122), a system for translating C interpreters into safe Rust, broke the work into complete, testable features. That approach improved validation pass rates by 6 to 20 percentage points compared with multi-agent translation alone.
 
-That is the missing layer in many AI coding demos. The model produces a patch. The tests may pass. But the repository has not told the agent what the change is allowed to mean.
+[NOVA](https://arxiv.org/abs/2606.27243), built for architecture work in industrial recommender systems, routes tasks by risk, runs several levels of checks, records paths the agent should not take, and sends high-risk work to people. In one task, the paper reports a 13-fold reduction in human-attended time while reducing silent failures against its coding-agent baselines.
 
-This is where the author's old coordination argument shows up in code. The hard question is not "can the agent implement something?" It is "can the organization make intent legible enough that implementation compounds instead of fragments?"
+These systems are different, but they share one lesson: autonomy works better when the route, limits, and checks are explicit.
 
-## Verification needs milestones
+## Better models will still need clear codebases
 
-The same pattern appears in more specialized agent work.
+The fair counterargument is that models will get better at reading a repository and building their own map. They can inspect history, run tests, and ask questions. Codebase maps may look like temporary support for today's weaker agents.
 
-[*Mostly Automatic Translation of Language Interpreters from C to Safe Rust*](https://arxiv.org/abs/2606.27122) describes Reboot, a system that translated six C interpreters of 6,000 to 23,000 lines into safe Rust with only 1 to 11 brief user interventions. The translations passed the provided test suites and reached 62% to 92% pass rates on separate validation tests.
+Better models will need less help. But that is not a reason to keep structure hidden.
 
-The interesting part is not only the Rust result. It is the method. Reboot decomposes translation by feature, creating a sequence of complete, testable milestones. Feature reduction improved validation pass rates by 6 to 20 percentage points compared with multi-agent translation alone.
+A strong engineer can also work through a messy codebase. We still document ownership and architecture because repeated inference is slow, inconsistent, and hard to review. The same rule applies to agents.
 
-NOVA, a June 25 paper on a [verification-aware agent harness for recommender-system architecture work](https://arxiv.org/abs/2606.27243), makes the same operating claim in an industrial setting. Generic coding agents can produce runnable code that is architecturally wrong. NOVA routes work by risk level, uses a verification cascade, records forbidden directions, and escalates high-risk tasks to human oversight. In one literature-to-production task, the paper reports a 13x reduction in human-attended time, while reducing silent failures compared with coding-agent baselines.
+A map created inside one agent run is private and temporary. A map held in the repository can be checked, improved, and reused by everyone.
 
-The lesson is not that every team should copy NOVA. The lesson is that autonomy becomes useful when the work has explicit waypoints, risk levels, and checks. Without those, an agent is not navigating. It is sampling.
+## Agent readiness is good engineering
 
-## The counterargument is fair
+The practical conclusion is less exciting than a new agent product. Teams can improve agent performance by making the repository easier to understand: clear module ownership, small vertical slices, contract tests, current architecture records, and explicit dependency boundaries.
 
-There is a strong counterargument: frontier models may get good enough to infer project structure from ordinary files. Maybe codebase maps become temporary scaffolding. Maybe the model can read the repo, inspect history, run tests, ask questions, and build the map itself.
+This work also helps new engineers. If a person or an agent cannot quickly answer where a behavior lives, what must not change, and how the change will be checked, the codebase is hiding important operating knowledge.
 
-That will happen more often than skeptics expect. Good agents will become better at orientation.
+By the end of 2027, I expect serious software teams to treat "agent readiness" less as prompt writing and more as repository quality. The teams that benefit most from coding agents will not have the longest instructions. They will have codebases that make responsible change easy to find.
 
-But this does not remove the need for maps. A strong human engineer can also infer a messy codebase, but no one treats that as a reason to keep ownership, tests, and architecture implicit. We make structure explicit because inference is expensive, inconsistent, and hard to review.
-
-If a model invents its own private map during a run, the organization cannot easily inspect or reuse it. If the repository carries the map, every human and agent starts from the same public structure.
-
-The map is not a crutch for weak models. It is shared infrastructure for coordinated work.
-
-## Agent readiness is engineering hygiene
-
-This is the uncomfortable implication for software teams. The best way to improve coding-agent performance may be to clean up the repository in ways that were already good engineering: clearer module ownership, smaller vertical slices, contract tests, current ADRs, explicit dependency boundaries, and documentation that describes decisions.
-
-That is less exciting than buying another agent tool. It is also harder to fake.
-
-An agent-ready codebase should let a new worker answer five questions quickly:
-
-1. Where does this behavior live?
-2. What contract must not change?
-3. Who or what owns the decision?
-4. Which tests prove the change matters?
-5. What should the worker avoid touching?
-
-If those questions are hard for an agent, they are probably hard for a new engineer too. The agent is not creating the legibility problem. It is revealing it.
-
-Here is the prediction worth tracking: by the end of 2027, serious software organizations will talk about "agent readiness" less as a prompting skill and more as repository hygiene. The winning teams will not be the ones with the longest prompts. They will be the ones whose codebases tell both humans and machines where responsible change should happen.
-
-The interface was never only the chat box. The interface is the codebase itself.
+The best agent interface may be the codebase itself.
