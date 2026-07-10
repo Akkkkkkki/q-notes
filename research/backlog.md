@@ -693,3 +693,115 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** Medium, because the mechanism is strong and visual, but the piece must avoid turning company production claims into proof of useful deployment.
 
 **Suggested tags:** `robotics`, `ai`, `hardware`, `business`
+
+## 2026-07-10 — Maintainer review is becoming AI apprenticeship control
+
+**Status:** Backlog
+
+**One-line thesis:** Open-source AI contribution policy is not only about whether generated code is correct; it is about whether maintainers can still turn contributors into people who understand and own the project.
+
+**Why this is interesting now:** Godot's July 2026 move to reject AI-authored contributions is easy to read as an anti-AI culture-war signal. The more interesting mechanism is operational: maintainers are saying review cannot scale if contributors cannot explain, debug, and learn from the code they submit. That makes AI policy a pipeline question, not just a code-quality question.
+
+**Potential author angle:** Push against both lazy positions. "AI code bad" is too broad, and "review the diff like any other diff" misses the social function of review. In healthy open-source projects, review is also how judgment, local taste, and maintainership are taught. AI-heavy submissions may produce code while skipping the apprenticeship that keeps the project alive.
+
+**Author hook:** This extends the site's agent-coordination line into a community-governance mechanism. The author can connect it to professional-services and engineering organizations: when output gets cheaper, the training loop that produces future owners becomes easier to starve.
+
+**Evidence checked:**
+- [PC Gamer: Open-source game engine Godot will no longer accept AI-authored code contributions](https://www.pcgamer.com/gaming-industry/open-source-game-engine-godot-will-no-longer-accept-ai-authored-code-contributions-we-cant-trust-heavy-users-of-ai-to-understand-their-code-enough-to-fix-it/) — July 8 near-primary reporting quoting Godot's policy rationale that maintainers cannot trust heavy AI users to understand enough to fix their code.
+- [Regulating Machine Contributors in Open Source Software](https://arxiv.org/abs/2606.14594) — June 12 mechanism paper analyzing why open-source communities need explicit governance for machine contributors, including disclosure, responsibility, and maintainer burden.
+- [From Conversation to Contribution: Analyzing and Sharing AI Chat Histories in Open-Source Development](https://arxiv.org/abs/2607.00911) — July 1 paper showing AI-assisted development conversations may contain useful provenance, while developers worry about revealing skill gaps, private ideas, or noisy process.
+- [AI Agent Pull Requests on GitHub: Frequency, Structure, and Merge Conflict Rates](https://arxiv.org/abs/2607.04697) — July 6 paper showing agent PR activity is already common enough to create repository-level coordination issues, useful context for why maintainer policy is no longer theoretical.
+
+**Counterargument / risk:** The strongest counterargument is that a strict ban may throw away useful contributors and push AI use underground. The thesis weakens if disclosure, chat-history summaries, and review tooling let maintainers verify understanding without requiring every contributor to hand-write every line.
+
+**Two interview questions:**
+1. In a code review, are you mainly checking the patch, or are you also training the contributor to become someone you can trust later?
+2. What should an open-source project demand from an AI-assisted contributor: disclosure, a clean explanation, a test plan, or evidence that they can repair the code without the model?
+
+**Draftability:** High, because it gives a specific social mechanism behind AI contribution policy: cheap code can still be expensive if it breaks the apprenticeship loop.
+
+**Suggested tags:** `ai`, `software`, `open-source`, `governance`
+
+## 2026-07-10 — AI coding conversations are private provenance
+
+**Status:** Backlog
+
+**One-line thesis:** The missing artifact in AI-assisted software work may be the chat history, but that artifact is socially hard to share because it exposes how the developer thought, guessed, copied, and got stuck.
+
+**Why this is interesting now:** A July 1 paper argues that AI coding conversations contain reusable context for open-source contribution, but its developer interviews also show why full transparency will be resisted. The under-synthesized point is that provenance is no longer just a commit hash or pull-request description. It may include the messy collaboration record that produced the diff.
+
+**Potential author angle:** Make the uncomfortable claim that AI coding creates a new privacy tax on trust. Reviewers increasingly want to know how the code was produced, but the most useful evidence can reveal weak understanding, tentative ideas, or business-sensitive reasoning. The practical question is not "should we share everything?" but "what summary is enough for accountability without making every contributor publish their thinking out loud?"
+
+**Author hook:** This sharpens the author's interest in coordination and software legibility. It pairs with the codebase-map and knowledge-import backlog items without repeating them: the codebase map helps the agent navigate; the conversation trace helps humans decide whether to trust the journey.
+
+**Evidence checked:**
+- [From Conversation to Contribution: Analyzing and Sharing AI Chat Histories in Open-Source Development](https://arxiv.org/abs/2607.00911) — July 1 study of 68 AI-assisted coding conversations and 14 interviews; proposes structured metadata for chat histories and reports willingness to share only when privacy, competence, and idea-exposure risks are controlled.
+- [Knowledge-Based Pull Requests: A Trusted Workflow for Agent-Mediated Knowledge Collaboration](https://arxiv.org/abs/2606.26721) — June 25 paper proposing that code, tests, and cleaned agent traces should become knowledge artifacts before a trusted project environment regenerates code.
+- [The Verification Horizon: No Silver Bullet for Coding Agent Rewards](https://arxiv.org/abs/2606.26300) — June 24 paper arguing that verifying underspecified intent remains harder than generating candidate code, supporting the need for better evidence about intent and process.
+- [GitHub Docs: About Copilot coding agent](https://docs.github.com/en/copilot/concepts/coding-agent/about-copilot-coding-agent) — product documentation showing agent-written work already arrives as pull requests for human review, making provenance design a live workflow issue rather than a research abstraction.
+
+**Counterargument / risk:** Chat history can be noisy, misleading, or performative, and sharing it may create more reviewer load than trust. The thesis is false if good tests, small diffs, signed authorship, and maintainers' local knowledge remain enough to judge AI-assisted work without process evidence.
+
+**Two interview questions:**
+1. Would you trust an AI-assisted pull request more if you could inspect the chat that produced it, or would that just move the review burden to a worse surface?
+2. What parts of your AI coding conversations would you be willing to show a teammate: the final plan, the failed attempts, the prompts, or only a generated summary?
+
+**Draftability:** High, because it turns a technical provenance problem into a human one: the evidence reviewers need may be exactly the evidence contributors least want to expose.
+
+**Suggested tags:** `ai`, `software`, `open-source`, `privacy`
+
+## 2026-07-10 — Agent skills can turn stale habits into infrastructure
+
+**Status:** Backlog
+
+**One-line thesis:** Reusable agent skills are becoming a second codebase of operating habits, and their main risk may be normal staleness: copied procedures quietly keep telling agents how work used to be done.
+
+**Why this is interesting now:** July research on open-sourced coding-agent skills found thousands of Codex and Claude skills in the wild, many derived from template-generated workflows and reused across real projects. The obvious story is supply-chain security. The more durable story is organizational drift: a skill file can preserve old assumptions about commands, review norms, deployment gates, and ownership long after the project has changed.
+
+**Potential author angle:** Argue that agent-readiness is not just adding instructions. It is maintaining the instructions as live infrastructure. A stale `SKILL.md` is like an onboarding doc with execution rights: it may not be malicious, but it can make every agent repeat the same outdated habit at machine speed.
+
+**Author hook:** This extends the site's codebase-map argument into the behavior layer. Maps tell agents where things are. Skills tell them what to do next. Both become governance surfaces once agents can act.
+
+**Evidence checked:**
+- [Uncovering the Real-World Evolution of Coding Agent Skill Configurations](https://arxiv.org/abs/2607.05677) — July 7 study of 13,000-plus skills from 800-plus GitHub repositories; finds heavy template influence, natural-language instruction formats, and project-specific workflow capture.
+- [Agent Skills are a New Vector for Supply-Chain Attacks](https://arxiv.org/abs/2606.13776) — June mechanism paper on skills as executable behavioral dependencies and an attack surface.
+- [Cloud Security Alliance: SKILL.md agent context poisoning](https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/05/CSA_research_note_SKILL_md_agent_context_poisoning_20260506-csa-styled-1.pdf) — older security note connecting malicious skills to persistence, propagation, credential exfiltration, and command execution.
+- [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — mechanism source emphasizing workflow design and tool use, useful context for why reusable instructions can become operational infrastructure.
+
+**Counterargument / risk:** Many skills may stay narrow, manually reviewed, and easy to delete, especially inside disciplined teams. The thesis weakens if agent platforms make skill provenance, expiry, tests, and scoped permissions standard enough that stale instructions fail loudly instead of quietly shaping behavior.
+
+**Two interview questions:**
+1. If an agent follows an old team habit perfectly, who owns the mistake: the model, the skill author, or the team that let the instruction rot?
+2. Should agent skills have expiry dates, owners, and tests the same way production code does?
+
+**Draftability:** High, because it names a practical maintenance problem that most agent-governance conversations skip: not hostile instructions, but forgotten ones.
+
+**Suggested tags:** `ai`, `software`, `security`, `governance`
+
+## 2026-07-10 — Agentic ransomware may be easiest to catch while it is thinking
+
+**Status:** Backlog
+
+**One-line thesis:** The first agentic malware may not be scary because it is magically stealthy; it may be scary because it can chain ordinary attack steps quickly, while still leaving new kinds of behavioral traces defenders can watch.
+
+**Why this is interesting now:** July reporting on Sysdig's JADEPUFFER analysis claims the first documented LLM-powered ransomware case chained reconnaissance, exploitation, privilege escalation, lateral movement, and exfiltration with autonomous planning traces. The interesting mechanism is double-edged: agentic attacks can compress the time from foothold to damage, but their tool use, retries, and planning chatter may create detection surfaces that ordinary scripts do not.
+
+**Potential author angle:** Avoid the cinematic "AI hackers are here" story. The useful claim is more operational: AI changes the attack tempo before it changes the attack primitives. Defenders should ask what can be detected in the loop itself: unusual tool sequencing, exploratory commands, repeated failed branches, and machine-generated work notes.
+
+**Author hook:** This continues the site's agent-governance line from the defender side. It also gives a concrete prediction: security products will sell not only malware signatures, but agent-behavior observability for both internal copilots and hostile automation.
+
+**Evidence checked:**
+- [ITPro: Agentic AI malware could be the dawn of ransomware 3.0](https://www.itpro.com/security/ransomware/agentic-ai-malware-could-be-the-dawn-of-ransomware-3-0) — July 7 near-primary coverage of Sysdig's JADEPUFFER report, including autonomous planning, reconnaissance, exploitation, privilege escalation, lateral movement, and exfiltration claims.
+- [Business Insider: Cybersecurity researchers say they found the first ransomware powered by AI agents](https://www.businessinsider.com/first-documented-ransomware-using-ai-agents-sysdig-jadepuffer-2026-7) — July 3 reporting on the same Sysdig analysis, useful for triangulating the claim and quoted expert framing.
+- [Ransomware 3.0: Autonomous Cyberattacks with LLM-Agentic Workflows](https://arxiv.org/abs/2605.21246) — May mechanism paper showing how LLM-agent workflows can automate attack-chain stages and arguing for defenses that monitor autonomous behavior, not just static payloads.
+- [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June primary source framing agent safety through monitoring, prevention, and response layers, useful for translating the malware case into broader agent-control architecture.
+
+**Counterargument / risk:** The public evidence depends on vendor reporting, and defenders may be seeing assisted human operation rather than genuinely autonomous malware. The thesis is false if attackers quickly strip planning traces, use smaller local models, or hide agent behavior behind ordinary scripts well enough that "thinking" is no longer visible.
+
+**Two interview questions:**
+1. If an attacker uses an agent, should defenders monitor for malicious payloads, or for the exploratory rhythm of a machine trying options?
+2. Does AI make cyberattacks more dangerous because it invents new tactics, or because it makes mediocre attackers persistent and fast?
+
+**Draftability:** Medium, because the mechanism is strong but the piece must be careful not to overstate a vendor-framed first case as settled proof of a new era.
+
+**Suggested tags:** `ai`, `security`, `software`, `business`
