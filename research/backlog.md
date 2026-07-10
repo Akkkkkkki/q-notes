@@ -390,7 +390,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-06-26 — AI pull requests are becoming knowledge imports
 
-**Status:** Backlog
+**Status:** Drafted in `src/content/posts/pull-requests-are-knowledge-imports.en.md` and `src/content/posts/pull-requests-are-knowledge-imports.zh.md` on 2026-07-03
 
 **One-line thesis:** As coding agents make outside patches cheap, the real review question shifts from "should we merge this diff?" to "what knowledge, intent, and risk should this project absorb?"
 
@@ -404,6 +404,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 - [Knowledge-Based Pull Requests: A Trusted Workflow for Agent-Mediated Knowledge Collaboration](https://arxiv.org/abs/2606.26721) — June 25 paper proposing that external code, tests, and cleaned agent traces should be treated as knowledge sources, with project-owned agents regenerating code inside the trusted environment.
 - [Augmentation with Dilution: A Large-Scale Empirical Study of Human Contributor Ecosystems After AI Coding Agent Adoption](https://arxiv.org/abs/2606.26289) — June 24 study of 11,097 GitHub repositories from January 2023 to May 2026; reports lower human contributor density, a 3.7 percentage-point decline in newcomer share, and a 5.3% increase in review depth after agent adoption.
 - [The Verification Horizon: No Silver Bullet for Coding Agent Rewards](https://arxiv.org/abs/2606.26300) — June 24 paper arguing that generating candidate solutions is becoming easier than faithfully verifying whether they satisfy underspecified human intent.
+- [AI Writes Faster Than Humans Can Review: A Longitudinal Study of an Enterprise 2x Mandate](https://arxiv.org/abs/2607.01904) — July 2 enterprise case study reporting 2.09x per-capita merged PR throughput by April 2026 while per-reviewer load roughly doubled and automated review overtook human review.
 - [Google DeepMind: Securing the future of AI agents](https://deepmind.google/blog/securing-the-future-of-ai-agents/) — June 18 primary source framing agent oversight as monitoring, prevention, response, and capability-based controls rather than model quality alone.
 
 **Counterargument / risk:** Traditional pull requests may survive if provenance tooling, test coverage, and reviewer UI improve enough that project maintainers can safely evaluate agent-written diffs directly. The thesis weakens if trusted-regeneration workflows add too much friction or if contributors refuse to package intent separately from code.
