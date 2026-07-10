@@ -1,85 +1,89 @@
 ---
-title: "Agent teammates need traffic control"
+title: "Coding agents need traffic control"
 date: 2026-07-10
-excerpt: "The next bottleneck in agentic software work is not only reviewing each patch; it is sequencing many plausible patches before they collide."
+excerpt: "When several coding agents work at once, the hard part is deciding what each one should change, and in what order."
 tags: ["ai", "software", "engineering", "management", "essay"]
 lang: en
 translationKey: agent-prs-need-traffic-control
 maturity: growing
 ---
 
-The first practical failure of many coding agents may not look like bad code.
+Coding agents can fail even when each one writes decent code.
 
-It may look like five good-enough pull requests arriving at once, each locally reasonable, each passing its own tests, and none of them aware that the others are trying to reshape the same repo.
+Picture five pull requests arriving at once. Each looks reasonable. Each passes its own tests. But none of the agents knows that the others are changing the same codebase.
 
-That is a different problem from "can the agent write code?" It is closer to air traffic control. The scarce work is deciding which agent is allowed to touch which surface, in what order, with what merge budget, and under whose ownership.
+This is the next problem for teams using many agents. Writing code is getting cheaper. Deciding who should change what, and in what order, is not.
 
-Review is still necessary. But once autonomous contributors overlap, review is not enough. A codebase with many agent teammates needs traffic control.
+Teams need *agent traffic control*: clear rules for which agent can touch which part of the code, what should go first, and when duplicate work should stop.
 
-## The data is moving from anecdotes to collisions
+Code review catches bad patches after they are written. Traffic control should prevent conflicting patches from being written in the first place.
 
-A July 6 paper on [AI-agent pull requests on GitHub](https://arxiv.org/abs/2607.04697) gives the cleanest current signal. The authors studied 33,596 agent-authored pull requests across 2,807 repositories.
+## The collisions are already visible
 
-Under the strictest definition, where two agent PRs are open at the exact same time, 40.2% of repositories had co-active agent PR pairs. Those co-active pairs accounted for 79.4% of all agent-submitted PRs in the sample. With a one-week collaboration window, the repo share rose to 53.4%, and 95% of agent PRs were co-active with another agent PR.
+A July 6 paper on [AI-agent pull requests on GitHub](https://arxiv.org/abs/2607.04697) studied 33,596 agent-written pull requests across 2,807 repositories.
 
-That matters because concurrent PRs are not just parallel work. They are competing edits to a shared object.
+The authors first looked for pairs of agent PRs that were open at exactly the same time. They found such pairs in 40.2% of repositories. Those overlapping pairs included 79.4% of all agent PRs in the sample.
 
-The paper replayed three-way git merges for 747 co-active pairs. Same-agent pairs had a 19.8% textual conflict rate. Cross-agent pairs had a 41.7% conflict rate. Cross-agent pairs were rare, only 0.5% of exact-overlap co-active pairs, but the direction is still useful: different automated workers can interfere with each other more sharply than a single platform producing multiple branches.
+When the authors widened the window to one week, 53.4% of repositories had overlapping agent work. In that wider window, 95% of agent PRs overlapped with another agent PR.
 
-The conflicts were not mostly lockfile noise. The paper says 84.4% of conflicted files were source files. Nearly 42% of conflicts were structural: one branch deleted a file the other modified, or two branches independently added different versions of the same file.
+Overlap does not always mean conflict. But it creates the chance for conflict, because several workers are changing the same codebase without sharing one plan.
 
-That is the interesting part. The agents are not only fighting over lines. They are sometimes disagreeing about whether a thing should exist.
+The paper also replayed git merges for 747 pairs of PRs that had been open at the same time. Pairs from the same agent had a 19.8% text-conflict rate. Pairs from different agents had a 41.7% rate. The second group was small, only 0.5% of the overlapping pairs, so we should not make too much of that gap yet.
 
-## Local correctness is not global order
+The type of conflict matters more. Source files made up 84.4% of conflicted files. Almost 42% of conflicts changed the structure of the codebase: one branch deleted a file that another branch changed, or two branches created different versions of the same file.
 
-The usual software review habit asks: is this PR correct?
+The agents were not just editing the same lines. Sometimes they disagreed about whether a file should exist at all.
 
-Agent-heavy work adds a prior question: should this PR land before the others?
+## Good patches can still arrive in the wrong order
 
-A patch can be right in isolation and expensive in sequence. One agent extracts a helper. Another rewrites the caller. A third updates tests against the old shape. A fourth fixes logging in a file that is about to disappear. Each change can be defensible. Together they create a merge queue that no one actually designed.
+Software review usually asks: is this PR correct?
 
-This is why agent output can feel productive while the repo becomes harder to govern. The issue is not only quality. It is timing, ownership, and surface area.
+With several agents working at once, teams need to ask an earlier question: should this work have started yet?
 
-The broader ecosystem evidence points the same way. A June study, [*Augmentation with Dilution*](https://arxiv.org/abs/2606.26289), looked at 11,097 GitHub repositories from January 2023 to May 2026. It found that after AI-agent adoption, human contributor density fell, newcomer share dropped by 3.7 percentage points, and review depth increased by 5.3%. The authors' phrase is useful: augmentation with dilution. More generated work does not automatically mean more human understanding.
+One agent extracts a helper. Another rewrites the code that calls it. A third updates tests for the old version. A fourth fixes logging in a file that the first agent plans to delete.
 
-Another paper on [agent logging behavior](https://arxiv.org/abs/2604.09409) found that humans performed 72.5% of post-generation log repairs in the studied repos. That is a quiet kind of maintenance work. The PR may merge, but humans still clean up the observability decisions afterward.
+Each patch may be fine on its own. Together, they create a mess that nobody chose.
 
-Put those together and the pattern is clear: agents move work into the review and integration layer. The bottleneck does not disappear. It moves to the people and systems that decide how changes combine.
+This is why a high PR count can be misleading. The problem is not always code quality. It can be poor timing, unclear ownership, or too many agents working in the same area.
 
-## The repo needs a control plane
+Two other studies point in the same direction. [*Augmentation with Dilution*](https://arxiv.org/abs/2606.26289) studied 11,097 GitHub repositories from January 2023 to May 2026. After teams adopted AI agents, human participation made up less of the work. The share of newcomers dropped by 3.7 percentage points, and PRs received 5.3% more review.
 
-Traffic control sounds grand, but the practical version is boring.
+More code was being produced, but human understanding did not grow at the same rate.
 
-Agent platforms need to know which areas of a codebase are already claimed. A task should reserve a surface before it starts changing it. A second task touching the same surface should see the conflict early, not after both agents have spent tokens and created polished branches.
+A separate paper on [how agents write logs](https://arxiv.org/abs/2604.09409) found that humans made 72.5% of the log fixes that happened after generated code was added. The agent finished the patch, but people still had to repair many of its logging choices.
 
-Teams also need merge-order rules. A refactor branch should probably land before feature branches that depend on the old structure. A schema change should have a named owner and a narrow window. A test-generation task should know whether the implementation it is testing is stable or about to be replaced.
+Agents do not remove the work of reviewing and combining changes. They send more work there.
 
-This is not only a tooling problem. It is a management problem made visible in git.
+## What traffic control looks like
 
-Someone has to decide whether ten agent PRs represent ten independent improvements or one confused swarm around an underspecified goal. Someone has to kill overlapping work. Someone has to say, "this agent may update tests, but it may not create a new abstraction." Someone has to notice when the codebase is absorbing activity faster than it is absorbing intent.
+The practical version is simple.
 
-That person may be a tech lead, code owner, product engineer, or manager. The title matters less than the function: sequencing autonomous work before it turns into shared-state clutter.
+Before an agent starts, it should say what part of the code it plans to change and what outcome it is trying to reach. If another task already covers the same area, the system should flag the overlap early. A person can then combine the tasks, put one behind the other, or stop one of them.
 
-## Smaller PRs are not the whole answer
+Some work also has a clear order. A refactor should usually land before features that depend on the old structure. A database change should have one owner. Tests should not be written against code that another agent is about to replace.
 
-The obvious counterargument is that software teams already have tools for this. Use smaller PRs. Use merge queues. Use code owners. Use feature flags. Rebase often. Let CI catch the rest.
+Tools can spot the overlap, but they cannot make every decision. Someone still has to own the order of work.
 
-Yes. Those tools help. The July 6 paper measures textual conflict, not build conflict or semantic conflict, so we should not treat every conflict as a product failure. Some are trivial. Some are the ordinary cost of parallel development.
+That person may be a tech lead, code owner, product engineer, or manager. The title does not matter much. The job is to stop agents from creating work faster than the team can understand and combine it.
 
-But that is not enough to dismiss the thesis. Existing tools were designed around scarce human contributors who usually know what else is happening, or at least can be asked. Agents change the rate of attempted work. They also make it easier for one human to launch several branches whose interactions no single human has fully considered.
+## Smaller PRs are not enough
 
-Merge queues decide what can land. Agent traffic control has to decide what should be attempted at the same time.
+Teams already have useful tools: small PRs, merge queues, code owners, feature flags, frequent rebasing, and CI.
 
-That distinction matters. If two agents both try to improve onboarding, the problem is not only whether git can merge the files. The problem is whether the repo now contains two competing ideas of onboarding. If one agent deletes a helper while another builds on it, the problem is not only the conflict marker. It is that neither worker owned the architectural direction.
+They all help. The July 6 paper measures text conflicts, not build failures or product bugs. Some of those conflicts were probably easy to fix. Parallel development has always produced merge conflicts.
 
-## The useful metric is collision avoided
+But agents change how quickly new work can begin. One person can now launch several branches before thinking through how they fit together.
 
-The next serious agent platforms should not brag only about PR count. They should show collision avoided.
+A merge queue answers, "Can this PR land now?" Agent traffic control asks, "Should both of these jobs have started?"
 
-How often did the system detect overlapping work before branches diverged? How often did it route a task to wait behind a refactor? How often did it ask for a human decision because two agents wanted incompatible designs? How many agent PRs were killed early rather than polished into review burden?
+That question comes earlier, and it matters more. Two onboarding patches may merge cleanly while still giving the product two different ideas of onboarding. An agent may delete a helper while another builds a new feature on top of it. Git can show the conflict, but it cannot choose the direction.
 
-That last number may become a sign of maturity. A team that kills agent work early is not wasting less creativity. It is refusing to convert cheap action into expensive integration.
+## Count the work you avoid
 
-Here is the prediction worth tracking: by the end of 2027, mature agentic software teams will treat branch claiming, merge sequencing, and conflict budgets as first-class product infrastructure. The winning workflow will not be "ten agents, ten PRs, one tired reviewer." It will be a repo-level scheduler that knows when the right answer is not another patch.
+Agent platforms should report more than the number of PRs they create.
 
-The code still has to be good. But in a world of agent teammates, good code arriving in the wrong order is just another form of mess.
+They should show how often they caught overlapping work before code was written. How often did a task wait for a refactor? How often did two competing designs go to a human for a decision? How many PRs were stopped early instead of being polished and handed to a reviewer?
+
+Stopping agent work early can be a sign of a well-run system. Cheap code is not useful when it creates expensive cleanup.
+
+Here is the prediction: by the end of 2027, teams that use coding agents seriously will make task ownership, work order, and limits on overlapping changes part of their normal development process. The best setup will not be ten agents sending ten PRs to one tired reviewer. It will know when the right answer is to wait, combine the work, or not write another patch at all.

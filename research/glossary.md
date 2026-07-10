@@ -33,4 +33,4 @@ same PR as the post that introduced them. Rules of thumb:
 | skin in the game | 切身利益 | Keep English in parentheses on first mention. |
 | authorization bug | 授权漏洞 | Coined framing for agent scope failures; keep English in parentheses on first mention in zh. |
 | coordination debt | 协同债 | Coined in the "cheap agents create coordination debt" essay for the backlog of unresolved decisions created when action becomes cheaper than alignment; parallel to 技术债. |
-| agent traffic control | agent 交通管制 | Coined in the "Agent teammates need traffic control" essay for coordinating task scope, ownership, and merge order before concurrent agent work collides. |
+| agent traffic control | agent 交通管制 | Coined in the "Coding agents need traffic control" essay for coordinating task scope, ownership, and merge order before concurrent agent work collides. |
