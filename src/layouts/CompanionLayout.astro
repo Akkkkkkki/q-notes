@@ -1,0 +1,537 @@
+---
+// Shared shell for the Companion app surfaces (Today / Capture / Answer /
+// Publish). One place for: the head + fonts, the visual system, the bottom
+// tab bar with badges, the "connect this device" onboarding, the server
+// trouble banner, and the window.QN helpers (token, api, status, dictation,
+// badge counts). Pages supply their content in the default slot and their
+// logic in an inline script that uses QN. See docs/companion-vision.md.
+interface Props {
+  title: string;
+  tab: 'today' | 'capture' | 'answer' | 'publish';
+  lede?: string;
+}
+const { title, tab, lede } = Astro.props;
+
+const tabs = [
+  {
+    id: 'today',
+    href: '/flow/',
+    label: 'Today',
+    icon: 'M3 10.5 12 3l9 7.5 M5 9.5 V20 a1 1 0 0 0 1 1 h12 a1 1 0 0 0 1 -1 V9.5 M9.5 21 v-5.5 h5 V21',
+  },
+  {
+    id: 'capture',
+    href: '/capture/',
+    label: 'Capture',
+    icon: 'M12 3 a9 9 0 1 0 0 18 a9 9 0 1 0 0 -18 M12 8 v8 M8 12 h8',
+  },
+  {
+    id: 'answer',
+    href: '/interview/',
+    label: 'Answer',
+    icon: 'M21 11.5 a8.5 8.5 0 0 1 -8.5 8.5 c-1.2 0 -2.35 -.24 -3.4 -.68 L4 21 l1.68 -5.1 A8.5 8.5 0 1 1 21 11.5 z',
+  },
+  {
+    id: 'publish',
+    href: '/desk/',
+    label: 'Publish',
+    icon: 'M22 2 11 13 M22 2 l-7 20 -4 -9 -9 -4 z',
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>{title} — Q's Notes</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
+    <style is:global>
+      @font-face {
+        font-family: 'Geist Sans';
+        src: url('/fonts/Geist-Variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: swap;
+      }
+      :root {
+        --bg: #0a0a0a;
+        --surface: #161616;
+        --surface-2: #101010;
+        --border: #2c2c2c;
+        --border-soft: #1f1f1f;
+        --text: #f5f5f5;
+        --body: #c9c9c9;
+        --muted: #8a8a8a;
+        --dim: #5a5a5a;
+        --green: #7fc98b;
+        --green-border: #26402b;
+        --amber: #f0b45c;
+        --amber-border: #4a3a20;
+        --red: #e5484d;
+        --radius: 0.75rem;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      html { height: 100%; }
+      body {
+        font-family: 'Geist Sans', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        max-width: 40rem;
+        margin: 0 auto;
+        min-height: 100%;
+        padding: max(env(safe-area-inset-top), 0.9rem) 1rem
+          calc(4.6rem + max(env(safe-area-inset-bottom), 0.5rem));
+      }
+
+      /* ---- screen header ---- */
+      .screen-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-bottom: 0.3rem;
+      }
+      .screen-head h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+      #qn-status { font-size: 0.78rem; color: var(--muted); text-align: right; min-height: 1rem; }
+      .lede { font-size: 0.92rem; color: var(--muted); padding-bottom: 1rem; }
+
+      /* ---- bottom tab bar ---- */
+      #qn-tabs {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        background: rgba(10, 10, 10, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--border-soft);
+        padding: 0.3rem max(env(safe-area-inset-left), 0.5rem)
+          max(env(safe-area-inset-bottom), 0.3rem)
+          max(env(safe-area-inset-right), 0.5rem);
+      }
+      #qn-tabs a {
+        position: relative;
+        flex: 1;
+        max-width: 9.5rem;
+        min-height: 3.2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.68rem;
+        font-weight: 500;
+        border-radius: 0.6rem;
+      }
+      #qn-tabs a.here { color: var(--text); }
+      #qn-tabs svg { width: 1.45rem; height: 1.45rem; }
+      #qn-tabs .badge {
+        position: absolute;
+        top: 0.1rem;
+        left: calc(50% + 0.3rem);
+        min-width: 1.05rem;
+        height: 1.05rem;
+        padding: 0 0.28rem;
+        border-radius: 999px;
+        background: var(--red);
+        color: #fff;
+        font-size: 0.62rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #qn-tabs .badge[hidden] { display: none; }
+
+      /* ---- shared building blocks ---- */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.9rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.92rem;
+        color: var(--body);
+        overflow-wrap: anywhere;
+      }
+      .card.dim { color: #6a6a6a; }
+      button { font: inherit; cursor: pointer; }
+      button:disabled { opacity: 0.5; }
+      .btn-primary {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0a0a0a;
+        background: var(--text);
+        border: none;
+        border-radius: 0.6rem;
+        padding: 0.7rem 1.1rem;
+        min-height: 2.75rem;
+      }
+      .btn-primary.saved { background: #1f7a3d; color: #fff; }
+      .btn-ghost {
+        font-size: 0.9rem;
+        color: var(--body);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 0.6rem;
+        padding: 0.7rem 1rem;
+        min-height: 2.75rem;
+      }
+      .btn-danger { color: #d99; border-color: #3a2626; }
+      .btn-block { display: block; width: 100%; }
+      textarea, input[type='text'], input[type='password'], input:not([type]) {
+        width: 100%;
+        font: inherit;
+        font-size: 0.95rem;
+        color: inherit;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 0.6rem;
+        padding: 0.7rem;
+        outline: none;
+      }
+      textarea:focus, input:focus { border-color: #555; }
+      textarea { resize: vertical; }
+      .chip {
+        display: inline-block;
+        font-size: 0.72rem;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.05rem 0.5rem;
+        margin-right: 0.35rem;
+        vertical-align: 0.08em;
+      }
+      .chip.warn { color: var(--amber); border-color: var(--amber-border); }
+      .chip.ok { color: var(--green); border-color: var(--green-border); }
+      .stage { margin-bottom: 1.4rem; }
+      .stage > h2 {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 0.55rem;
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+      }
+      .stage > h2 .count {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0 0.5rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .stage > h2 .when {
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--dim);
+        margin-left: auto;
+        text-align: right;
+      }
+      .sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+      .state { font-size: 0.78rem; color: var(--muted); }
+      .fine { font-size: 0.72rem; color: var(--dim); }
+      .hint { padding-top: 1.25rem; font-size: 0.72rem; color: var(--dim); text-align: center; }
+      .mic-btn, .lang-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.6rem;
+        height: 2.6rem;
+        padding: 0;
+        font-size: 1.1rem;
+        line-height: 1;
+        color: var(--body);
+        background: #232323;
+        border: 1px solid #3a3a3a;
+        border-radius: 999px;
+      }
+      .lang-btn { font-size: 0.8rem; font-weight: 600; }
+      .mic-btn.on {
+        color: #fff;
+        background: #b3261e;
+        border-color: #b3261e;
+        animation: qn-pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes qn-pulse { 50% { box-shadow: 0 0 0 0.35rem rgba(179, 38, 30, 0.25); } }
+
+      /* ---- server trouble banner ---- */
+      #qn-config {
+        background: #2a1215;
+        border: 1px solid #5c2328;
+        border-radius: var(--radius);
+        padding: 0.8rem 0.9rem;
+        font-size: 0.88rem;
+        color: #f0c0c4;
+        margin-bottom: 1rem;
+      }
+      #qn-config a { color: #f0c0c4; }
+      #qn-config code { font-family: ui-monospace, monospace; font-size: 0.8rem; }
+      #qn-config details { margin-top: 0.5rem; }
+      #qn-config summary { cursor: pointer; font-size: 0.8rem; color: #c99; }
+      #qn-config .ops { display: block; margin-top: 0.45rem; font-size: 0.78rem; color: #c99; }
+
+      /* ---- connect this device ---- */
+      #qn-connect {
+        background: var(--surface);
+        border: 1px solid #3a3a3a;
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+      #qn-connect h2 { font-size: 1rem; font-weight: 650; margin-bottom: 0.35rem; }
+      #qn-connect p { font-size: 0.88rem; color: var(--body); margin-bottom: 0.7rem; }
+      #qn-connect .row { display: flex; gap: 0.5rem; }
+      #qn-connect .row input { flex: 1; min-width: 0; }
+      #qn-connect .fine { margin-top: 0.6rem; }
+      #qn-connect .fine code { font-family: ui-monospace, monospace; font-size: 0.7rem; }
+    </style>
+    <script is:inline>
+      // Shared Companion helpers. Defined in <head>-order before any page
+      // script; functions that touch the DOM run at call time, when the shell
+      // elements above the page slot already exist.
+      window.QN = (() => {
+        const TOKEN_KEY = 'qn-capture-token';
+        const LANG_KEY = 'qn-capture-lang';
+        const FLOW_KEY = 'qn-flow-cache';
+        const FLOW_TTL = 5 * 60 * 1000;
+
+        const $ = (id) => document.getElementById(id);
+        const getToken = () => localStorage.getItem(TOKEN_KEY) || '';
+        const setStatus = (msg) => { $('qn-status').textContent = msg; };
+        // Page scripts run mid-parse, before shell elements that sit below the
+        // page content exist — defer those DOM touches until the DOM is ready.
+        const whenReady = (fn) => {
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+          else fn();
+        };
+
+        function needToken() {
+          whenReady(() => {
+            $('qn-connect').hidden = false;
+            if (!$('qn-status').textContent) setStatus('not connected');
+          });
+        }
+
+        function showConfig(secrets) { whenReady(() => showConfigNow(secrets)); }
+        function showConfigNow(secrets) {
+          const missing = ['GITHUB_TOKEN', 'CAPTURE_TOKEN'].filter((k) => !(secrets || {})[k]);
+          if (missing.length) {
+            $('qn-config-detail').innerHTML =
+              'The Worker is missing <code>' + missing.join('</code> and <code>') + '</code>. ' +
+              'Re-pasting your key on this phone cannot fix it — re-add ' +
+              (missing.length > 1 ? 'them' : 'it') + ' on Cloudflare as type <em>Secret</em> ' +
+              '(<code>npx wrangler secret put …</code>), see ' +
+              '<a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.';
+          }
+          $('qn-config').hidden = false;
+          $('qn-connect').hidden = true;
+        }
+
+        async function api(path, body) {
+          const res = await fetch(path, {
+            method: body === undefined ? 'GET' : 'POST',
+            headers: {
+              Authorization: 'Bearer ' + getToken(),
+              ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+            },
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+          });
+          if (res.status === 401) { needToken(); throw Object.assign(new Error('unauthorized'), { unauthorized: true }); }
+          // 503 = the Worker lost its secrets — a server problem, not a key problem.
+          if (res.status === 503) { showConfig({}); throw Object.assign(new Error('server-config'), { serverError: true, config: true }); }
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw Object.assign(new Error(data.error || 'request failed (' + res.status + ')'), { serverError: true, status: res.status });
+          }
+          return res.json();
+        }
+
+        function el(tag, className, text) {
+          const node = document.createElement(tag);
+          if (className) node.className = className;
+          if (text !== undefined) node.textContent = text;
+          return node;
+        }
+
+        const localDate = () => {
+          const d = new Date();
+          return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+
+        // ---- dictation (Web Speech API; buttons only appear where supported,
+        // so no broken control ever shows — OS keyboard dictation still works
+        // everywhere as the fallback) ----
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const getDictLang = () => localStorage.getItem(LANG_KEY)
+          || ((navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US');
+        let activeRec = null;
+        function attachDictation(textarea, onState) {
+          if (!SR) return null;
+          const rec = new SR();
+          rec.continuous = true;
+          rec.interimResults = true;
+          let listening = false;
+          let base = '';
+          const mic = el('button', 'mic-btn', '🎙');
+          mic.type = 'button';
+          mic.setAttribute('aria-label', 'Dictate');
+          const lang = el('button', 'lang-btn');
+          lang.type = 'button';
+          lang.setAttribute('aria-label', 'Dictation language');
+          const renderLang = () => { lang.textContent = getDictLang().startsWith('zh') ? '中' : 'EN'; };
+          renderLang();
+          lang.addEventListener('click', () => {
+            localStorage.setItem(LANG_KEY, getDictLang().startsWith('zh') ? 'en-US' : 'zh-CN');
+            renderLang();
+            if (listening) rec.stop();
+          });
+          rec.addEventListener('result', (e) => {
+            let interim = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              const t = e.results[i][0].transcript;
+              if (e.results[i].isFinal) base = (base + ' ' + t).trim();
+              else interim += t;
+            }
+            textarea.value = (base + ' ' + interim).trim();
+          });
+          const stopUi = () => {
+            listening = false;
+            mic.classList.remove('on');
+            if (onState) onState(false);
+          };
+          rec.addEventListener('end', stopUi);
+          rec.addEventListener('error', stopUi);
+          mic.addEventListener('click', () => {
+            if (listening) { rec.stop(); return; }
+            if (activeRec && activeRec !== rec) { try { activeRec.stop(); } catch {} }
+            base = textarea.value.trim();
+            rec.lang = getDictLang();
+            try {
+              rec.start();
+              activeRec = rec;
+              listening = true;
+              mic.classList.add('on');
+              if (onState) onState(true);
+            } catch { /* start() throws if already running — ignore */ }
+          });
+          return { mic, lang };
+        }
+
+        // ---- tab badges, fed by /api/flow (cached so Capture stays fast) ----
+        async function flowData(force) {
+          if (!getToken()) return null;
+          if (!force) {
+            try {
+              const c = JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null');
+              if (c && Date.now() - c.t < FLOW_TTL) return c.data;
+            } catch { /* fall through to a fresh fetch */ }
+          }
+          const data = await api('/api/flow');
+          try { sessionStorage.setItem(FLOW_KEY, JSON.stringify({ t: Date.now(), data })); } catch {}
+          return data;
+        }
+
+        function applyBadges(flow) {
+          if (!flow) return;
+          const set = (tabId, n) => {
+            const b = document.querySelector('#qn-tabs a[data-tab="' + tabId + '"] .badge');
+            if (!b) return;
+            b.textContent = n > 9 ? '9+' : String(n);
+            b.hidden = !n;
+          };
+          set('today', flow.needsYou.filter((i) => i.urgency === 'now').length);
+          set('answer', flow.interview ? Math.max(flow.interview.total - flow.interview.answered, 0) : 0);
+          set('publish', flow.desk.length);
+        }
+
+        function refreshBadges(force) {
+          flowData(force).then(applyBadges).catch(() => { /* badges are decoration, never a blocker */ });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+          $('qn-token-save').addEventListener('click', () => {
+            const v = $('qn-token').value.trim();
+            if (!v) return;
+            localStorage.setItem(TOKEN_KEY, v);
+            location.reload();
+          });
+          $('qn-token').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') $('qn-token-save').click();
+          });
+          if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
+          // Non-blocking health probe: if the Worker lost its secrets, say so
+          // up front instead of letting the next action fail confusingly.
+          fetch('/api/health').then((r) => r.json())
+            .then((h) => { if (!h.ok) showConfig(h.secrets || {}); })
+            .catch(() => {});
+          refreshBadges(false);
+        });
+
+        return { $, getToken, setStatus, needToken, showConfig, api, el, localDate, attachDictation, flowData, applyBadges, refreshBadges };
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="screen-head">
+      <h1>{title}</h1>
+      <span id="qn-status"></span>
+    </header>
+    {lede && <p class="lede">{lede}</p>}
+
+    <div id="qn-config" hidden>
+      <strong>The notebook server needs attention</strong> — nothing can load or save
+      right now. Anything you capture stays safe on this phone and syncs once it's fixed.
+      <details>
+        <summary>How to fix it (2 minutes, on a computer)</summary>
+        <span class="ops" id="qn-config-detail">The Worker lost its secrets. Re-add them on
+        Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
+        <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.</span>
+      </details>
+    </div>
+
+    <slot />
+
+    <section id="qn-connect" hidden>
+      <h2>Connect this phone</h2>
+      <p>Paste your access key once. It's stored only on this device and unlocks
+        loading and saving on every screen.</p>
+      <div class="row">
+        <input id="qn-token" type="password" autocomplete="off" placeholder="Access key" />
+        <button id="qn-token-save" class="btn-primary">Connect</button>
+      </div>
+      <p class="fine">The key is the Worker's <code>CAPTURE_TOKEN</code> secret. Lost it?
+        Set a fresh one with <code>npx wrangler secret put CAPTURE_TOKEN</code> and paste
+        it here.</p>
+    </section>
+
+    <nav id="qn-tabs" aria-label="App sections">
+      {tabs.map((t) => (
+        <a href={t.href} class={t.id === tab ? 'here' : undefined} data-tab={t.id}
+          aria-current={t.id === tab ? 'page' : undefined}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d={t.icon} />
+          </svg>
+          <span>{t.label}</span>
+          <span class="badge" hidden></span>
+        </a>
+      ))}
+    </nav>
+  </body>
+</html>

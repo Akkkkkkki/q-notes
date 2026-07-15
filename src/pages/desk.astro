@@ -1,461 +1,327 @@
 ---
-// Companion Phase 3 — Desk. "Ship from the couch."
-// One card per open content PR: the ship gate's verdict, the rendered
-// branch preview, the voice panel (verbatim spine + keep/cut flags), and
-// Ship / One change / Downgrade / Kill. Tapping Ship offers the two
-// author-owned slots — title and last line — both skippable in one tap.
-// See docs/companion-vision.md §3.3.
+// Publish — "ship from the couch" (vision §3.3).
+// One card per draft waiting as an open content PR: a plain-language status,
+// a big "read it" preview button, the voice panel (your words kept +
+// keep/cut flags), and Publish / Ask for one change / Make it a note /
+// Discard. Publishing offers the two author-owned slots — title and last
+// line — both skippable in one tap.
+import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <title>Desk — Q's Notes</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
-    <style>
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('/fonts/Geist-Variable.woff2') format('woff2');
-        font-weight: 100 900;
-        font-display: swap;
-      }
-      * { box-sizing: border-box; margin: 0; }
-      body {
-        font-family: 'Geist Sans', system-ui, sans-serif;
-        background: #0a0a0a;
-        color: #f5f5f5;
-        padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 2rem);
-        max-width: 40rem;
-        margin: 0 auto;
-        line-height: 1.5;
-      }
-      header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        padding-bottom: 1rem;
-      }
-      nav a { color: #8a8a8a; text-decoration: none; font-size: 0.85rem; }
-      nav a.here { color: #f5f5f5; font-weight: 600; }
-      nav a + a { margin-left: 0.9rem; }
-      #status { font-size: 0.8rem; color: #8a8a8a; }
-      .card {
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.75rem;
-        padding: 0.9rem;
-        margin-bottom: 0.9rem;
-      }
-      .card h2 { font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; }
-      .meta { font-size: 0.75rem; color: #8a8a8a; margin: 0.3rem 0 0.6rem; }
-      .meta .chip {
-        display: inline-block;
-        border: 1px solid #2c2c2c;
-        border-radius: 999px;
-        padding: 0.05rem 0.5rem;
-        margin-right: 0.35rem;
-      }
-      .verdict {
-        font-size: 0.88rem;
-        color: #c9c9c9;
-        background: #131313;
-        border: 1px solid #242424;
-        border-radius: 0.5rem;
-        padding: 0.6rem 0.7rem;
-        margin-bottom: 0.7rem;
-        white-space: pre-wrap;
-        max-height: 14rem;
-        overflow-y: auto;
-      }
-      .verdict.none { color: #8a8a8a; font-style: italic; }
-      .preview {
-        display: inline-block;
-        font-size: 0.85rem;
-        color: #9ecbff;
-        text-decoration: none;
-        margin-bottom: 0.7rem;
-      }
-      .voice { margin-bottom: 0.7rem; }
-      .voice h3 { font-size: 0.78rem; font-weight: 600; color: #8a8a8a; margin-bottom: 0.3rem; }
-      .voice .spine li { font-size: 0.85rem; color: #c9c9c9; }
-      .voice ul { padding-left: 1.1rem; margin-bottom: 0.4rem; }
-      .flag {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        font-size: 0.85rem;
-        background: #1a1612;
-        border: 1px solid #3a3226;
-        border-radius: 0.5rem;
-        padding: 0.45rem 0.6rem;
-        margin-bottom: 0.4rem;
-      }
-      .flag span { flex: 1; }
-      .flag button {
-        font: inherit;
-        font-size: 0.78rem;
-        font-weight: 600;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.4rem;
-        background: transparent;
-        color: #c9c9c9;
-        padding: 0.25rem 0.6rem;
-        cursor: pointer;
-      }
-      .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
-      button.primary {
-        font: inherit;
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        background: #f5f5f5;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-      }
-      button.ghost {
-        font: inherit;
-        font-size: 0.85rem;
-        color: #c9c9c9;
-        background: transparent;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.9rem;
-        cursor: pointer;
-      }
-      button.danger { color: #d99; border-color: #3a2626; }
-      button:disabled { opacity: 0.5; }
-      .panel {
-        border-top: 1px solid #242424;
-        margin-top: 0.7rem;
-        padding-top: 0.7rem;
-      }
-      .panel label { font-size: 0.78rem; color: #8a8a8a; display: block; margin: 0.5rem 0 0.25rem; }
-      .panel textarea, .panel input {
-        width: 100%;
-        font: inherit;
-        font-size: 0.92rem;
-        color: inherit;
-        background: #101010;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.55rem;
-        outline: none;
-      }
-      .panel textarea { min-height: 4rem; resize: vertical; }
-      .panel textarea:focus, .panel input:focus { border-color: #555; }
-      .options button {
-        display: block;
-        width: 100%;
-        text-align: left;
-        font: inherit;
-        font-size: 0.85rem;
-        color: #c9c9c9;
-        background: #101010;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.45rem 0.6rem;
-        margin-bottom: 0.35rem;
-        cursor: pointer;
-      }
-      .options button.picked { border-color: #f5f5f5; color: #f5f5f5; }
-      .state { font-size: 0.78rem; color: #8a8a8a; }
-      #empty { color: #8a8a8a; font-size: 0.92rem; padding: 1.5rem 0; }
-      #token-row { margin-top: 1rem; display: none; }
-      #token-row.visible { display: block; }
-      #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
-      #token {
-        width: 100%;
-        font: inherit;
-        font-size: 0.9rem;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.6rem;
-        outline: none;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/flow/">Flow</a>
-        <a href="/capture/">Capture</a>
-        <a href="/interview/">Interview</a>
-        <a href="/desk/" class="here">Desk</a>
-      </nav>
-      <span id="status"></span>
-    </header>
+<CompanionLayout
+  title="Publish"
+  tab="publish"
+  lede="Drafts waiting for your OK. Read each one as a normal page, then publish it, ask for one change, or let it go."
+>
+  <style is:global>
+    .draft h2 { font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; color: var(--text); }
+    .meta { font-size: 0.75rem; color: var(--muted); margin: 0.3rem 0 0.6rem; }
+    .status-line {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 0.55rem;
+    }
+    .status-line .dot { flex: 0 0 auto; width: 0.55rem; height: 0.55rem; border-radius: 999px; position: relative; top: -0.05rem; }
+    .status-line.ready { color: var(--green); }
+    .status-line.ready .dot { background: var(--green); }
+    .status-line.attention { color: var(--amber); }
+    .status-line.attention .dot { background: var(--amber); }
+    .status-line.none { color: var(--muted); font-weight: 500; }
+    .status-line.none .dot { background: var(--dim); }
+    .verdict-details { margin-bottom: 0.7rem; }
+    .verdict-details summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); }
+    .verdict {
+      font-size: 0.85rem;
+      color: var(--body);
+      background: #131313;
+      border: 1px solid #242424;
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.7rem;
+      margin-top: 0.45rem;
+      white-space: pre-wrap;
+      max-height: 14rem;
+      overflow-y: auto;
+    }
+    .preview { margin-bottom: 0.7rem; text-align: center; text-decoration: none; }
+    .voice { margin-bottom: 0.7rem; }
+    .voice h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.3rem; }
+    .voice .spine li { font-size: 0.85rem; color: var(--body); }
+    .voice ul { padding-left: 1.1rem; margin-bottom: 0.4rem; }
+    .flag {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      font-size: 0.85rem;
+      background: #1a1612;
+      border: 1px solid #3a3226;
+      border-radius: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    .flag span { flex: 1; }
+    .flag button {
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 0.4rem;
+      background: transparent;
+      color: var(--body);
+      padding: 0.35rem 0.7rem;
+      min-height: 2.1rem;
+    }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    .panel { border-top: 1px solid #242424; margin-top: 0.7rem; padding-top: 0.7rem; }
+    .panel .panel-lede { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .panel label { font-size: 0.78rem; color: var(--muted); display: block; margin: 0.5rem 0 0.25rem; }
+    .panel textarea { min-height: 4rem; }
+    .options button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      font-size: 0.85rem;
+      color: var(--body);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.55rem 0.7rem;
+      margin-bottom: 0.35rem;
+    }
+    .options button.picked { border-color: var(--text); color: var(--text); }
+  </style>
 
-    <div id="config-banner" style="display:none; background:#2a1215; border:1px solid #5c2328; border-radius:0.75rem; padding:0.8rem 0.9rem; font-size:0.85rem; color:#f0c0c4; margin-bottom:1rem;">
-      <strong>The server lost its secrets</strong> — the Worker is missing
-      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code>, so it rejects everything.
-      Re-pasting your token on this phone cannot fix it: re-add both on Cloudflare as type
-      <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
-      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener" style="color:#f0c0c4">the runbook</a>.
-    </div>
+  <main id="cards"></main>
+  <p id="empty" class="card dim" hidden></p>
 
-    <div id="token-row">
-      <label for="token">Capture token (stored on this device only)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="paste CAPTURE_TOKEN, then reload" />
-      <button id="token-save" class="primary" style="margin-top:0.5rem">Save token</button>
-    </div>
+  <p class="hint">Publishing merges the draft and it goes live in minutes · letting one go is a valid outcome</p>
 
-    <main id="cards"></main>
-    <p id="empty" hidden></p>
+  <script is:inline>
+    const { $, api, el, getToken, setStatus, needToken, refreshBadges } = QN;
 
-    <script is:inline>
-      const $ = (id) => document.getElementById(id);
-      const TOKEN_KEY = 'qn-capture-token';
-      const statusEl = $('status');
+    function showEmpty(msg) {
+      $('empty').textContent = msg;
+      $('empty').hidden = false;
+    }
 
-      function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
-      function setStatus(msg) { statusEl.textContent = msg; }
-      function needToken() {
-        $('token-row').classList.add('visible');
-        setStatus('token needed');
-      }
-      function showConfig() {
-        $('config-banner').style.display = 'block';
-        $('token-row').classList.remove('visible');
+    function statusFor(verdict) {
+      if (!verdict) return { cls: 'none', label: 'Not checked yet — the editor check runs Friday morning' };
+      if (/ready to ship/i.test(verdict)) return { cls: 'ready', label: 'Ready to publish' };
+      if (/needs your call/i.test(verdict)) return { cls: 'attention', label: 'Needs your call' };
+      return { cls: 'attention', label: 'Checked — see what the editor said' };
+    }
+
+    function renderCard(pr) {
+      const card = el('section', 'card draft');
+      card.appendChild(el('h2', '', pr.title));
+
+      const meta = el('p', 'meta');
+      meta.appendChild(el('span', 'chip', '#' + pr.number));
+      if (pr.tier) meta.appendChild(el('span', 'chip', pr.tier));
+      meta.appendChild(el('span', 'chip', 'waiting ' + pr.ageDays + 'd'));
+      card.appendChild(meta);
+
+      const st = statusFor(pr.verdict);
+      const statusLine = el('div', 'status-line ' + st.cls);
+      statusLine.appendChild(el('span', 'dot'));
+      statusLine.appendChild(el('span', '', st.label));
+      card.appendChild(statusLine);
+
+      if (pr.verdict) {
+        const details = el('details', 'verdict-details');
+        details.appendChild(el('summary', '', 'What the editor check said'));
+        details.appendChild(el('div', 'verdict', pr.verdict));
+        card.appendChild(details);
       }
 
-      async function api(path, body) {
-        const res = await fetch(path, {
-          method: body === undefined ? 'GET' : 'POST',
-          headers: {
-            Authorization: 'Bearer ' + getToken(),
-            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-          },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
-        });
-        if (res.status === 401) { needToken(); throw new Error('unauthorized'); }
-        // Worker lost its secrets — a Cloudflare problem, not a token problem.
-        if (res.status === 503) { showConfig(); throw new Error('server-config'); }
-        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed (' + res.status + ')');
-        return res.json();
-      }
+      const preview = el('a', 'btn-ghost btn-block preview',
+        pr.previewUrl ? 'Read it — the real page, not a diff →' : 'Open the draft on GitHub →');
+      preview.href = pr.previewUrl || pr.url;
+      preview.target = '_blank';
+      preview.rel = 'noopener';
+      card.appendChild(preview);
 
-      function el(tag, className, text) {
-        const node = document.createElement(tag);
-        if (className) node.className = className;
-        if (text !== undefined) node.textContent = text;
-        return node;
-      }
-
-      function showEmpty(msg) {
-        $('empty').textContent = msg;
-        $('empty').hidden = false;
-      }
-
-      function renderCard(pr) {
-        const card = el('section', 'card');
-        card.appendChild(el('h2', '', pr.title));
-
-        const meta = el('p', 'meta');
-        meta.appendChild(el('span', 'chip', '#' + pr.number));
-        if (pr.tier) meta.appendChild(el('span', 'chip', pr.tier));
-        meta.appendChild(el('span', 'chip', pr.ageDays + 'd open'));
-        card.appendChild(meta);
-
-        const verdict = el('div', 'verdict' + (pr.verdict ? '' : ' none'));
-        verdict.textContent = pr.verdict || 'No ship-gate verdict yet — the gate runs Friday 08:00.';
-        card.appendChild(verdict);
-
-        const preview = el('a', 'preview', pr.previewUrl ? 'Read the preview →' : 'Open the PR →');
-        preview.href = pr.previewUrl || pr.url;
-        preview.target = '_blank';
-        preview.rel = 'noopener';
-        card.appendChild(preview);
-
-        if (pr.voice.spine.length || pr.voice.flags.length) {
-          const voice = el('div', 'voice');
-          if (pr.voice.spine.length) {
-            voice.appendChild(el('h3', '', 'Your words, kept'));
-            const ul = el('ul', 'spine');
-            for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
-            voice.appendChild(ul);
+      if (pr.voice.spine.length || pr.voice.flags.length) {
+        const voice = el('div', 'voice');
+        if (pr.voice.spine.length) {
+          voice.appendChild(el('h3', '', 'Your words, kept'));
+          const ul = el('ul', 'spine');
+          for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
+          voice.appendChild(ul);
+        }
+        for (const flag of pr.voice.flags) {
+          const row = el('div', 'flag');
+          row.appendChild(el('span', '', 'The draft says “' + flag + '” — is that yours?'));
+          for (const [decision, label] of [['keep', 'Keep'], ['cut', 'Cut']]) {
+            const b = el('button', '', label);
+            b.addEventListener('click', async () => {
+              b.disabled = true;
+              try {
+                await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
+                row.replaceChildren(el('span', '', '“' + flag + '” — ' + decision + ' ✓'));
+              } catch (e) { b.disabled = false; setStatus('didn’t send — try again'); }
+            });
+            row.appendChild(b);
           }
-          for (const flag of pr.voice.flags) {
-            const row = el('div', 'flag');
-            row.appendChild(el('span', '', 'Says “' + flag + '” — yours?'));
-            for (const decision of ['keep', 'cut']) {
-              const b = el('button', '', decision);
-              b.addEventListener('click', async () => {
-                b.disabled = true;
-                try {
-                  await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
-                  row.replaceChildren(el('span', '', '“' + flag + '” — ' + decision + ' ✓'));
-                } catch (e) { b.disabled = false; setStatus('failed'); }
-              });
-              row.appendChild(b);
-            }
-            voice.appendChild(row);
-          }
-          card.appendChild(voice);
+          voice.appendChild(row);
         }
-
-        const actions = el('div', 'actions');
-        const panel = el('div', 'panel');
-        panel.hidden = true;
-        let openPanel = null;
-
-        function togglePanel(name, build) {
-          if (openPanel === name) { panel.hidden = true; openPanel = null; return; }
-          openPanel = name;
-          panel.hidden = false;
-          panel.replaceChildren();
-          build(panel);
-        }
-
-        const ship = el('button', 'primary', 'Ship');
-        ship.addEventListener('click', () => togglePanel('ship', buildShipPanel));
-        const oneChange = el('button', 'ghost', 'One change');
-        oneChange.addEventListener('click', () => togglePanel('change', buildChangePanel));
-        const downgrade = el('button', 'ghost', 'Downgrade to note');
-        downgrade.addEventListener('click', async () => {
-          if (!confirm('Ask the next run to downgrade this to a Note?')) return;
-          downgrade.disabled = true;
-          try {
-            await api('/api/desk/comment', { number: pr.number, kind: 'downgrade' });
-            downgrade.textContent = 'Downgrade requested ✓';
-          } catch (e) { downgrade.disabled = false; setStatus('failed'); }
-        });
-        const kill = el('button', 'ghost danger', 'Kill');
-        kill.addEventListener('click', async () => {
-          if (!confirm('Close this PR for good? Killed is a valid outcome.')) return;
-          kill.disabled = true;
-          try {
-            await api('/api/desk/kill', { number: pr.number });
-            card.remove();
-          } catch (e) { kill.disabled = false; setStatus('failed'); }
-        });
-        actions.append(ship, oneChange, downgrade, kill);
-        card.appendChild(actions);
-        card.appendChild(panel);
-
-        // Ship panel: the two author-owned slots, both skippable in one tap —
-        // "Ship now" with everything blank merges with the drafter's defaults.
-        function buildShipPanel(panel) {
-          const slots = []; // one row per content file: { path, titleInput, lineInput }
-          for (const entry of pr.lastLines.length ? pr.lastLines : pr.contentFiles.map((p) => ({ path: p, text: '' }))) {
-            panel.appendChild(el('label', '', entry.path));
-
-            if (pr.titleOptions.length) {
-              const opts = el('div', 'options');
-              panel.appendChild(opts);
-              for (const option of pr.titleOptions) {
-                const b = el('button', '', option);
-                b.addEventListener('click', () => {
-                  titleInput.value = titleInput.value === option ? '' : option;
-                  for (const sib of opts.children) sib.classList.toggle('picked', sib === b && titleInput.value === option);
-                });
-                opts.appendChild(b);
-              }
-            }
-            const titleInput = el('input');
-            titleInput.placeholder = 'Title — leave blank to keep the drafter’s';
-            panel.appendChild(titleInput);
-
-            panel.appendChild(el('label', '', entry.text ? 'Last line (currently: “' + entry.text.slice(0, 120) + (entry.text.length > 120 ? '…' : '') + '”)' : 'Last line'));
-            const lineInput = el('textarea');
-            lineInput.placeholder = 'Dictate a replacement last line — or leave blank to keep it';
-            panel.appendChild(lineInput);
-            slots.push({ path: entry.path, titleInput, lineInput });
-          }
-
-          const go = el('button', 'primary', 'Ship now');
-          go.style.marginTop = '0.6rem';
-          const state = el('span', 'state');
-          state.style.marginLeft = '0.5rem';
-          go.addEventListener('click', async () => {
-            go.disabled = true;
-            try {
-              for (const slot of slots) {
-                const title = slot.titleInput.value.trim();
-                const lastLine = slot.lineInput.value.trim();
-                if (!title && !lastLine) continue;
-                state.textContent = 'applying slots…';
-                await api('/api/desk/slots', { number: pr.number, path: slot.path, title, lastLine });
-              }
-              state.textContent = 'merging…';
-              await api('/api/desk/ship', { number: pr.number });
-              card.replaceChildren(el('h2', '', pr.title), el('p', 'meta', 'Shipped ✓ — live on the next deploy.'));
-            } catch (e) {
-              go.disabled = false;
-              state.textContent = e.message === 'unauthorized' ? 'token needed' : e.message;
-            }
-          });
-          panel.append(go, state);
-        }
-
-        function buildChangePanel(panel) {
-          panel.appendChild(el('label', '', 'The one change (the next drafter/gate run acts on it)'));
-          const ta = el('textarea');
-          ta.placeholder = 'Dictate or type one sentence…';
-          panel.appendChild(ta);
-          const send = el('button', 'primary', 'Send');
-          send.style.marginTop = '0.6rem';
-          send.addEventListener('click', async () => {
-            const text = ta.value.trim();
-            if (!text) return;
-            send.disabled = true;
-            try {
-              await api('/api/desk/comment', { number: pr.number, kind: 'one-change', text });
-              panel.replaceChildren(el('span', 'state', 'sent ✓'));
-            } catch (e) { send.disabled = false; setStatus('failed'); }
-          });
-          panel.appendChild(send);
-        }
-
-        return card;
+        card.appendChild(voice);
       }
 
-      $('token-save').addEventListener('click', () => {
-        const v = $('token').value.trim();
-        if (!v) return;
-        localStorage.setItem(TOKEN_KEY, v);
-        $('token').value = '';
-        $('token-row').classList.remove('visible');
-        load();
-      });
+      const actions = el('div', 'actions');
+      const panel = el('div', 'panel');
+      panel.hidden = true;
+      let openPanel = null;
 
-      async function load() {
-        if (!getToken()) { needToken(); return; }
-        setStatus('loading…');
+      function togglePanel(name, build) {
+        if (openPanel === name) { panel.hidden = true; openPanel = null; return; }
+        openPanel = name;
+        panel.hidden = false;
+        panel.replaceChildren();
+        build(panel);
+      }
+
+      const ship = el('button', 'btn-primary', 'Publish');
+      ship.addEventListener('click', () => togglePanel('ship', buildShipPanel));
+      const oneChange = el('button', 'btn-ghost', 'Ask for one change');
+      oneChange.addEventListener('click', () => togglePanel('change', buildChangePanel));
+      const downgrade = el('button', 'btn-ghost', 'Make it a note');
+      downgrade.addEventListener('click', async () => {
+        if (!confirm('Ask the pipeline to shrink this into a short note instead of a full post?')) return;
+        downgrade.disabled = true;
         try {
-          const { prs } = await api('/api/desk');
-          setStatus('');
-          const cards = $('cards');
-          cards.replaceChildren();
-          if (!prs.length) {
-            showEmpty('Nothing on the desk — no open content PRs. The drafter runs Thursday.');
-            return;
+          await api('/api/desk/comment', { number: pr.number, kind: 'downgrade' });
+          downgrade.textContent = 'Note requested ✓';
+        } catch (e) { downgrade.disabled = false; setStatus('didn’t send — try again'); }
+      });
+      const kill = el('button', 'btn-ghost btn-danger', 'Discard');
+      kill.addEventListener('click', async () => {
+        if (!confirm('Discard this draft for good? Letting one go is a valid outcome.')) return;
+        kill.disabled = true;
+        try {
+          await api('/api/desk/kill', { number: pr.number });
+          card.remove();
+          refreshBadges(true);
+        } catch (e) { kill.disabled = false; setStatus('didn’t work — try again'); }
+      });
+      actions.append(ship, oneChange, downgrade, kill);
+      card.appendChild(actions);
+      card.appendChild(panel);
+
+      // Publish panel: the two author-owned touches, both optional —
+      // "Publish now" with everything blank ships the draft exactly as-is.
+      function buildShipPanel(panel) {
+        panel.appendChild(el('p', 'panel-lede',
+          'Two optional touches before it goes live. Leave both blank and it publishes exactly as written.'));
+        const slots = []; // one row per content file: { path, titleInput, lineInput }
+        for (const entry of pr.lastLines.length ? pr.lastLines : pr.contentFiles.map((p) => ({ path: p, text: '' }))) {
+          panel.appendChild(el('label', '', entry.path));
+
+          if (pr.titleOptions.length) {
+            const opts = el('div', 'options');
+            panel.appendChild(opts);
+            for (const option of pr.titleOptions) {
+              const b = el('button', '', option);
+              b.addEventListener('click', () => {
+                titleInput.value = titleInput.value === option ? '' : option;
+                for (const sib of opts.children) sib.classList.toggle('picked', sib === b && titleInput.value === option);
+              });
+              opts.appendChild(b);
+            }
           }
-          $('empty').hidden = true;
-          for (const pr of prs) cards.appendChild(renderCard(pr));
-        } catch (e) {
-          if (e.message === 'unauthorized') {
-            // needToken() already opened the token row.
-          } else if (e.message === 'server-config') {
-            showEmpty('The desk can’t load until the Worker secrets are restored (see above).');
-          } else {
-            showEmpty('Couldn’t load the desk: ' + e.message);
-          }
-          setStatus('');
+          const titleInput = el('input');
+          titleInput.placeholder = 'Your title — blank keeps the draft’s';
+          panel.appendChild(titleInput);
+
+          panel.appendChild(el('label', '', entry.text
+            ? 'Last line (currently: “' + entry.text.slice(0, 120) + (entry.text.length > 120 ? '…' : '') + '”)'
+            : 'Last line'));
+          const lineInput = el('textarea');
+          lineInput.placeholder = 'Dictate a replacement last line — blank keeps it';
+          panel.appendChild(lineInput);
+          slots.push({ path: entry.path, titleInput, lineInput });
         }
+
+        const go = el('button', 'btn-primary', 'Publish now');
+        go.style.marginTop = '0.6rem';
+        const state = el('span', 'state');
+        state.style.marginLeft = '0.5rem';
+        go.addEventListener('click', async () => {
+          go.disabled = true;
+          try {
+            for (const slot of slots) {
+              const title = slot.titleInput.value.trim();
+              const lastLine = slot.lineInput.value.trim();
+              if (!title && !lastLine) continue;
+              state.textContent = 'applying your touches…';
+              await api('/api/desk/slots', { number: pr.number, path: slot.path, title, lastLine });
+            }
+            state.textContent = 'publishing…';
+            await api('/api/desk/ship', { number: pr.number });
+            card.replaceChildren(el('h2', '', pr.title), el('p', 'meta', 'Published ✓ — live on the site in a few minutes.'));
+            refreshBadges(true);
+          } catch (e) {
+            go.disabled = false;
+            state.textContent = e.unauthorized ? 'connect below first' : e.message;
+          }
+        });
+        panel.append(go, state);
       }
 
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
-      load();
-    </script>
-  </body>
-</html>
+      function buildChangePanel(panel) {
+        panel.appendChild(el('p', 'panel-lede',
+          'One sentence on what to change — the pipeline redrafts around it on its next pass.'));
+        const ta = el('textarea');
+        ta.placeholder = 'Dictate or type the one change…';
+        panel.appendChild(ta);
+        const send = el('button', 'btn-primary', 'Send');
+        send.style.marginTop = '0.6rem';
+        send.addEventListener('click', async () => {
+          const text = ta.value.trim();
+          if (!text) return;
+          send.disabled = true;
+          try {
+            await api('/api/desk/comment', { number: pr.number, kind: 'one-change', text });
+            panel.replaceChildren(el('span', 'state', 'sent ✓ — the next pass acts on it'));
+          } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
+        });
+        panel.appendChild(send);
+      }
+
+      return card;
+    }
+
+    async function load() {
+      if (!getToken()) {
+        needToken();
+        showEmpty('Connect this phone below to see the drafts waiting for you.');
+        return;
+      }
+      setStatus('loading…');
+      try {
+        const { prs } = await api('/api/desk');
+        setStatus('');
+        const cards = $('cards');
+        cards.replaceChildren();
+        if (!prs.length) {
+          showEmpty('No drafts waiting for you — new ones are written Thursday from your answers.');
+          return;
+        }
+        $('empty').hidden = true;
+        for (const pr of prs) cards.appendChild(renderCard(pr));
+      } catch (e) {
+        if (e.unauthorized) {
+          showEmpty('Connect this phone below to see the drafts waiting for you.');
+        } else if (e.config) {
+          showEmpty('The drafts can’t load until the server is fixed (see above).');
+        } else {
+          showEmpty('Couldn’t load the drafts: ' + e.message);
+        }
+        setStatus('');
+      }
+    }
+
+    load();
+  </script>
+</CompanionLayout>

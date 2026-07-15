@@ -89,31 +89,41 @@ summary any agent should read before drafting or editing content, and
 [`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
 companion app for the pipeline's recurring author touchpoints.
 
-## Companion — Flow + Capture + Interview + Desk
+## Companion — Today + Capture + Answer + Publish
 
 The phone-first companion app from [`docs/companion-vision.md`](./docs/companion-vision.md)
 exists as its first three phases plus a pipeline overview, installable as one PWA.
 Repo-as-backend: the app owns no data; everything reads and writes the same files the
 automations use.
 
-**Flow** (`/flow`) — the whole pipeline at a glance:
+All four screens share one shell (`src/layouts/CompanionLayout.astro`): a bottom tab
+bar sized for thumbs, count badges fed by `GET /api/flow` (cached a few minutes so
+Capture stays fast), one "Connect this phone" onboarding for the device key, one
+plain-language banner when the Worker loses its secrets (ops detail folded behind a
+"how to fix" disclosure), and shared `window.QN` helpers (auth'd fetch, status line,
+Web Speech dictation). On-screen copy speaks plain language — thoughts, questions,
+drafts — while URLs, file formats, and the API keep the pipeline's original names.
 
-- **Needs you now**: a prioritized list computed from the pipeline's clocks — PRs the
+**Today** (`/flow`) — the home screen; the whole pipeline at a glance:
+
+- **Up to you**: a prioritized list computed from the pipeline's clocks — PRs the
   ship gate marked ready, PRs approaching the 7-day downgrade / 14-day close, the
   week's half-answered brief (with days until Thursday's drafter), backlog items
   within 5 days of their 21-day expiry, and one aged unconsumed spark resurfaced as a
   "still true?" question.
-- **The stage rail**: Sparks → Backlog → Interview → On the desk → Published, each
-  with counts, items, and the schedule of the automation that moves things along
-  (scout Mon, interviewer Tue, drafter Thu, gate Fri).
+- **The stage rail**: your thoughts → topic queue → this week's questions → waiting
+  to publish → published, each with counts, items, and the schedule of the automation
+  that moves things along (scout Mon, interviewer Tue, drafter Thu, gate Fri) — plus
+  a "How this works" disclosure explaining the weekly rhythm in plain words.
 - **Quick capture**: a one-line spark box riding the same `POST /api/spark` writer.
 - Everything read-only otherwise (`GET /api/flow`); items deep-link into Capture /
-  Interview / Desk for the actual actions.
+  Answer / Publish for the actual actions.
 
 **Capture** (`/capture`) — "thought to repo in under 15 seconds":
 
-- One text box; OS keyboard dictation works as-is. English, 中文, or mixed — one line
-  per thought, landing as a dated line in `research/inbox.md` (commit message
+- One text box with a dictation mic and an EN/中 language toggle (Web Speech API where
+  available; OS keyboard dictation works everywhere). English, 中文, or mixed — one
+  line per thought, landing as a dated line in `research/inbox.md` (commit message
   `spark: <first words>`).
 - **Offline queue**: sparks queue in the browser and send when back online.
 - **Share target**: on Android, share a URL or quote from any app into Capture; the
@@ -122,35 +132,38 @@ automations use.
 - **Reward loop**: after sending, the last three sparks are shown, including any
   `→ where it went` annotations once automations consume them.
 
-**Interview** (`/interview`) — "answer five questions on a commute":
+**Answer** (`/interview`) — "answer five questions on a commute":
 
 - The week's brief from `research/interviews/` rendered as a conversation: the
-  three-sentence idea on top, one card per question. Dictate or type; each answer
-  commits immediately into the brief's `## Author answers` section, attributed per
-  question — resumable across days, exactly as the drafter expects.
+  three-sentence idea on top, a progress line, one card per question with its own
+  dictation mic. Dictate or type; each answer commits immediately into the brief's
+  `## Author answers` section, attributed per question — resumable across days,
+  exactly as the drafter expects.
 - Skipping a question is just not answering it; **Not this topic** closes the whole
   brief in one tap, freeing Thursday's drafter to use the fallback ladder.
 - **Tuesday push** (optional): a cron checks every Tuesday 08:30 whether the fresh
   brief is still unanswered and wakes subscribed devices via web push. Enable it from
-  the Interview page once VAPID keys are configured.
+  the Answer page once VAPID keys are configured.
 
-**Desk** (`/desk`) — "ship from the couch":
+**Publish** (`/desk`) — "ship from the couch":
 
 - One card per open **content** PR (a PR qualifies only if every changed file lives
   under `src/content/`, `drafts/`, `research/`, or `public/images/` — the phone can
-  never see or merge a code PR). Each card shows the ship gate's verdict, tier, age,
-  and a link to the rendered branch preview — prose approved as prose, not as a diff.
+  never see or merge a code PR). Each card leads with a plain-language status derived
+  from the ship gate's verdict (**Ready to publish** / **Needs your call** / **Not
+  checked yet**, full verdict behind a disclosure), tier, age, and a big "Read it"
+  button to the rendered branch preview — prose approved as prose, not as a diff.
 - **Voice panel**: the drafter's verbatim-spine list (*your words, kept*) and one
-  "Says X — yours?" question per untraceable opinion, resolved with one-tap
-  **keep** / **cut** (lands as a PR comment the next automation run acts on).
-- **Ship** offers the two author-owned slots — pick a title (the drafter's three
+  "is that yours?" question per untraceable opinion, resolved with one-tap
+  **Keep** / **Cut** (lands as a PR comment the next automation run acts on).
+- **Publish** offers the two author-owned slots — pick a title (the drafter's three
   options, or type your own) and dictate a replacement last line — both skippable in
   one tap, then merges. The slots ride `POST /api/desk/slots`, the only writer that
   ever touches `src/content/**`: PR branches only, title frontmatter line and final
   paragraph only.
-- **One change** (a dictated sentence as a PR comment), **Downgrade to note** (invokes
-  the documented remedy), and a smaller **Kill** (comments and closes — killed is a
-  valid outcome).
+- **Ask for one change** (a dictated sentence as a PR comment), **Make it a note**
+  (invokes the documented downgrade remedy), and **Discard** (comments and closes —
+  letting one go is a valid outcome).
 - **Friday push** (optional): after the ship gate's Friday-morning pass, a 08:30 cron
   wakes subscribed devices if anything is sitting on the desk.
 
@@ -169,10 +182,12 @@ automations use.
    `wrangler.jsonc`, which is how tokens silently disappear. Check any time with
    `curl https://<site>/api/health`. Full story: [`docs/ops-runbook.md`](./docs/ops-runbook.md).
 3. Deploy (`npm run build && npx wrangler deploy`), open `/capture` on the phone,
-   paste the `CAPTURE_TOKEN` once (stored on-device), and add to home screen.
+   paste the `CAPTURE_TOKEN` once into the "Connect this phone" card (stored
+   on-device), and add to home screen.
 4. Optional web push: `node scripts/generate-vapid.mjs`, store the two values with
    `npx wrangler secret put VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_JWK`, redeploy, then tap
-   "Enable Tuesday notifications" on `/interview` (requires the PWA to be installed on iOS).
+   "Notify me when questions arrive" on `/interview` (requires the PWA to be installed
+   on iOS).
 5. Optional hardening: put Cloudflare Access in front of `/capture`, `/interview`,
    `/desk`, and `/api/*`.
 6. Optional iOS share sheet: an Apple Shortcut that sends

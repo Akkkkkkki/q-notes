@@ -1,508 +1,231 @@
 ---
-// Companion Phase 1 — Capture. "Thought to repo in under 15 seconds."
-// Deliberately not on BaseLayout: this is the installable app surface,
-// not a site page. See docs/companion-vision.md §3.1.
+// Capture — "thought to repo in under 15 seconds" (vision §3.1).
+// Opens straight into the text box with the keyboard up; everything else
+// (tabs, connect card, error banner) comes from the shared shell.
+import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <title>Capture — Q's Notes</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
-    <style>
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('/fonts/Geist-Variable.woff2') format('woff2');
-        font-weight: 100 900;
-        font-display: swap;
-      }
-      * { box-sizing: border-box; margin: 0; }
-      html, body { height: 100%; }
-      body {
-        font-family: 'Geist Sans', system-ui, sans-serif;
-        background: #0a0a0a;
-        color: #f5f5f5;
-        display: flex;
-        flex-direction: column;
-        padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 1rem);
-        max-width: 40rem;
-        margin: 0 auto;
-      }
-      header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        padding-bottom: 0.75rem;
-      }
-      nav a { color: #8a8a8a; text-decoration: none; font-size: 0.85rem; }
-      nav a.here { color: #f5f5f5; font-weight: 600; }
-      nav a + a { margin-left: 0.9rem; }
-      #status { font-size: 0.8rem; color: #8a8a8a; min-height: 1rem; }
-      #lede {
-        font-size: 0.95rem;
-        line-height: 1.45;
-        color: #b4b4b4;
-        padding-bottom: 0.9rem;
-      }
-      #composer { position: relative; }
-      #spark {
-        width: 100%;
-        flex: 0 0 auto;
-        min-height: 7.5rem;
-        font: inherit;
-        font-size: 1.05rem;
-        line-height: 1.5;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.75rem;
-        padding: 0.85rem 0.85rem 3.4rem 0.85rem;
-        resize: none;
-        outline: none;
-      }
-      #spark:focus { border-color: #555; }
-      #mic {
-        position: absolute;
-        bottom: 0.6rem;
-        right: 0.6rem;
-        width: 2.4rem;
-        height: 2.4rem;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        font-size: 1.1rem;
-        line-height: 1;
-        color: #c9c9c9;
-        background: #232323;
-        border: 1px solid #3a3a3a;
-        border-radius: 999px;
-        cursor: pointer;
-      }
-      #mic.available { display: inline-flex; }
-      #lang {
-        position: absolute;
-        bottom: 0.6rem;
-        right: 3.35rem;
-        height: 2.4rem;
-        min-width: 2.4rem;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 0 0.5rem;
-        font: inherit;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #c9c9c9;
-        background: #232323;
-        border: 1px solid #3a3a3a;
-        border-radius: 999px;
-        cursor: pointer;
-      }
-      #lang.available { display: inline-flex; }
-      #mic.on {
-        color: #fff;
-        background: #b3261e;
-        border-color: #b3261e;
-        animation: pulse 1.2s ease-in-out infinite;
-      }
-      @keyframes pulse { 50% { box-shadow: 0 0 0 0.35rem rgba(179, 38, 30, 0.25); } }
-      #send {
-        margin-top: 0.75rem;
-        width: 100%;
-        padding: 0.85rem;
-        font: inherit;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        background: #f5f5f5;
-        border: none;
-        border-radius: 0.75rem;
-        cursor: pointer;
-      }
-      #send:disabled { opacity: 0.5; }
-      #send.saved { background: #1f7a3d; color: #fff; }
-      #source {
-        margin-top: 0.5rem;
-        font-size: 0.78rem;
-        color: #8a8a8a;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      #recent { margin-top: 1.75rem; }
-      #recent h2 {
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #8a8a8a;
-        margin-bottom: 0.6rem;
-      }
-      #recent ul { list-style: none; padding: 0; }
-      #recent li {
-        font-size: 0.88rem;
-        line-height: 1.45;
-        color: #c9c9c9;
-        padding: 0.5rem 0;
-        border-top: 1px solid #1f1f1f;
-        overflow-wrap: anywhere;
-      }
-      #recent li.empty { color: #8a8a8a; border-top: none; }
-      #recent li.eg { color: #5a5a5a; font-style: italic; border-top: none; padding-top: 0; }
-      #recent li.pending { color: #8a8a8a; }
-      #config-banner {
-        margin-top: 1.25rem;
-        background: #2a1215;
-        border: 1px solid #5c2328;
-        border-radius: 0.75rem;
-        padding: 0.8rem 0.9rem;
-        font-size: 0.85rem;
-        color: #f0c0c4;
-      }
-      #config-banner a { color: #f0c0c4; }
-      #config-banner .ops { display: block; margin-top: 0.5rem; font-size: 0.78rem; color: #c99; }
-      #token-row { margin-top: 1.25rem; display: none; }
-      #token-row.visible { display: block; }
-      #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
-      #token {
-        width: 100%;
-        font: inherit;
-        font-size: 0.9rem;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.6rem;
-        outline: none;
-      }
-      .hint { margin-top: auto; padding-top: 1.5rem; font-size: 0.72rem; color: #5a5a5a; text-align: center; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/flow/">Flow</a>
-        <a href="/capture/" class="here">Capture</a>
-        <a href="/interview/">Interview</a>
-        <a href="/desk/">Desk</a>
-      </nav>
-      <span id="status"></span>
-    </header>
+<CompanionLayout
+  title="Capture"
+  tab="capture"
+  lede="Catch a thought before it escapes. Type or talk, hit save — done. Half-formed is fine; English, 中文, or both."
+>
+  <style is:global>
+    #composer { position: relative; }
+    #spark {
+      min-height: 7.5rem;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      border-radius: var(--radius);
+      padding: 0.85rem 0.85rem 3.6rem 0.85rem;
+      resize: none;
+    }
+    #composer .mic-btn { position: absolute; bottom: 0.6rem; right: 0.6rem; }
+    #composer .lang-btn { position: absolute; bottom: 0.6rem; right: 3.55rem; }
+    #send { margin-top: 0.75rem; }
+    #source {
+      margin-top: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #recent { margin-top: 1.75rem; }
+    #recent ul { list-style: none; padding: 0; }
+    #recent li {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--body);
+      padding: 0.5rem 0;
+      border-top: 1px solid var(--border-soft);
+      overflow-wrap: anywhere;
+    }
+    #recent li.empty { color: var(--muted); border-top: none; }
+    #recent li.eg { color: var(--dim); font-style: italic; border-top: none; padding-top: 0; }
+    #recent li.pending { color: var(--muted); }
+  </style>
 
-    <p id="lede">Catch a thought before it escapes. Type or talk — it's saved to your
-      notes inbox as one line. That's the whole job.</p>
+  <div id="composer">
+    <textarea
+      id="spark"
+      autofocus
+      maxlength="2000"
+      enterkeyhint="send"
+      placeholder="e.g. “consulting outcomes are unfalsifiable” — one thought, one line."></textarea>
+  </div>
+  <div id="source" hidden></div>
+  <button id="send" type="button" class="btn-primary btn-block">Save thought</button>
 
-    <div id="composer">
-      <textarea
-        id="spark"
-        autofocus
-        maxlength="2000"
-        enterkeyhint="send"
-        placeholder="e.g. “consulting outcomes are unfalsifiable” — half-formed is fine. English, 中文, or both."></textarea>
-      <button id="lang" type="button" aria-label="Dictation language" title="Dictation language">EN</button>
-      <button id="mic" type="button" aria-label="Dictate">🎙</button>
-    </div>
-    <div id="source" hidden></div>
-    <button id="send" type="button">Send to inbox</button>
+  <section id="recent" class="stage" hidden>
+    <h2>Recent thoughts</h2>
+    <ul></ul>
+  </section>
 
-    <div id="config-banner" hidden>
-      <strong>Can't reach the server right now.</strong> Your thoughts are safe on this
-      device and will sync automatically once it's back.
-      <span class="ops">Fix: the Worker is missing its
-      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code> secrets — re-add both on
-      Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>), see
-      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.</span>
-    </div>
+  <p class="hint">Saved to your notes inbox, one line each · works offline · nothing is lost</p>
 
-    <div id="token-row">
-      <label for="token">One-time access token (stored on this device only, never sent to the repo)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="paste your token, then Send again" />
-    </div>
+  <script is:inline>
+    const { $, api, getToken, setStatus, needToken, localDate, attachDictation, refreshBadges } = QN;
+    const sparkEl = $('spark');
+    const sendEl = $('send');
+    const sourceEl = $('source');
+    const recentEl = $('recent');
+    const QUEUE_KEY = 'qn-spark-queue';
 
-    <section id="recent" hidden>
-      <h2>Recent thoughts</h2>
-      <ul></ul>
-    </section>
+    // Share-target prefill (?text=&url=&title= via the manifest GET target).
+    const params = new URLSearchParams(location.search);
+    let sharedUrl = params.get('url') || '';
+    const sharedText = [params.get('title'), params.get('text')].filter(Boolean).join(' — ');
+    if (sharedText) {
+      // Android often stuffs the URL into `text`; split it out as provenance.
+      const m = sharedText.match(/https?:\/\/\S+$/);
+      if (m && !sharedUrl) {
+        sharedUrl = m[0];
+        sparkEl.value = sharedText.slice(0, m.index).trim();
+      } else {
+        sparkEl.value = sharedText;
+      }
+    }
+    if (sharedUrl) {
+      sourceEl.textContent = '← ' + sharedUrl;
+      sourceEl.hidden = false;
+    }
 
-    <p class="hint">One thought per line · saved offline too · nothing is lost</p>
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    // One clear confirmation right on the button the thumb just pressed —
+    // grey text in the header corner reads as "did anything happen?".
+    let savedTimer;
+    function flashSaved(label) {
+      sendEl.textContent = label || '✓ Saved';
+      sendEl.classList.add('saved');
+      clearTimeout(savedTimer);
+      savedTimer = setTimeout(() => {
+        sendEl.textContent = 'Save thought';
+        sendEl.classList.remove('saved');
+      }, 1800);
+    }
+    function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
+    function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+    // Stash the thought locally and clear the box, so a failed send never loses it.
+    function queueSpark(spark) {
+      const q = getQueue();
+      q.push(spark);
+      setQueue(q);
+      sparkEl.value = '';
+      sharedUrl = '';
+      sourceEl.hidden = true;
+      loadRecent();
+    }
 
-    <script is:inline>
-      const $ = (id) => document.getElementById(id);
-      const sparkEl = $('spark');
-      const sendEl = $('send');
-      const micEl = $('mic');
-      const langEl = $('lang');
-      const statusEl = $('status');
-      const sourceEl = $('source');
-      const tokenRow = $('token-row');
-      const tokenEl = $('token');
-      const recentEl = $('recent');
-
-      const TOKEN_KEY = 'qn-capture-token';
-      const QUEUE_KEY = 'qn-spark-queue';
-
-      // Share-target prefill (?text=&url=&title= via the manifest GET target).
-      const params = new URLSearchParams(location.search);
-      let sharedUrl = params.get('url') || '';
-      const sharedText = [params.get('title'), params.get('text')].filter(Boolean).join(' — ');
-      if (sharedText) {
-        // Android often stuffs the URL into `text`; split it out as provenance.
-        const m = sharedText.match(/https?:\/\/\S+$/);
-        if (m && !sharedUrl) {
-          sharedUrl = m[0];
-          sparkEl.value = sharedText.slice(0, m.index).trim();
-        } else {
-          sparkEl.value = sharedText;
+    async function flushQueue() {
+      let queue = getQueue();
+      while (queue.length) {
+        try {
+          await api('/api/spark', queue[0]);
+        } catch (e) {
+          if (e.unauthorized) needToken();
+          setQueue(queue);
+          if (e.serverError) throw e;
+          setStatus(queue.length + ' waiting to sync');
+          return false;
         }
+        queue = queue.slice(1);
+        setQueue(queue);
       }
-      if (sharedUrl) {
-        sourceEl.textContent = '← ' + sharedUrl;
-        sourceEl.hidden = false;
-      }
+      return true;
+    }
 
-      function setStatus(msg) { statusEl.textContent = msg; }
-      function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
-      // One clear confirmation right on the button the thumb just pressed —
-      // grey text in the header corner reads as "did anything happen?".
-      let savedTimer;
-      function flashSaved(label) {
-        sendEl.textContent = label || '✓ Saved';
-        sendEl.classList.add('saved');
-        clearTimeout(savedTimer);
-        savedTimer = setTimeout(() => {
-          sendEl.textContent = 'Send to inbox';
-          sendEl.classList.remove('saved');
-        }, 1800);
-      }
-      function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
-      function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
-      function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
-      // Stash the thought locally and clear the box, so a failed send never loses it.
-      function queueSpark(spark) {
-        const q = getQueue();
-        q.push(spark);
-        setQueue(q);
+    async function send() {
+      const text = sparkEl.value.trim();
+      if (!text) return;
+      const spark = { text, url: sharedUrl, date: localDate() };
+
+      sendEl.disabled = true;
+      setStatus('saving…');
+      try {
+        const flushed = await flushQueue();
+        if (!flushed) throw new Error('offline');
+        await api('/api/spark', spark);
         sparkEl.value = '';
         sharedUrl = '';
         sourceEl.hidden = true;
+        flashSaved('✓ Saved');
+        setStatus('in your inbox');
         loadRecent();
-      }
-      function localDate() {
-        const d = new Date();
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      }
-
-      async function post(spark) {
-        const res = await fetch('/api/spark', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + getToken(),
-          },
-          body: JSON.stringify(spark),
-        });
-        if (res.status === 401) throw Object.assign(new Error('unauthorized'), { unauthorized: true });
-        // 503 means the *Worker* lost its secrets — a Cloudflare-side problem
-        // no amount of re-pasting the token on this device can fix.
-        if (res.status === 503) throw Object.assign(new Error('server secrets missing'), { serverError: true, config: true });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw Object.assign(new Error(body.error || 'send failed (' + res.status + ')'), { serverError: true, status: res.status });
-        }
-        return res.json();
-      }
-
-      function showConfig() {
-        $('config-banner').hidden = false;
-        tokenRow.classList.remove('visible');
-      }
-
-      async function flushQueue() {
-        let queue = getQueue();
-        while (queue.length) {
-          try {
-            await post(queue[0]);
-          } catch (e) {
-            if (e.unauthorized) needToken();
-            setQueue(queue);
-            if (e.serverError) throw e;
-            setStatus(queue.length + ' waiting to sync');
-            return false;
-          }
-          queue = queue.slice(1);
-          setQueue(queue);
-        }
-        return true;
-      }
-
-      function needToken() {
-        tokenRow.classList.add('visible');
-        setStatus('access token needed — see below');
-      }
-
-      async function send() {
-        if (tokenEl.value.trim()) {
-          localStorage.setItem(TOKEN_KEY, tokenEl.value.trim());
-          tokenEl.value = '';
-          tokenRow.classList.remove('visible');
-          setStatus('token saved ✓');
-        }
-        const text = sparkEl.value.trim();
-        if (!text) return;
-        const spark = { text, url: sharedUrl, date: localDate() };
-
-        sendEl.disabled = true;
-        setStatus('sending…');
-        try {
-          const flushed = await flushQueue();
-          if (!flushed) throw new Error('offline');
-          await post(spark);
-          sparkEl.value = '';
-          sharedUrl = '';
-          sourceEl.hidden = true;
+      } catch (e) {
+        if (e.unauthorized) {
+          // Don't lose the thought: keep it on this phone until the key exists.
+          queueSpark(spark);
+          flashSaved('✓ Saved here');
+          setStatus('connect below to sync');
+        } else if (e.config) {
+          // Queue it like an offline send. To the author it's simply "saved" —
+          // the server-side fix is the banner's job.
+          queueSpark(spark);
+          flashSaved('✓ Saved here');
+          setStatus('will sync once the server is back (' + getQueue().length + ' waiting)');
+        } else if (e.serverError && e.status >= 400 && e.status < 500) {
+          // A validation failure (e.g. too long): retrying can't help, so show the
+          // server's own actionable message and keep the thought in the box to edit.
+          setStatus(e.message);
+        } else if (e.serverError) {
+          // Network / 5xx: retrying may help. Keep the thought in the box; don't
+          // surface the opaque server/proxy text.
+          console.error('spark send failed:', e.message);
+          setStatus("couldn't reach the server — tap Save to try again");
+        } else {
+          queueSpark(spark);
           flashSaved('✓ Saved');
-          setStatus('in your inbox');
-          loadRecent();
-        } catch (e) {
-          if (e.unauthorized) {
-            needToken();
-          } else if (e.config) {
-            // Don't lose the thought: queue it like an offline send. To the user
-            // it's simply "saved" — the Cloudflare-side fix is the ops banner's job.
-            queueSpark(spark);
-            showConfig();
-            flashSaved('✓ Saved here');
-            setStatus('will sync once the server is back (' + getQueue().length + ' waiting)');
-          } else if (e.serverError && e.status >= 400 && e.status < 500) {
-            // A validation failure (e.g. too long): retrying can't help, so show the
-            // server's own actionable message and keep the thought in the box to edit.
-            setStatus(e.message);
-          } else if (e.serverError) {
-            // Network / 5xx: retrying may help. Keep the thought in the box; don't
-            // surface the opaque server/proxy text.
-            console.error('spark send failed:', e.message);
-            setStatus("couldn't reach the server — tap Send to try again");
-          } else {
-            queueSpark(spark);
-            flashSaved('✓ Saved');
-            setStatus('will sync when back online (' + getQueue().length + ' waiting)');
-          }
-        } finally {
-          sendEl.disabled = false;
-          sparkEl.focus();
+          setStatus('will sync when back online (' + getQueue().length + ' waiting)');
         }
+      } finally {
+        sendEl.disabled = false;
+        sparkEl.focus();
       }
+    }
 
-      async function loadRecent() {
-        const ul = recentEl.querySelector('ul');
-        recentEl.hidden = false;
-        // Locally-queued thoughts (not yet synced) sit on top as proof the box works,
-        // even before a token exists.
-        const pending = getQueue().map(
-          (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · syncing…</li>'
-        );
-        let synced = [];
-        if (getToken()) {
-          try {
-            const res = await fetch('/api/sparks', { headers: { Authorization: 'Bearer ' + getToken() } });
-            if (res.ok) synced = (await res.json()).sparks || [];
-          } catch { /* reward loop only — never block capture */ }
-        }
-        const rows = pending.concat(synced.map((s) => '<li>' + esc(s) + '</li>')).slice(0, 3);
-        ul.innerHTML = rows.length
-          ? rows.join('')
-          : '<li class="empty">Your captured thoughts will show up here — try one above.</li>'
-            + '<li class="eg">2026-07-08 — consulting outcomes are unfalsifiable</li>';
+    async function loadRecent() {
+      const ul = recentEl.querySelector('ul');
+      recentEl.hidden = false;
+      // Locally-queued thoughts (not yet synced) sit on top as proof the box works,
+      // even before a key exists.
+      const pending = getQueue().map(
+        (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · syncing…</li>'
+      );
+      let synced = [];
+      if (getToken()) {
+        try {
+          synced = (await api('/api/sparks')).sparks || [];
+        } catch { /* reward loop only — never block capture */ }
       }
+      const rows = pending.concat(synced.map((s) => '<li>' + esc(s) + '</li>')).slice(0, 3);
+      ul.innerHTML = rows.length
+        ? rows.join('')
+        : '<li class="empty">Your saved thoughts will show up here — try one above.</li>'
+          + '<li class="eg">2026-07-08 — consulting outcomes are unfalsifiable</li>';
+    }
 
-      // Voice-first: a visible dictation button (vision §3.1, §6). Uses the Web Speech
-      // API where present; the button stays hidden where it isn't, so no broken
-      // control ever shows and OS-keyboard dictation still works as the fallback.
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const LANG_KEY = 'qn-capture-lang';
-      if (SR) {
-        const recognition = new SR();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        let listening = false;
-        let dictBase = '';
-        micEl.classList.add('available');
-        langEl.classList.add('available');
-        // The Web Speech API recognises one language per session (and defaults to the
-        // page's lang="en", so 中文 needs to be set explicitly). Offer a quick toggle,
-        // seeded from the device locale, and remember the choice.
-        let dictLang = localStorage.getItem(LANG_KEY)
-          || ((navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US');
-        const renderLang = () => { langEl.textContent = dictLang.startsWith('zh') ? '中' : 'EN'; };
-        renderLang();
-        langEl.addEventListener('click', () => {
-          dictLang = dictLang.startsWith('zh') ? 'en-US' : 'zh-CN';
-          localStorage.setItem(LANG_KEY, dictLang);
-          renderLang();
-          if (listening) recognition.stop();
-        });
-        recognition.addEventListener('result', (e) => {
-          let interim = '';
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            const t = e.results[i][0].transcript;
-            if (e.results[i].isFinal) dictBase = (dictBase + ' ' + t).trim();
-            else interim += t;
-          }
-          sparkEl.value = (dictBase + ' ' + interim).trim();
-        });
-        const stopUi = () => {
-          listening = false;
-          micEl.classList.remove('on');
-          if (statusEl.textContent === 'listening…') setStatus('');
-        };
-        recognition.addEventListener('end', stopUi);
-        recognition.addEventListener('error', stopUi);
-        micEl.addEventListener('click', () => {
-          if (listening) { recognition.stop(); return; }
-          dictBase = sparkEl.value.trim();
-          recognition.lang = dictLang;
-          try {
-            recognition.start();
-            listening = true;
-            micEl.classList.add('on');
-            setStatus('listening…');
-          } catch { /* start() throws if already running — ignore */ }
-        });
-      }
+    // Voice-first (vision §3.1, §6): dictation buttons appear only where the
+    // Web Speech API exists; OS-keyboard dictation is the fallback elsewhere.
+    const dict = attachDictation(sparkEl, (on) => {
+      if (on) setStatus('listening…');
+      else if ($('qn-status').textContent === 'listening…') setStatus('');
+    });
+    if (dict) $('composer').append(dict.lang, dict.mic);
 
-      sendEl.addEventListener('click', send);
-      sparkEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
-      });
-      function flushFailed(e) {
-        if (e.config) showConfig();
-        else if (e.serverError) { console.error('sync failed:', e.message); setStatus("couldn't reach the server"); }
-      }
-      window.addEventListener('online', () => {
-        flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); loadRecent(); })
-          .catch((e) => { flushFailed(e); loadRecent(); });
-      });
+    sendEl.addEventListener('click', send);
+    sparkEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
+    });
+    window.addEventListener('online', () => {
+      flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); loadRecent(); })
+        .catch(() => loadRecent());
+    });
 
-      if (!getToken()) needToken();
-      const pending = getQueue().length;
-      if (pending) setStatus(pending + ' waiting to sync');
-      flushQueue().then(() => loadRecent())
-        .catch((e) => { flushFailed(e); loadRecent(); });
-
-      // Non-blocking health probe: if the Worker lost its secrets, say so up
-      // front instead of letting the next send fail confusingly.
-      fetch('/api/health').then((r) => r.json())
-        .then((h) => { if (!h.ok) showConfig(); })
-        .catch(() => {});
-
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
-    </script>
-  </body>
-</html>
+    if (!getToken()) needToken();
+    const pendingCount = getQueue().length;
+    if (pendingCount) setStatus(pendingCount + ' waiting to sync');
+    flushQueue().then((ok) => { if (ok) refreshBadges(false); loadRecent(); })
+      .catch(() => loadRecent());
+  </script>
+</CompanionLayout>

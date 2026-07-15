@@ -1,8 +1,8 @@
 {
   "id": "/capture/",
-  "name": "Q's Notes Capture",
-  "short_name": "Capture",
-  "description": "Thought to repo in under 15 seconds.",
+  "name": "Q's Notes",
+  "short_name": "Q's Notes",
+  "description": "Capture thoughts, answer the week's questions, publish posts — two minutes from anywhere.",
   "start_url": "/capture/",
   "scope": "/",
   "display": "standalone",
@@ -14,10 +14,10 @@
     { "src": "/icons/capture-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Capture", "url": "/capture/" },
-    { "name": "Flow", "url": "/flow/" },
-    { "name": "Interview", "url": "/interview/" },
-    { "name": "Desk", "url": "/desk/" }
+    { "name": "Capture a thought", "url": "/capture/" },
+    { "name": "Today", "url": "/flow/" },
+    { "name": "Answer questions", "url": "/interview/" },
+    { "name": "Publish drafts", "url": "/desk/" }
   ],
   "share_target": {
     "action": "/capture/",
