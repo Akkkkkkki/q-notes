@@ -1,346 +1,196 @@
 ---
-// Companion Phase 2 — Interview. "Answer five questions on a commute."
-// Renders the week's brief from research/interviews/ as cards; each answer
-// commits immediately into the file's ## Author answers section.
-// See docs/companion-vision.md §3.2.
+// Answer — "answer five questions on a commute" (vision §3.2).
+// The week's brief from research/interviews/ rendered as a conversation:
+// the idea on top, one question per card, dictation on every card. Each
+// answer commits immediately into the file's ## Author answers section.
+import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <title>Interview — Q's Notes</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
-    <style>
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('/fonts/Geist-Variable.woff2') format('woff2');
-        font-weight: 100 900;
-        font-display: swap;
-      }
-      * { box-sizing: border-box; margin: 0; }
-      body {
-        font-family: 'Geist Sans', system-ui, sans-serif;
-        background: #0a0a0a;
-        color: #f5f5f5;
-        padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 2rem);
-        max-width: 40rem;
-        margin: 0 auto;
-        line-height: 1.5;
-      }
-      header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        padding-bottom: 1rem;
-      }
-      nav a { color: #8a8a8a; text-decoration: none; font-size: 0.85rem; }
-      nav a.here { color: #f5f5f5; font-weight: 600; }
-      nav a + a { margin-left: 0.9rem; }
-      #status { font-size: 0.8rem; color: #8a8a8a; }
-      h1 { font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; margin: 0.25rem 0 0.5rem; }
-      #idea {
-        font-size: 0.92rem;
-        color: #c9c9c9;
-        background: #131313;
-        border: 1px solid #242424;
-        border-radius: 0.75rem;
-        padding: 0.8rem 0.9rem;
-        margin-bottom: 1rem;
-      }
-      .contract { font-size: 0.75rem; color: #6a6a6a; margin-bottom: 1.25rem; }
-      .card {
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.75rem;
-        padding: 0.9rem;
-        margin-bottom: 0.9rem;
-      }
-      .card.answered { border-color: #2e4633; }
-      .card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.6rem; }
-      .card h2 .qn { color: #8a8a8a; font-weight: 500; margin-right: 0.4rem; }
-      .card textarea {
-        width: 100%;
-        min-height: 5.5rem;
-        font: inherit;
-        font-size: 0.95rem;
-        color: inherit;
-        background: #101010;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.6rem;
-        resize: vertical;
-        outline: none;
-      }
-      .card textarea:focus { border-color: #555; }
-      .card .row { display: flex; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
-      .card .save {
-        font: inherit;
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        background: #f5f5f5;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-      }
-      .card .save:disabled { opacity: 0.5; }
-      .card .state { font-size: 0.78rem; color: #8a8a8a; }
-      .voice-note { font-size: 0.72rem; color: #5a5a5a; margin-top: 0.45rem; }
-      #decline, #notify {
-        font: inherit;
-        font-size: 0.85rem;
-        color: #c9c9c9;
-        background: transparent;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.55rem 0.9rem;
-        cursor: pointer;
-        margin-top: 0.5rem;
-      }
-      #decline { color: #d99; border-color: #3a2626; }
-      #empty { color: #8a8a8a; font-size: 0.92rem; padding: 1.5rem 0; }
-      #token-row { margin-top: 1rem; display: none; }
-      #token-row.visible { display: block; }
-      #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
-      #token {
-        width: 100%;
-        font: inherit;
-        font-size: 0.9rem;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.6rem;
-        outline: none;
-      }
-      footer { margin-top: 1.5rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/flow/">Flow</a>
-        <a href="/capture/">Capture</a>
-        <a href="/interview/" class="here">Interview</a>
-        <a href="/desk/">Desk</a>
-      </nav>
-      <span id="status"></span>
-    </header>
+<CompanionLayout
+  title="Answer"
+  tab="answer"
+  lede="This week's questions about your idea. Talk or type in your own words — fragments, mixed English / 中文, typos: all exactly right."
+>
+  <style is:global>
+    #idea {
+      font-size: 0.92rem;
+      color: var(--body);
+      background: #131313;
+      border: 1px solid #242424;
+      border-radius: var(--radius);
+      padding: 0.8rem 0.9rem;
+      margin-bottom: 0.6rem;
+    }
+    #progress { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.1rem; }
+    #title { font-size: 1.05rem; font-weight: 650; letter-spacing: -0.01em; margin: 0.25rem 0 0.5rem; }
+    .q-card h2 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.6rem; }
+    .q-card h2 .qn { color: var(--muted); font-weight: 500; margin-right: 0.4rem; }
+    .q-card textarea { min-height: 5.5rem; background: var(--surface-2); }
+    .q-card .row { display: flex; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
+    .q-card .row .state { flex: 1; }
+    .q-card.answered { border-color: #2e4633; }
+    footer { margin-top: 1.5rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  </style>
 
-    <div id="config-banner" style="display:none; background:#2a1215; border:1px solid #5c2328; border-radius:0.75rem; padding:0.8rem 0.9rem; font-size:0.85rem; color:#f0c0c4; margin-bottom:1rem;">
-      <strong>The server lost its secrets</strong> — the Worker is missing
-      <code>GITHUB_TOKEN</code> / <code>CAPTURE_TOKEN</code>, so it rejects everything.
-      Re-pasting your token on this phone cannot fix it: re-add both on Cloudflare as type
-      <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
-      <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener" style="color:#f0c0c4">the runbook</a>.
-    </div>
+  <main id="main" hidden>
+    <h1 id="title"></h1>
+    <div id="idea"></div>
+    <p id="progress"></p>
+    <div id="cards"></div>
+    <footer>
+      <button id="notify" class="btn-ghost" hidden>Notify me when questions arrive</button>
+      <button id="decline" class="btn-ghost btn-danger">Not this topic — skip this week</button>
+    </footer>
+  </main>
 
-    <div id="token-row">
-      <label for="token">Capture token (stored on this device only)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="paste CAPTURE_TOKEN, then reload" />
-      <button id="token-save" class="save" style="margin-top:0.5rem">Save token</button>
-    </div>
+  <p id="empty" class="card dim" hidden></p>
 
-    <main id="main" hidden>
-      <h1 id="title"></h1>
-      <div id="idea"></div>
-      <p class="contract">
-        Voice-dump quality is the contract: fragments, mixed English / 中文, typos — all
-        exactly right. Each answer saves to the repo immediately. Skipping is fine.
-      </p>
-      <div id="cards"></div>
-      <footer>
-        <button id="notify" hidden>Enable Tuesday notifications</button>
-        <button id="decline">Not this topic</button>
-      </footer>
-    </main>
+  <p class="hint">Answers save straight to your notes · skip any question · Thursday's draft uses whatever exists</p>
 
-    <p id="empty" hidden></p>
+  <script is:inline>
+    const { $, api, el, getToken, setStatus, needToken, attachDictation, refreshBadges } = QN;
 
-    <script is:inline>
-      const $ = (id) => document.getElementById(id);
-      const TOKEN_KEY = 'qn-capture-token';
-      const statusEl = $('status');
+    let brief = null;
 
-      function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
-      function setStatus(msg) { statusEl.textContent = msg; }
-      function needToken() {
-        $('token-row').classList.add('visible');
-        setStatus('token needed');
+    function showEmpty(msg) {
+      $('empty').textContent = msg;
+      $('empty').hidden = false;
+      $('main').hidden = true;
+    }
+
+    function renderProgress() {
+      const done = brief.questions.filter((q) => q.answer).length;
+      $('progress').textContent = done + ' of ' + brief.questions.length + ' answered — ' +
+        (done === brief.questions.length
+          ? 'all set. Thursday’s draft will use every answer. ✓'
+          : 'answer what you can; Thursday’s draft takes whatever exists.');
+    }
+
+    function render() {
+      if (!brief) {
+        showEmpty('No questions this week yet — they arrive Tuesday when there’s a live topic. Save thoughts on the Capture tab in the meantime.');
+        return;
       }
-      function showConfig() {
-        $('config-banner').style.display = 'block';
-        $('token-row').classList.remove('visible');
+      if (brief.closed) {
+        showEmpty('This week’s questions are closed (' + brief.status + '). Thursday’s draft will pick another route — that’s fine.');
+        return;
       }
+      $('main').hidden = false;
+      $('empty').hidden = true;
+      $('title').textContent = brief.title;
+      $('idea').textContent = brief.idea;
+      renderProgress();
 
-      async function api(path, body) {
-        const res = await fetch(path, {
-          method: body === undefined ? 'GET' : 'POST',
-          headers: {
-            Authorization: 'Bearer ' + getToken(),
-            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-          },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
-        });
-        if (res.status === 401) { needToken(); throw new Error('unauthorized'); }
-        // Worker lost its secrets — a Cloudflare problem, not a token problem.
-        if (res.status === 503) { showConfig(); throw new Error('server-config'); }
-        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed (' + res.status + ')');
-        return res.json();
-      }
-
-      let brief = null;
-
-      function showEmpty(msg) {
-        $('empty').textContent = msg;
-        $('empty').hidden = false;
-        $('main').hidden = true;
-      }
-
-      function render() {
-        if (!brief) {
-          showEmpty('No interview brief yet — the Tuesday interviewer writes one when there’s a live topic. Capture sparks in the meantime.');
-          return;
-        }
-        if (brief.closed) {
-          showEmpty('This week’s brief is closed (' + brief.status + '). Thursday’s drafter will use the fallback ladder — that’s fine.');
-          return;
-        }
-        $('main').hidden = false;
-        $('empty').hidden = true;
-        $('title').textContent = brief.title;
-        $('idea').textContent = brief.idea;
-
-        const cards = $('cards');
-        cards.innerHTML = '';
-        for (const q of brief.questions) {
-          const card = document.createElement('section');
-          card.className = 'card' + (q.answer ? ' answered' : '');
-          const h = document.createElement('h2');
-          const qn = document.createElement('span');
-          qn.className = 'qn';
-          qn.textContent = 'Q' + q.n;
-          h.appendChild(qn);
-          h.appendChild(document.createTextNode(q.text));
-          const ta = document.createElement('textarea');
-          ta.placeholder = 'Dictate or type — then Save. Or skip; the drafter takes what exists.';
-          ta.value = q.answer || '';
-          ta.enterKeyHint = 'done';
-          const row = document.createElement('div');
-          row.className = 'row';
-          const save = document.createElement('button');
-          save.className = 'save';
-          save.textContent = q.answer ? 'Update' : 'Save';
-          const state = document.createElement('span');
-          state.className = 'state';
-          if (q.answer) state.textContent = 'saved ✓';
-          save.addEventListener('click', async () => {
-            const text = ta.value.trim();
-            if (!text) return;
-            save.disabled = true;
-            state.textContent = 'saving…';
-            try {
-              await api('/api/answer', { path: brief.path, question: q.n, text });
-              q.answer = text;
-              card.classList.add('answered');
-              save.textContent = 'Update';
-              state.textContent = 'saved ✓';
-            } catch (e) {
-              state.textContent = e.message === 'unauthorized' ? 'token needed' : 'failed — try again';
-            } finally {
-              save.disabled = false;
-            }
-          });
-          row.appendChild(save);
-          row.appendChild(state);
-          card.appendChild(h);
-          card.appendChild(ta);
-          card.appendChild(row);
-          cards.appendChild(card);
-        }
-      }
-
-      $('decline').addEventListener('click', async () => {
-        if (!brief) return;
-        if (!confirm('Close this brief? Thursday’s drafter will use the fallback ladder instead.')) return;
-        setStatus('closing…');
-        try {
-          await api('/api/brief/close', { path: brief.path });
-          brief.closed = true;
-          brief.status = 'Closed (not this topic)';
-          setStatus('');
-          render();
-        } catch (e) {
-          setStatus(e.message === 'unauthorized' ? 'token needed' : 'failed');
-        }
-      });
-
-      $('token-save').addEventListener('click', () => {
-        const v = $('token').value.trim();
-        if (!v) return;
-        localStorage.setItem(TOKEN_KEY, v);
-        $('token').value = '';
-        $('token-row').classList.remove('visible');
-        load();
-      });
-
-      // Tuesday-brief web push: offered only where supported and configured.
-      async function setupNotifyButton() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-        const reg = await navigator.serviceWorker.ready;
-        const existing = await reg.pushManager.getSubscription();
-        if (existing) return;
-        const btn = $('notify');
-        btn.hidden = false;
-        btn.addEventListener('click', async () => {
-          btn.disabled = true;
+      const cards = $('cards');
+      cards.replaceChildren();
+      for (const q of brief.questions) {
+        const card = el('section', 'card q-card' + (q.answer ? ' answered' : ''));
+        const h = el('h2');
+        h.appendChild(el('span', 'qn', 'Q' + q.n));
+        h.appendChild(document.createTextNode(q.text));
+        const ta = el('textarea');
+        ta.placeholder = 'Talk or type your take — then Save. Or skip it.';
+        ta.value = q.answer || '';
+        ta.enterKeyHint = 'done';
+        const row = el('div', 'row');
+        const save = el('button', 'btn-primary', q.answer ? 'Update' : 'Save');
+        const state = el('span', 'state');
+        if (q.answer) state.textContent = 'saved ✓';
+        save.addEventListener('click', async () => {
+          const text = ta.value.trim();
+          if (!text) return;
+          save.disabled = true;
+          state.textContent = 'saving…';
           try {
-            const { key } = await api('/api/push/key');
-            const sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: Uint8Array.from(
-                atob(key.replace(/-/g, '+').replace(/_/g, '/')),
-                (c) => c.charCodeAt(0)
-              ),
-            });
-            await api('/api/push/subscribe', sub.toJSON());
-            btn.textContent = 'Notifications on ✓';
+            await api('/api/answer', { path: brief.path, question: q.n, text });
+            q.answer = text;
+            card.classList.add('answered');
+            save.textContent = 'Update';
+            state.textContent = 'saved ✓';
+            renderProgress();
+            refreshBadges(true);
           } catch (e) {
-            btn.textContent = 'Notifications unavailable';
+            state.textContent = e.unauthorized ? 'connect below first' : 'didn’t save — tap Save again';
+          } finally {
+            save.disabled = false;
           }
         });
+        row.appendChild(save);
+        const dict = attachDictation(ta, (on) => { state.textContent = on ? 'listening…' : state.textContent === 'listening…' ? '' : state.textContent; });
+        if (dict) row.append(dict.lang, dict.mic);
+        row.appendChild(state);
+        card.append(h, ta, row);
+        cards.appendChild(card);
       }
+    }
 
-      async function load() {
-        if (!getToken()) { needToken(); return; }
-        setStatus('loading…');
+    $('decline').addEventListener('click', async () => {
+      if (!brief) return;
+      if (!confirm('Skip this topic for the week? Thursday’s draft will pick another route instead.')) return;
+      setStatus('closing…');
+      try {
+        await api('/api/brief/close', { path: brief.path });
+        brief.closed = true;
+        brief.status = 'Closed (not this topic)';
+        setStatus('');
+        render();
+        refreshBadges(true);
+      } catch (e) {
+        setStatus(e.unauthorized ? '' : 'didn’t close — try again');
+      }
+    });
+
+    // Web push for the Tuesday questions: offered only where supported and configured.
+    async function setupNotifyButton() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      const reg = await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) return;
+      const btn = $('notify');
+      btn.hidden = false;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
         try {
-          const data = await api('/api/brief');
-          brief = data.brief;
-          setStatus('');
-          render();
-          setupNotifyButton();
+          const { key } = await api('/api/push/key');
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: Uint8Array.from(
+              atob(key.replace(/-/g, '+').replace(/_/g, '/')),
+              (c) => c.charCodeAt(0)
+            ),
+          });
+          await api('/api/push/subscribe', sub.toJSON());
+          btn.textContent = 'Notifications on ✓';
         } catch (e) {
-          if (e.message === 'unauthorized') {
-            // needToken() already opened the token row.
-          } else if (e.message === 'server-config') {
-            showEmpty('The brief can’t load until the Worker secrets are restored (see above).');
-          } else {
-            showEmpty('Couldn’t load the brief: ' + e.message);
-          }
-          setStatus('');
+          btn.textContent = 'Notifications unavailable';
         }
-      }
+      });
+    }
 
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
-      load();
-    </script>
-  </body>
-</html>
+    async function load() {
+      if (!getToken()) {
+        needToken();
+        showEmpty('Connect this phone below to load the week’s questions.');
+        return;
+      }
+      setStatus('loading…');
+      try {
+        brief = (await api('/api/brief')).brief;
+        setStatus('');
+        render();
+        setupNotifyButton();
+      } catch (e) {
+        if (e.unauthorized) {
+          showEmpty('Connect this phone below to load the week’s questions.');
+        } else if (e.config) {
+          showEmpty('The questions can’t load until the server is fixed (see above).');
+        } else {
+          showEmpty('Couldn’t load the questions: ' + e.message);
+        }
+        setStatus('');
+      }
+    }
+
+    load();
+  </script>
+</CompanionLayout>

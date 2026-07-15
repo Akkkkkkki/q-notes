@@ -9,7 +9,10 @@ walk-mode interviews, ship-time author slots, and the spark echo). **Phases 1 (C
 2 (Interview), and 3 (Desk) are built**: the `/capture`, `/interview`, and `/desk` PWA
 surfaces and the Worker API live in this repo (`src/pages/capture.astro`,
 `src/pages/interview.astro`, `src/pages/desk.astro`, `worker/`), with a test suite under
-`tests/`; setup steps are in the README. Builds on
+`tests/`; setup steps are in the README. 2026-07 UX redesign: the four surfaces now
+share one shell (`src/layouts/CompanionLayout.astro`) with a bottom tab bar
+(Today / Capture / Answer / Publish), count badges, one connect-device onboarding,
+and plain-language copy throughout — same URLs, same Worker API. Builds on
 [`docs/pipeline.md`](./pipeline.md); references issues
 [#7](https://github.com/Akkkkkkki/q-notes/issues/7) (bilingual site) and
 [#8](https://github.com/Akkkkkkki/q-notes/issues/8) (inbox seeding).

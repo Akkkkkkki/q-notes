@@ -1,429 +1,226 @@
 ---
-// Companion — Flow. The whole pipeline at a glance: what needs the author
-// now, and every piece's position in Sparks → Backlog → Interview → Desk →
-// Published, with the automations' clocks made visible. Read-only except for
-// the quick-capture box (which rides the existing /api/spark writer).
-// Deliberately not on BaseLayout: this is the installable app surface.
+// Today — the home screen. Answers one question first ("what needs me right
+// now?"), offers a quick capture box, then shows the whole pipeline in plain
+// words: thoughts → topic queue → this week's questions → waiting to publish
+// → published. Read-only except quick capture (rides POST /api/spark).
+import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0a0a0a" />
-    <title>Flow — Q's Notes</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icons/capture-180.png" />
-    <style>
-      @font-face {
-        font-family: 'Geist Sans';
-        src: url('/fonts/Geist-Variable.woff2') format('woff2');
-        font-weight: 100 900;
-        font-display: swap;
-      }
-      * { box-sizing: border-box; margin: 0; }
-      body {
-        font-family: 'Geist Sans', system-ui, sans-serif;
-        background: #0a0a0a;
-        color: #f5f5f5;
-        padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 2rem);
-        max-width: 40rem;
-        margin: 0 auto;
-        line-height: 1.5;
-      }
-      header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        padding-bottom: 1rem;
-      }
-      nav a { color: #8a8a8a; text-decoration: none; font-size: 0.85rem; }
-      nav a.here { color: #f5f5f5; font-weight: 600; }
-      nav a + a { margin-left: 0.9rem; }
-      #status { font-size: 0.8rem; color: #8a8a8a; }
-      .banner {
-        background: #2a1215;
-        border: 1px solid #5c2328;
-        border-radius: 0.75rem;
-        padding: 0.8rem 0.9rem;
-        font-size: 0.88rem;
-        color: #f0c0c4;
-        margin-bottom: 1rem;
-      }
-      .banner code { font-family: ui-monospace, monospace; font-size: 0.82rem; }
-      .banner a { color: #f0c0c4; }
-      section.stage { margin-bottom: 1.4rem; }
-      section.stage > h2 {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #8a8a8a;
-        margin-bottom: 0.55rem;
-        display: flex;
-        align-items: baseline;
-        gap: 0.5rem;
-      }
-      h2 .count {
-        border: 1px solid #2c2c2c;
-        border-radius: 999px;
-        padding: 0 0.5rem;
-        font-weight: 500;
-        letter-spacing: 0;
-        text-transform: none;
-      }
-      h2 .when { font-weight: 400; letter-spacing: 0; text-transform: none; color: #5a5a5a; margin-left: auto; }
-      .card {
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.75rem;
-        padding: 0.7rem 0.85rem;
-        margin-bottom: 0.55rem;
-        font-size: 0.9rem;
-        color: #c9c9c9;
-        overflow-wrap: anywhere;
-      }
-      .card a { color: inherit; text-decoration: none; display: block; }
-      .card .title { color: #f5f5f5; font-weight: 600; font-size: 0.93rem; }
-      .card .sub { font-size: 0.8rem; color: #8a8a8a; margin-top: 0.15rem; }
-      .card.dim { color: #6a6a6a; }
-      .chip {
-        display: inline-block;
-        font-size: 0.72rem;
-        color: #8a8a8a;
-        border: 1px solid #2c2c2c;
-        border-radius: 999px;
-        padding: 0.02rem 0.45rem;
-        margin-right: 0.3rem;
-        vertical-align: 0.08em;
-      }
-      .chip.warn { color: #f0b45c; border-color: #4a3a20; }
-      .chip.ok { color: #7fc98b; border-color: #26402b; }
-      .attn { display: flex; gap: 0.55rem; align-items: baseline; }
-      .attn .dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 999px; position: relative; top: -0.05rem; }
-      .attn.now .dot { background: #e5484d; }
-      .attn.soon .dot { background: #f0b45c; }
-      .attn.later .dot { background: #5a5a5a; }
-      #quick { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
-      #quick input {
-        flex: 1;
-        font: inherit;
-        font-size: 0.95rem;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.8rem;
-        outline: none;
-        min-width: 0;
-      }
-      #quick input:focus { border-color: #555; }
-      #quick button {
-        font: inherit;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        background: #f5f5f5;
-        border: none;
-        border-radius: 0.75rem;
-        padding: 0 1rem;
-        cursor: pointer;
-      }
-      #quick button:disabled { opacity: 0.5; }
-      #empty-now { color: #7fc98b; font-size: 0.9rem; margin-bottom: 0.55rem; }
-      #token-row { margin: 1rem 0; display: none; }
-      #token-row.visible { display: block; }
-      #token-row label { font-size: 0.8rem; color: #8a8a8a; display: block; margin-bottom: 0.4rem; }
-      #token {
-        width: 100%;
-        font: inherit;
-        font-size: 0.9rem;
-        color: inherit;
-        background: #161616;
-        border: 1px solid #2c2c2c;
-        border-radius: 0.5rem;
-        padding: 0.6rem;
-        outline: none;
-      }
-      #token-save {
-        margin-top: 0.5rem;
-        font: inherit;
-        font-size: 0.88rem;
-        font-weight: 600;
-        color: #0a0a0a;
-        background: #f5f5f5;
-        border: none;
-        border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-      }
-      .hint { padding-top: 1rem; font-size: 0.72rem; color: #5a5a5a; text-align: center; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="/flow/" class="here">Flow</a>
-        <a href="/capture/">Capture</a>
-        <a href="/interview/">Interview</a>
-        <a href="/desk/">Desk</a>
-      </nav>
-      <span id="status"></span>
-    </header>
+<CompanionLayout
+  title="Today"
+  tab="today"
+  lede="What the writing pipeline needs from you — usually nothing, sometimes two minutes."
+>
+  <style is:global>
+    .attn { display: flex; gap: 0.55rem; align-items: baseline; }
+    .attn .dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 999px; position: relative; top: -0.05rem; }
+    .attn.now .dot { background: var(--red); }
+    .attn.soon .dot { background: var(--amber); }
+    .attn.later .dot { background: var(--dim); }
+    .card a { color: inherit; text-decoration: none; display: block; }
+    .card .title { color: var(--text); font-weight: 600; font-size: 0.93rem; }
+    #quick { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
+    #quick input { flex: 1; min-width: 0; }
+    #quick button { flex: 0 0 auto; }
+    #empty-now { color: var(--green); font-size: 0.9rem; margin-bottom: 0.55rem; }
+    #how { margin-top: 0.5rem; }
+    #how summary { cursor: pointer; font-size: 0.8rem; color: var(--dim); }
+    #how p { font-size: 0.82rem; color: var(--muted); padding-top: 0.5rem; }
+  </style>
 
-    <div id="config-banner" class="banner" hidden></div>
+  <main id="board" hidden>
+    <section class="stage" id="now">
+      <h2>Up to you</h2>
+      <div id="now-list"></div>
+    </section>
 
-    <div id="token-row">
-      <label for="token">Capture token (stored on this device only)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="paste CAPTURE_TOKEN" />
-      <button id="token-save">Save token</button>
+    <div id="quick">
+      <input id="quick-text" enterkeyhint="send" placeholder="Save a quick thought…" />
+      <button id="quick-send" class="btn-primary">Save</button>
     </div>
 
-    <div id="quick" hidden>
-      <input id="quick-text" enterkeyhint="send" placeholder="Quick spark → inbox" />
-      <button id="quick-send">Send</button>
-    </div>
+    <section class="stage" id="sparks">
+      <h2>Your thoughts <span class="count" id="sparks-count"></span><span class="when">picked as topics every Mon</span></h2>
+      <div id="sparks-list"></div>
+    </section>
 
-    <main id="board" hidden>
-      <section class="stage" id="now">
-        <h2>Needs you now</h2>
-        <div id="now-list"></div>
-      </section>
+    <section class="stage" id="backlog">
+      <h2>Topic queue <span class="count" id="backlog-count"></span><span class="when">unused topics expire after 21 days</span></h2>
+      <div id="backlog-list"></div>
+    </section>
 
-      <section class="stage" id="sparks">
-        <h2>Sparks <span class="count" id="sparks-count"></span><span class="when">your raw thoughts · scout mines these Mon</span></h2>
-        <div id="sparks-list"></div>
-      </section>
+    <section class="stage" id="interview">
+      <h2>This week's questions <span class="when">arrive Tue · drafts written Thu</span></h2>
+      <div id="interview-list"></div>
+    </section>
 
-      <section class="stage" id="backlog">
-        <h2>Backlog <span class="count" id="backlog-count"></span><span class="when" id="backlog-when">scout adds Mon · items expire at 21d</span></h2>
-        <div id="backlog-list"></div>
-      </section>
+    <section class="stage" id="desk">
+      <h2>Waiting to publish <span class="count" id="desk-count"></span><span class="when">checked every Fri</span></h2>
+      <div id="desk-list"></div>
+    </section>
 
-      <section class="stage" id="interview">
-        <h2>Interview <span class="when">brief lands Tue · drafter takes answers Thu</span></h2>
-        <div id="interview-list"></div>
-      </section>
+    <section class="stage" id="published">
+      <h2>Published <span class="when"><a href="/" style="color:var(--dim)">the site →</a></span></h2>
+      <div id="published-list"></div>
+    </section>
 
-      <section class="stage" id="desk">
-        <h2>On the desk <span class="count" id="desk-count"></span><span class="when">gate verdicts Fri · downgrade 7d · close 14d</span></h2>
-        <div id="desk-list"></div>
-      </section>
+    <details id="how">
+      <summary>How this works</summary>
+      <p>You do two small things: save thoughts (any tab, any time) and answer the
+        week's questions in your own words. The pipeline does the rest on a weekly
+        rhythm — Monday it picks topics from your thoughts, Tuesday it asks you
+        questions, Thursday it writes bilingual drafts from your answers, Friday it
+        checks them. You publish with one tap on the Publish tab.</p>
+    </details>
+  </main>
 
-      <section class="stage" id="published">
-        <h2>Published <span class="when"><a href="/" style="color:#5a5a5a">the site →</a></span></h2>
-        <div id="published-list"></div>
-      </section>
-    </main>
+  <p class="hint">Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view</p>
 
-    <p class="hint">Sparks → Backlog → Interview → Desk → Published · the automations run the belt, you supply the point of view</p>
+  <script is:inline>
+    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges } = QN;
 
-    <script is:inline>
-      const $ = (id) => document.getElementById(id);
-      const TOKEN_KEY = 'qn-capture-token';
-      const statusEl = $('status');
+    function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
 
-      function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
-      function setStatus(msg) { statusEl.textContent = msg; }
-      function needToken() { $('token-row').classList.add('visible'); setStatus('token needed'); }
-
-      function showConfigBanner(secrets) {
-        const missing = ['GITHUB_TOKEN', 'CAPTURE_TOKEN'].filter((k) => !secrets[k]);
-        const b = $('config-banner');
-        b.innerHTML =
-          '<strong>The server lost its secrets</strong> — <code>' + missing.join('</code> and <code>') + '</code> ' +
-          (missing.length > 1 ? 'are' : 'is') + ' missing on the Worker, so nothing can load or save. ' +
-          'This is a Cloudflare-side problem: re-pasting your token on this phone cannot fix it. ' +
-          'Re-add them as type <em>Secret</em> (not Text) — <code>npx wrangler secret put …</code> — ' +
-          'see <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.';
-        b.hidden = false;
+    function render(flow) {
+      // Up to you
+      const now = $('now-list');
+      now.replaceChildren();
+      if (!flow.needsYou.length) {
+        now.appendChild(el('p', '', 'Nothing needs you right now — the pipeline is running on its own.')).id = 'empty-now';
+      }
+      for (const item of flow.needsYou) {
+        const c = card();
+        const row = el('div', 'attn ' + item.urgency);
+        row.appendChild(el('span', 'dot'));
+        const a = el('a', '', item.text);
+        a.href = item.href;
+        row.appendChild(a);
+        c.appendChild(row);
+        now.appendChild(c);
       }
 
-      async function api(path, body) {
-        const res = await fetch(path, {
-          method: body === undefined ? 'GET' : 'POST',
-          headers: {
-            Authorization: 'Bearer ' + getToken(),
-            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-          },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
-        });
-        if (res.status === 503) { showConfigBanner({}); throw new Error('server-config'); }
-        if (res.status === 401) { needToken(); throw new Error('unauthorized'); }
-        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'request failed (' + res.status + ')');
-        return res.json();
+      // Your thoughts
+      $('sparks-count').textContent = flow.sparks.unconsumed + ' waiting';
+      const sparks = $('sparks-list');
+      sparks.replaceChildren();
+      if (!flow.sparks.recent.length) {
+        sparks.appendChild(card('dim')).textContent = 'No thoughts saved yet — the box above takes one line.';
+      }
+      for (const s of flow.sparks.recent) {
+        const c = card(s.consumed ? 'dim' : '');
+        c.appendChild(el('div', '', s.text));
+        c.appendChild(el('div', 'sub', s.date + (s.consumed ? ' · became a topic' : ' · waiting to be picked')));
+        sparks.appendChild(c);
       }
 
-      function el(tag, className, text) {
-        const node = document.createElement(tag);
-        if (className) node.className = className;
-        if (text !== undefined) node.textContent = text;
-        return node;
+      // Topic queue
+      $('backlog-count').textContent = flow.backlog.live.length + ' live';
+      const backlog = $('backlog-list');
+      backlog.replaceChildren();
+      if (!flow.backlog.live.length) {
+        backlog.appendChild(card('dim')).textContent = 'No topics queued — Monday’s pick fills this from your thoughts.';
+      }
+      for (const b of flow.backlog.live) {
+        const c = card();
+        c.appendChild(el('div', 'title', b.title));
+        if (b.thesis) c.appendChild(el('div', 'sub', b.thesis));
+        const chips = el('div', 'sub');
+        chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd'));
+        if (b.draftability) chips.appendChild(el('span', 'chip', 'draftability ' + b.draftability.toLowerCase()));
+        c.appendChild(chips);
+        backlog.appendChild(c);
+      }
+      if (flow.backlog.draftedCount || flow.backlog.expiredCount) {
+        backlog.appendChild(card('dim')).textContent =
+          flow.backlog.draftedCount + ' drafted · ' + flow.backlog.expiredCount + ' expired (the queue decays by design)';
       }
 
-      function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
-
-      function render(flow) {
-        // Needs you now
-        const now = $('now-list');
-        now.replaceChildren();
-        if (!flow.needsYou.length) {
-          now.appendChild(el('p', '', '')).id = 'empty-now';
-          $('empty-now').textContent = 'Nothing is waiting on you. The belt keeps moving on its own.';
-        }
-        for (const item of flow.needsYou) {
-          const c = card();
-          const row = el('div', 'attn ' + item.urgency);
-          row.appendChild(el('span', 'dot'));
-          const a = el('a', '', item.text);
-          a.href = item.href;
-          row.appendChild(a);
-          c.appendChild(row);
-          now.appendChild(c);
-        }
-
-        // Sparks
-        $('sparks-count').textContent = flow.sparks.unconsumed + ' waiting';
-        const sparks = $('sparks-list');
-        sparks.replaceChildren();
-        if (!flow.sparks.recent.length) {
-          sparks.appendChild(card('dim')).textContent = 'No sparks yet — the box above takes one line.';
-        }
-        for (const s of flow.sparks.recent) {
-          const c = card(s.consumed ? 'dim' : '');
-          c.appendChild(el('div', '', s.text));
-          c.appendChild(el('div', 'sub', s.date + (s.consumed ? ' · consumed' : ' · waiting for the scout')));
-          sparks.appendChild(c);
-        }
-
-        // Backlog
-        $('backlog-count').textContent = flow.backlog.live.length + ' live';
-        const backlog = $('backlog-list');
-        backlog.replaceChildren();
-        for (const b of flow.backlog.live) {
-          const c = card();
-          c.appendChild(el('div', 'title', b.title));
-          if (b.thesis) c.appendChild(el('div', 'sub', b.thesis));
-          const chips = el('div', 'sub');
-          const exp = el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd');
-          chips.appendChild(exp);
-          if (b.draftability) chips.appendChild(el('span', 'chip', 'draftability ' + b.draftability.toLowerCase()));
-          c.appendChild(chips);
-          backlog.appendChild(c);
-        }
-        if (flow.backlog.draftedCount || flow.backlog.expiredCount) {
-          backlog.appendChild(card('dim')).textContent =
-            flow.backlog.draftedCount + ' drafted · ' + flow.backlog.expiredCount + ' expired (the queue decays by design)';
-        }
-
-        // Interview
-        const interview = $('interview-list');
-        interview.replaceChildren();
-        if (flow.interview) {
-          const c = card();
-          const a = el('a');
-          a.href = '/interview/';
-          a.appendChild(el('div', 'title', flow.interview.title));
-          const done = flow.interview.answered >= flow.interview.total && flow.interview.total > 0;
-          a.appendChild(el('div', 'sub', flow.interview.answered + ' of ' + flow.interview.total + ' answered — ' +
-            (done ? 'ready for the drafter ✓' : 'dictate a few on a walk →')));
-          c.appendChild(a);
-          if (done) c.querySelector('.sub').prepend(Object.assign(el('span', 'chip ok', 'answered'), {}));
-          interview.appendChild(c);
-        } else {
-          interview.appendChild(card('dim')).textContent = 'No open brief. The interviewer writes one Tuesday 08:00 from the strongest candidate.';
-        }
-
-        // Desk
-        $('desk-count').textContent = flow.desk.length + ' PR' + (flow.desk.length === 1 ? '' : 's');
-        const desk = $('desk-list');
-        desk.replaceChildren();
-        for (const pr of flow.desk) {
-          const c = card();
-          const a = el('a');
-          a.href = '/desk/';
-          a.appendChild(el('div', 'title', '#' + pr.number + ' ' + pr.title));
-          const chips = el('div', 'sub');
-          if (pr.tier) chips.appendChild(el('span', 'chip', pr.tier));
-          chips.appendChild(el('span', 'chip' + (pr.ageDays >= 5 ? ' warn' : ''), pr.ageDays + 'd open'));
-          chips.appendChild(el('span', 'chip' + (pr.verdict === 'ready' ? ' ok' : pr.verdict === 'attention' ? ' warn' : ''),
-            pr.verdict === 'ready' ? 'ready to ship' : pr.verdict === 'attention' ? 'needs your call' : 'no verdict yet'));
-          a.appendChild(chips);
-          c.appendChild(a);
-          desk.appendChild(c);
-        }
-        if (!flow.desk.length) desk.appendChild(card('dim')).textContent = 'Nothing on the desk — the drafter opens PRs Thursday.';
-
-        // Published
-        const published = $('published-list');
-        published.replaceChildren();
-        for (const p of flow.published) {
-          const c = card('dim');
-          c.appendChild(el('div', '', p.summary));
-          c.appendChild(el('div', 'sub', p.date));
-          published.appendChild(c);
-        }
-        if (!flow.published.length) published.appendChild(card('dim')).textContent = 'Recent publishes show up here.';
-
-        $('board').hidden = false;
-        $('quick').hidden = false;
+      // This week's questions
+      const interview = $('interview-list');
+      interview.replaceChildren();
+      if (flow.interview) {
+        const c = card();
+        const a = el('a');
+        a.href = '/interview/';
+        a.appendChild(el('div', 'title', flow.interview.title));
+        const done = flow.interview.answered >= flow.interview.total && flow.interview.total > 0;
+        a.appendChild(el('div', 'sub', flow.interview.answered + ' of ' + flow.interview.total + ' answered — ' +
+          (done ? 'ready for Thursday’s draft ✓' : 'dictate a few on a walk →')));
+        c.appendChild(a);
+        if (done) c.querySelector('.sub').prepend(el('span', 'chip ok', 'answered'));
+        interview.appendChild(c);
+      } else {
+        interview.appendChild(card('dim')).textContent = 'No questions this week yet — they arrive Tuesday when there’s a live topic.';
       }
 
-      async function load() {
-        // Health first — unauthenticated, so it works even when everything
-        // else 503s, and it tells the truth about *which* side is broken.
-        try {
-          const health = await (await fetch('/api/health')).json();
-          if (!health.ok) { showConfigBanner(health.secrets || {}); setStatus(''); return; }
-        } catch { /* offline — fall through; the API call below will say so */ }
-
-        if (!getToken()) { needToken(); return; }
-        setStatus('loading…');
-        try {
-          render(await api('/api/flow'));
-          setStatus('');
-        } catch (e) {
-          if (e.message !== 'unauthorized' && e.message !== 'server-config') setStatus(e.message);
-          else setStatus('');
-        }
+      // Waiting to publish
+      $('desk-count').textContent = flow.desk.length + ' draft' + (flow.desk.length === 1 ? '' : 's');
+      const desk = $('desk-list');
+      desk.replaceChildren();
+      for (const pr of flow.desk) {
+        const c = card();
+        const a = el('a');
+        a.href = '/desk/';
+        a.appendChild(el('div', 'title', '#' + pr.number + ' ' + pr.title));
+        const chips = el('div', 'sub');
+        if (pr.tier) chips.appendChild(el('span', 'chip', pr.tier));
+        chips.appendChild(el('span', 'chip' + (pr.ageDays >= 5 ? ' warn' : ''), pr.ageDays + 'd waiting'));
+        chips.appendChild(el('span', 'chip' + (pr.verdict === 'ready' ? ' ok' : pr.verdict === 'attention' ? ' warn' : ''),
+          pr.verdict === 'ready' ? 'ready to publish' : pr.verdict === 'attention' ? 'needs your call' : 'not checked yet'));
+        a.appendChild(chips);
+        c.appendChild(a);
+        desk.appendChild(c);
       }
+      if (!flow.desk.length) desk.appendChild(card('dim')).textContent = 'No drafts waiting — new ones are written Thursday.';
 
-      $('token-save').addEventListener('click', () => {
-        const v = $('token').value.trim();
-        if (!v) return;
-        localStorage.setItem(TOKEN_KEY, v);
-        $('token').value = '';
-        $('token-row').classList.remove('visible');
+      // Published
+      const published = $('published-list');
+      published.replaceChildren();
+      for (const p of flow.published) {
+        const c = card('dim');
+        c.appendChild(el('div', '', p.summary));
+        c.appendChild(el('div', 'sub', p.date));
+        published.appendChild(c);
+      }
+      if (!flow.published.length) published.appendChild(card('dim')).textContent = 'Recently published pieces show up here.';
+
+      $('board').hidden = false;
+    }
+
+    async function load() {
+      if (!getToken()) { needToken(); return; }
+      setStatus('loading…');
+      try {
+        const flow = await flowData(true); // home always shows fresh state
+        render(flow);
+        applyBadges(flow);
+        setStatus('');
+      } catch (e) {
+        setStatus(e.unauthorized || e.config ? '' : e.message);
+      }
+    }
+
+    async function quickSend() {
+      const input = $('quick-text');
+      const text = input.value.trim();
+      if (!text) return;
+      $('quick-send').disabled = true;
+      setStatus('saving…');
+      try {
+        await api('/api/spark', { text, date: localDate() });
+        input.value = '';
+        setStatus('✓ saved to your thoughts');
         load();
-      });
-
-      async function quickSend() {
-        const input = $('quick-text');
-        const text = input.value.trim();
-        if (!text) return;
-        $('quick-send').disabled = true;
-        setStatus('sending…');
-        try {
-          const d = new Date();
-          const date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-          await api('/api/spark', { text, date });
-          input.value = '';
-          setStatus('✓ in the inbox');
-          load();
-        } catch (e) {
-          if (e.message !== 'unauthorized' && e.message !== 'server-config') setStatus(e.message);
-        } finally {
-          $('quick-send').disabled = false;
-        }
+      } catch (e) {
+        if (!e.unauthorized && !e.config) setStatus(e.message);
+        else setStatus('');
+      } finally {
+        $('quick-send').disabled = false;
       }
-      $('quick-send').addEventListener('click', quickSend);
-      $('quick-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') quickSend(); });
+    }
+    $('quick-send').addEventListener('click', quickSend);
+    $('quick-text').addEventListener('keydown', (e) => { if (e.key === 'Enter') quickSend(); });
 
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
-      load();
-    </script>
-  </body>
-</html>
+    load();
+  </script>
+</CompanionLayout>

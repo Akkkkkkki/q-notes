@@ -4,7 +4,7 @@
 // without a payload (VAPID wake-up only), so the text is fixed here. Two
 // crons exist — Tuesday brief and Friday desk — and a payload-less push
 // can't say which fired, so the weekday picks the notification.
-const CACHE = 'capture-shell-v4';
+const CACHE = 'capture-shell-v5';
 const SHELL = ['/capture/', '/flow/', '/interview/', '/desk/', '/manifest.webmanifest', '/fonts/Geist-Variable.woff2'];
 
 self.addEventListener('install', (event) => {
@@ -53,8 +53,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification("Q's Notes", {
       body: desk
-        ? 'The desk has drafts waiting. Ship, one change, or downgrade — five minutes.'
-        : 'This week’s interview brief is ready. 15–30 min, any language, fragments welcome.',
+        ? 'Drafts are waiting for your OK. Read, then publish — five minutes.'
+        : 'This week’s questions are ready. Talk or type, any language, fragments welcome.',
       icon: '/icons/capture-192.png',
       badge: '/icons/capture-192.png',
       tag: desk ? 'qnotes-desk' : 'qnotes-brief',
