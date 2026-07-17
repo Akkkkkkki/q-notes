@@ -51,6 +51,12 @@ Preamble text.
 **Status:** Expired (${daysAgo(19)})
 
 **One-line thesis:** Too old.
+
+## ${daysAgo(6)} — Passed over
+
+**Status:** Rejected (${daysAgo(1)}, passed via Today)
+
+**One-line thesis:** Not mine.
 `;
 }
 
@@ -118,7 +124,7 @@ describe('GET /api/health', () => {
 describe('parseBacklog', () => {
   it('parses items, skips the template block, and classifies statuses', () => {
     const items = parseBacklog(backlogFixture());
-    expect(items.map((i) => i.status)).toEqual(['live', 'live', 'drafted', 'expired']);
+    expect(items.map((i) => i.status)).toEqual(['live', 'live', 'drafted', 'expired', 'rejected']);
     expect(items[0].title).toBe('Fresh candidate');
     expect(items[0].thesis).toBe('A crisp claim.');
     expect(items[0].draftability).toBe('High');
@@ -163,6 +169,7 @@ describe('GET /api/flow', () => {
     expect(data.backlog.live).toHaveLength(2);
     expect(data.backlog.draftedCount).toBe(1);
     expect(data.backlog.expiredCount).toBe(1);
+    expect(data.backlog.passedCount).toBe(1);
 
     expect(data.interview).toMatchObject({ path: BRIEF_PATH, answered: 1, total: 2 });
 
@@ -210,6 +217,24 @@ describe('GET /api/flow', () => {
     const rank = { now: 0, soon: 1, later: 2 } as Record<string, number>;
     const ranks = data.needsYou.map((n: any) => rank[n.urgency]);
     expect(ranks).toEqual([...ranks].sort((a: number, b: number) => a - b));
+  });
+
+  it('shows the author’s takes back on their topic card', async () => {
+    gh.files.set(
+      'research/inbox.md',
+      `# Inbox\n\n` +
+        `${daysAgo(1)} — On “Fresh candidate”: my firsthand story ← https://x.test/a\n` +
+        `${daysAgo(1)} — On "Fresh candidate": consumed take → interviews/x.md\n` +
+        `${daysAgo(1)} — an unrelated spark\n`
+    );
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    const fresh = data.backlog.live.find((i: any) => i.title === 'Fresh candidate');
+    expect(fresh.takes).toEqual([
+      { date: daysAgo(1), text: 'my firsthand story' },
+      { date: daysAgo(1), text: 'consumed take' },
+    ]);
+    const aging = data.backlog.live.find((i: any) => i.title === 'Nearly expired candidate');
+    expect(aging.takes).toEqual([]);
   });
 
   it('nudges capture when the inbox has no waiting sparks', async () => {
