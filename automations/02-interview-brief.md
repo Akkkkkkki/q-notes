@@ -30,12 +30,9 @@ You do not write the article. You write the questions that make the article poss
    <thesis, why now, strongest counterargument — three sentences total>
 
    ## Questions
-   1–5, each designed to surface what only the author can contribute.
-
-   ## Retell (optional, 2 minutes)
-   _Pick from `src/content/posts/` the published post closest to this topic and name
-   it here. Ask: "用你自己的话，把 <post> 的核心论点讲给一个朋友听 — two or three
-   sentences, any language, 微信语音的随意程度就行." Skippable without guilt._
+   1–5, each designed to surface what only the author can contribute, plus a final
+   numbered retell question (see step 4). Numbered lines only — the phone client
+   renders exactly these as answer cards.
 
    ## Author answers
    _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are
@@ -54,12 +51,16 @@ You do not write the article. You write the questions that make the article poss
      does that survive here?" The author's own archive is the sharpest interviewer in
      the room; quote them exactly, never paraphrase.
    Avoid questions answerable by research; those are your job, not the author's.
-   The retell section is a voice-learning device, not a quiz: the gap between the
-   author's retelling and the published sentences is style signal (sentence shape, word
-   choice, 中英混排, cadence). The gardener compares the two monthly and proposes
+   **Always close with a retell question**, as the last numbered question so the phone
+   client renders it as a normal answer card: name the published post in
+   `src/content/posts/` closest to this topic and ask "（可跳过，2 分钟）用你自己的话，
+   把 <post> 的核心论点讲给一个朋友听 — two or three sentences, any language,
+   微信语音的随意程度就行." It's a voice-learning device, not a quiz: the gap between
+   the author's retelling and the published sentences is style signal (sentence shape,
+   word choice, 中英混排, cadence). The gardener compares the two monthly and proposes
    voiceprint entries; the answer itself is archived as a voice sample. If no published
-   post is close enough to the topic, pick the author's favorite recent post instead —
-   any retell is signal.
+   post is close enough to the topic, pick the author's most recent post instead — any
+   retell is signal.
 5. **Update the backlog item** status to `Interviewing since YYYY-MM-DD`.
 6. **Commit to `main`** (`interview: brief for <slug>`), then **notify the author** with
    the working title, the three-sentence idea, a link to the file, and one line:
