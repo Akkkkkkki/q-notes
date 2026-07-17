@@ -225,6 +225,7 @@ describe('GET /api/flow', () => {
       `# Inbox\n\n` +
         `${daysAgo(1)} — On “Fresh candidate”: my firsthand story ← https://x.test/a\n` +
         `${daysAgo(1)} — On "Fresh candidate": consumed take → interviews/x.md\n` +
+        `${daysAgo(1)} — On “Fresh candidate”: sourced take ← https://x.test/b → interviews/x.md\n` +
         `${daysAgo(1)} — an unrelated spark\n`
     );
     const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
@@ -232,6 +233,7 @@ describe('GET /api/flow', () => {
     expect(fresh.takes).toEqual([
       { date: daysAgo(1), text: 'my firsthand story' },
       { date: daysAgo(1), text: 'consumed take' },
+      { date: daysAgo(1), text: 'sourced take' },
     ]);
     const aging = data.backlog.live.find((i: any) => i.title === 'Nearly expired candidate');
     expect(aging.takes).toEqual([]);

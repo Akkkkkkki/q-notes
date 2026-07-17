@@ -196,7 +196,9 @@ export function takesFor(title: string, sparks: Spark[]): Array<{ date: string; 
   for (const s of sparks) {
     const m = s.text.match(re);
     if (!m) continue;
-    const text = m[1].replace(/\s*←\s*\S+\s*$/, '').replace(/\s*→.*$/, '').trim();
+    // Consumption first: a consumed line reads `take ← url → destination`,
+    // so the provenance URL is only at the end once the `→ …` tail is gone.
+    const text = m[1].replace(/\s*→.*$/, '').replace(/\s*←\s*\S+\s*$/, '').trim();
     if (text) out.push({ date: s.date, text });
   }
   return out;
