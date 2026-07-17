@@ -36,8 +36,9 @@ resolve stuck work without waiting for the author to feel ready.
    human-voice tells from `research/human-voice.md` §1 and §4 in both languages:
    uncontracted English throughout, stacked "It is not X. It is Y." pivots, an
    aphorism closing every section, rhetorical-question volleys, a closer or opener
-   framing reused from recent posts, LLM-lexicon words, and 中文版的翻译腔（空转词、
-   段首书面连接词堆叠、排比、升华句、与英文版逐句对齐）. Same protocol as other
+   framing reused from recent posts, LLM-lexicon words, and 中文版的翻译腔（欧化
+   句式——万能动词、"在……的情况下"、前置长定语、多余的"被"——加上空转词、排比、
+   升华句、英文式分号冒号、与英文版逐句对齐、硬加的口语词）. Same protocol as other
    voice checks: unambiguous mechanical fixes (a contraction, a deleted 空转词, one
    pivot flattened into a direct statement) get made and pushed; anything that would
    change meaning or cut a load-bearing line is raised as a one-line question. Voice

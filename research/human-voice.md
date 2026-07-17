@@ -61,9 +61,11 @@ actually existing in the voiceprint and interview answers.
 
 **中文版的对应问题。** 中文版语法干净，但骨架仍是英文：句序、段落节奏、每段结尾的
 金句位置都与英文版一一对应，读起来像高质量译文而不是中文写作。中文的"AI 味"
-本质上就是翻译腔。具体表现：连接词过于书面（"然而""因此"开头）、缺少口语化的
-过渡（其实 / 说白了 / 换句话说 / 问题在于）、没有语气词、三句一组的排比、
-以及和英文版完全同步的警句节奏。
+本质上就是翻译腔，病根在句子结构，不在用词：万能动词（进行 / 作出）、
+"在……的情况下"式的介词架子、前置长定语、多余的"被"、逻辑每一步都靠"然而"
+"因此"标出来（中文靠语序就够了），再加上和英文版完全同步的警句节奏与英文式的
+分号冒号。一个已经踩过的坑：往欧化句子上撒"说白了""其实"之类的口语词治不了
+翻译腔，只会更刻意——"公平地说"这种词本身就是 to be fair 的直译。
 
 ## 2. What the best tech blogs do differently
 
@@ -137,12 +139,19 @@ humor), and their rhythm is irregular because it follows thought, not template.
 
 10. **从想法重写，不从英文句子翻译。** 转写中文版时，先合上英文版，凭论点和事实
     清单重写；写完再对照检查 claim parity。句子结构与英文版对得越齐，翻译腔越重。
-11. **口语连接词优先。** 用 其实 / 说白了 / 换句话说 / 但问题是 / 也就是说，
-    少用段首的"然而""因此""此外"。语气词（吧 / 呢 / 罢了）可以偶尔用，一篇一两处。
-12. **删空转词。** "进行""作为""基于""关于""值得注意的是""综上所述"——删掉或换成
-    实义词。抽象名词别做主语（"数据告诉我们"→"从数据看"）。
-13. **不排比，不升华。** 三句一组的排比和把技术观察上升为人生道理的结尾句，都是
-    中文 AI 味的标志性特征。结尾停在具体的预测、事实或问题上即可。
+11. **拆链成饼。** 思果的比喻：英文长句是链条，环环相扣；中文是糕饼，一块一块。
+    多用句号，分句短，靠语序衔接（中文重意合）。少用分号，冒号后面别挂一长串。
+    句序能表达的逻辑，连接词直接删——不必每一步都写"然而""因此""此外"。
+12. **过一遍欧化清单（余光中）。** 万能动词还原：进行研究→研究，作出反应→反应
+    热烈；名词化还原为动词："有很多问题存在"→"问题很多"，"造成 98 人死亡"→
+    "死了 98 人"；删介词架子："在……的情况下""当……的时候""基于""关于"；
+    "被"字能省就省，受事可以直接做主语（"饭吃完了"）；慎用"之一""们""性"；
+    前置长定语拆开或缩短（"只有在团队里待了很久的人才懂的部分"→"老成员才摸得清
+    的角落"）。
+13. **口语词不能撒。** "说白了""其实""换句话说"治不了翻译腔：欧化句子加口语词
+    只会更刻意。先把句子改成中文骨架，语气自然就对了。语气词同理——结构对了才会
+    偶尔自然出现，不当调味料加。也不排比、不升华：三句一组的排比和把技术观察拔高
+    成人生道理的结尾，都是中文 AI 味的标志。结尾停在具体的预测、事实或问题上。
 
 ## 4. The human pass (pre-publish checklist)
 
@@ -158,8 +167,10 @@ made directly, like other mechanical fixes.
       one exist; no two adjacent sections share the same internal shape.
 - [ ] Opening and closing don't reuse the framing of the last three posts.
 - [ ] EN: contractions used by default; no LLM-lexicon words.
-- [ ] 中文：不是英文句子的对齐翻译；无空转词、无段首书面连接词堆叠、无排比、
-      无升华句；至少一处口语化过渡。
+- [ ] 中文：不是英文句子的对齐翻译；句子是中文骨架——无"在……的情况下"式介词架、
+      无万能动词和名词化、无前置长定语、"被"字省得掉就省；多用句号，少用分号，
+      连接词能删则删；无排比、无升华句；口语词只在整句本来就口语时出现，不是撒
+      上去的。
 - [ ] At least one traceable first-person moment (or the gap is flagged in the PR
       body); nothing firsthand is invented.
 - [ ] One or two natural light touches; none forced.
@@ -173,6 +184,11 @@ made directly, like other mechanical fixes.
   rule-of-three, section-summary habits)
 - iMEdD Lab, [How AI-generated prose diverges from human writing](https://lab.imedd.org/en/how-ai-generated-prose-diverges-from-human-writing-and-why-it-matters/)
   — uniform sentence length / low burstiness as the measurable machine signature
+- 余光中，[《怎样改进英式中文？——论中文的常态与变态》](https://www.translators.com.cn/archives/2007/10/1071)
+  — 欧化病症的原始清单：万能动词、名词成灾、"之一"、"被"字、的的不休、前置长定语
+- 思果，《翻译研究》——"翻译要像中文"；英文长句是链条，中文是糕饼，拆链成饼
+- [欧化中文（维基百科）](https://zh.wikipedia.org/zh-cn/%E6%AD%90%E5%8C%96%E4%B8%AD%E6%96%87)
+  — 病症的系统整理；形合（英文靠连接词）与意合（中文靠语序）的差别是拆句的理论根据
 - 中文写作社区对"AI 味 = 翻译腔"的分析，如
   [写作中的 AI 味是哪儿来的](https://yage.ai/share/ai-chinese-translationese-20260418.html)、
   [中文去 AI 味写作指南](https://www.jamecling.com/archives/1175)

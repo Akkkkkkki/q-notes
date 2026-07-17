@@ -65,7 +65,7 @@ Sentence-level texture, per language and for the 中英 mix.
 - Italics for emphasis (*word*) should be earned: reserve for direct quotes, a coined/glossary term on first use, and titles. Don't italicize a word purely for dramatic stress.
 - Ration the mic-drops: "It is not X. It is Y." at most once per post; aphorism closers at most one per section, and let at least two sections end on plain information.
 - Lumpy rhythm on purpose: vary paragraph length (one very short, one genuinely long), don't give every section the same claim → evidence → punchline shape. Uniform rhythm is the most machine-detectable property of a text.
-- 中文版从论点重写，不从英文句子翻译；用口语过渡（其实/说白了/但问题是），少用段首"然而""因此"。
+- 中文版从论点重写，不从英文句子翻译；先拆欧化骨架（万能动词、"在……的情况下"、前置长定语、多余的"被"），多用句号少用分号；口语词不往欧化句上撒，结构对了语气自然。
 - Full playbook with the talk test and pre-publish human pass: `research/human-voice.md`.
 
 <!-- Example: short declaratives for claims; longer sentences only when walking through a mechanism -->
