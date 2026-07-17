@@ -46,6 +46,10 @@ Words, framings, and hedges the author would not use. The ship gate flags these.
 - Insider jargon used unironically and undefined — "the read-across," "harness-engineered," "rebated to billable hours" — say it plainly or define it once.
 - Clever one-off metaphors that sound smart but add nothing a plain word wouldn't (e.g. "internal weather" for office politics). Reused keyword metaphors are the exception — coin them on purpose, then reuse.
 - Vocabulary doing the work that insight should — if a sentence's only payload is its phrasing, cut or replace it.
+- Uncontracted English in running prose — "do not"/"it is" everywhere reads robotic; write "doesn't"/"it's" and expand only for deliberate emphasis.
+- Template slots reused across posts — the fixed "Here is the prediction: by the end of 20XX..." closer frame, or any opening/closing framing repeated from the last three posts.
+- Rhetorical-question volleys — a run of questions nobody answers; ask at most one unanswered question per post.
+- LLM lexicon: delve, underscore (verb), intricate, crucial, pivotal, robust, landscape, leverage (verb), "it's important to note". 中文对应：值得注意的是、综上所述、进行/作为/基于 等空转词、三句排比、升华句。
 
 <!-- Example: "delve", "in today's fast-paced world", "it's important to note" -->
 <!-- Example: hedging both sides so thoroughly the piece takes no position -->
@@ -59,6 +63,10 @@ Sentence-level texture, per language and for the 中英 mix.
 - Em-dash discipline: cap at roughly one per 150 words (about half the density of early drafts). An em-dash is not the default way to close a sentence with a "reveal" — use a period, or a comma with "and"/"but". Use a colon, not a dash, to introduce a definition or explanation. Reserve — / —— for genuine mid-sentence appositive lists (e.g. "the consulting business model — utilization targets, leverage ratios, the pyramid itself — flowed downstream"). In Chinese, don't mirror English dash placement mechanically; 。/，/而/但/因为/也就是说 usually read more naturally than ——.
 - "It is not X. It is Y." and "What X actually means/looks like is..." are signature moves, not defaults — stacking them every paragraph turns emphasis into noise. Mix in plain direct statements.
 - Italics for emphasis (*word*) should be earned: reserve for direct quotes, a coined/glossary term on first use, and titles. Don't italicize a word purely for dramatic stress.
+- Ration the mic-drops: "It is not X. It is Y." at most once per post; aphorism closers at most one per section, and let at least two sections end on plain information.
+- Lumpy rhythm on purpose: vary paragraph length (one very short, one genuinely long), don't give every section the same claim → evidence → punchline shape. Uniform rhythm is the most machine-detectable property of a text.
+- 中文版从论点重写，不从英文句子翻译；用口语过渡（其实/说白了/但问题是），少用段首"然而""因此"。
+- Full playbook with the talk test and pre-publish human pass: `research/human-voice.md`.
 
 <!-- Example: short declaratives for claims; longer sentences only when walking through a mechanism -->
 

@@ -44,6 +44,7 @@ npm test             # Companion Worker API test suite (vitest)
 │   ├── backlog.md           # Topic backlog
 │   ├── inbox.md             # Author's raw idea inbox
 │   ├── voice.md             # Voiceprint: stances, signature phrasing, never-say terms
+│   ├── human-voice.md       # Human-voice playbook: machine-tell diagnosis + pre-publish human pass
 │   ├── glossary.md          # EN <-> 中文 glossary for transcreation
 │   └── interviews/          # Interview briefs + author answers
 ├── src/

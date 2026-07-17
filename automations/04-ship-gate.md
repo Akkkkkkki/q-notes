@@ -32,7 +32,16 @@ resolve stuck work without waiting for the author to feel ready.
    split is unambiguous, just make it and push; only surface it as a question when the
    term might be load-bearing. Spot-check
    the PR's verbatim-spine list too — three trivial phrases kept for compliance don't
-   count; the kept phrases should carry the piece's claims. Voice flags are rendered as
+   count; the kept phrases should carry the piece's claims. Also spot-check the
+   human-voice tells from `research/human-voice.md` §1 and §4 in both languages:
+   uncontracted English throughout, stacked "It is not X. It is Y." pivots, an
+   aphorism closing every section, rhetorical-question volleys, a closer or opener
+   framing reused from recent posts, LLM-lexicon words, and 中文版的翻译腔（空转词、
+   段首书面连接词堆叠、排比、升华句、与英文版逐句对齐）. Same protocol as other
+   voice checks: unambiguous mechanical fixes (a contraction, a deleted 空转词, one
+   pivot flattened into a direct statement) get made and pushed; anything that would
+   change meaning or cut a load-bearing line is raised as a one-line question. Voice
+   flags are rendered as
    questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
 3. **Checklist passes** → comment a verdict:
    - First check cadence: the site publishes **at most one post per 7 days** (quality
