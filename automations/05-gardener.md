@@ -35,16 +35,29 @@ Re-read the published posts in `src/content/posts/`:
 
 ## 3. Voiceprint maintenance
 
-Re-read the month's interview answers and published pieces, then propose 1–3 additions
-to `research/voice.md` under its `## Proposed (gardener)` heading:
+Re-read the month's interview answers, published pieces, the voice-samples corpus
+(`research/voice-samples/`), the A/B choices the author made in draft-PR comments, and
+the read-aloud marks the ship gate processed. Then propose 1–3 additions to
+`research/voice.md` under its `## Proposed (gardener)` heading:
 
 - a stance now taken in public (one line, citing the post that took it);
 - a signature phrasing worth preserving verbatim;
-- a new never-say (a word or framing the author consistently avoids or has cut).
+- a new never-say (a word or framing the author consistently avoids or has cut);
+- a rhythm note distilled from repeated A/B choices pointing the same direction.
+
+**Retell comparison**: for any interview retell answered this month, put the author's
+version and the published post's corresponding sentences side by side. The differences —
+sentence shape, word choice, 中英混排 habits, cadence — are the signal; propose the
+sharpest 1–2 as entries and archive the retell itself as a screened excerpt in
+`research/voice-samples/` (its README's privacy rule applies). Every proposal carries
+the source tag format defined in `voice.md`'s header; spoken-register sources say so.
 
 Propose only — promotion into the main sections or deletion is the author's, done by
 editing the file. Delete any Proposed entry untouched for two months; unreviewed
-accumulation would make the voiceprint less true, not more.
+accumulation would make the voiceprint less true, not more. In the monthly report, note
+which proposals keep recurring (ripe for promotion) and which contradict each other
+(a question for the author) — that's the convergence check: the loop is working when
+read-aloud marks per post trend toward zero.
 
 ## 4. Hygiene
 

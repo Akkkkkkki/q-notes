@@ -50,19 +50,30 @@ resolve stuck work without waiting for the author to feel ready.
      the verdict is "**Ready — queued**": the piece passed, but hold the merge until the
      7-day window clears, and say the date it frees up. The author can always override.
    - Otherwise "**Ready to ship**", a 3-bullet summary (thesis, the one thing worth a
-     second look, maturity level), any voice flags as one-line questions, and nothing
-     else. The goal is that the author can approve from a phone in five minutes.
+     second look, maturity level), any voice flags as one-line questions, plus one
+     standing read-aloud invitation: "通读一遍（最好朗读），把'我不会这么说'的句子
+     贴出来就行，不用解释。" — and nothing else. The goal is that the author can
+     approve from a phone in five minutes.
    - If the author still hesitates on a passing piece, the documented remedy is to set
      `maturity: seedling` and ship — remind them of that contract in the comment, once,
      without nagging.
-4. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
+4. **Author has marked "我不会这么说" sentences** (in PR comments or a review, on this
+   pass or a previous one) → each mark converts into a rule and a fix: rewrite the
+   marked sentence in place (staying inside claim parity), and append a one-line entry
+   to `research/voice.md` `## Proposed` with the `read-aloud mark` tag — a specific word
+   the author rejected becomes a Never candidate, a rejected sentence shape becomes a
+   Rhythm candidate. The mark needs no explanation from the author; inferring the rule
+   is your job, and a mark you can't generalize still gets the sentence fixed. These
+   marks are the highest-signal voice feedback the system gets — never let one expire
+   unprocessed.
+5. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
    gaps, build errors) and push to the PR branch. Only bounce to the author if the gap is
    substantive (a claim needs their judgment), and say precisely which checklist line
    fails and what the smallest fix is.
-5. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
+6. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
    (both languages), re-tier the frontmatter, trim everything that doesn't serve that one
    idea, push, and comment what you cut and why. A shipped note beats a stuck essay.
-6. **PR open > 14 days** → close it. Add one line to the source backlog item:
+7. **PR open > 14 days** → close it. Add one line to the source backlog item:
    `Killed YYYY-MM-DD: <reason>`. Killed is a valid outcome; a zombie PR is not.
 
 ## After the pass

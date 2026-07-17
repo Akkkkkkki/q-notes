@@ -103,6 +103,19 @@ Produce the highest rung available:
    confirmation between the en and zh versions (list the claims once, confirm both
    versions carry them); a **Voice** section listing the verbatim-spine phrases kept and
    any opinion you could not trace to author input (this list should be empty — if it
-   isn't, each entry is phrased as a question for the author, not a claim); and **three
-   title options per language** (the one used plus two alternates), so the author can
-   swap titles at ship time without composing anything.
+   isn't, each entry is phrased as a question for the author, not a claim); an **A/B
+   calibration** section (below); and **three title options per language** (the one used
+   plus two alternates), so the author can swap titles at ship time without composing
+   anything.
+
+## A/B calibration (every draft PR)
+
+Pick 1–3 load-bearing sentences or short passages from the draft — an opening, a claim,
+a closer — and for each, offer 2–3 alternative renderings that differ in something real:
+sentence shape, register, or degree of 中英混排. Label them A/B/C, put the version used
+in the draft first, and ask one question: "哪个像你说的？" The author replies with the
+letter, optionally one line of why; each choice becomes voiceprint signal (`A/B choice`
+source tag) that the gardener mines monthly. Hard cap: **three questions per PR** —
+each must be answerable from a phone in ten seconds, and a skipped question is a valid
+answer. Never block the PR on the A/B replies; the drafted version stands until the
+author says otherwise.
