@@ -80,6 +80,12 @@ export function rejectItem(
     if (/^drafted/i.test(m[1])) {
       return { error: 'Already drafted — handle the draft on the Publish tab instead', status: 400 };
     }
+    if (/^interviewing/i.test(m[1])) {
+      return {
+        error: 'This topic is being interviewed — decline it with “not this topic” on the Answer tab instead',
+        status: 400,
+      };
+    }
     if (/^rejected/i.test(m[1])) return { error: 'Already passed', status: 409 };
     lines[i] = statusLine;
     return { content: lines.join('\n') };

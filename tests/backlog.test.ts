@@ -36,6 +36,12 @@ function fixture(): string {
 
 **One-line thesis:** Done already.
 
+## ${daysAgo(4)} — Being interviewed
+
+**Status:** Interviewing since ${daysAgo(1)}
+
+**One-line thesis:** In flight.
+
 ## ${daysAgo(5)} — Already passed
 
 **Status:** Rejected (${daysAgo(1)}, passed via Today)
@@ -73,9 +79,9 @@ describe('POST /api/backlog/pass', () => {
     expect(content).toContain('**One-line thesis:** A crisp claim.'); // rest of the block intact
     expect(gh.commits[0].message).toBe('backlog: pass "Fresh candidate"');
 
-    // The flow sees it as rejected: no live items remain.
+    // The flow sees it as rejected — it leaves the live list.
     const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
-    expect(data.backlog.live).toHaveLength(0);
+    expect(data.backlog.live.map((i: any) => i.title)).toEqual(['Being interviewed']);
   });
 
   it('records the optional reason on the status line', async () => {
@@ -102,6 +108,16 @@ describe('POST /api/backlog/pass', () => {
     });
     expect(status).toBe(400);
     expect(data.error).toMatch(/Publish tab/);
+  });
+
+  it('refuses to pass a topic that is being interviewed', async () => {
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/backlog/pass', {
+      date: daysAgo(4),
+      title: 'Being interviewed',
+    });
+    expect(status).toBe(400);
+    expect(data.error).toMatch(/Answer tab/);
+    expect(gh.files.get(BACKLOG)).toContain(`**Status:** Interviewing since ${daysAgo(1)}`);
   });
 
   it('409s an item that was already passed', async () => {
