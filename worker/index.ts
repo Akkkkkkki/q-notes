@@ -4,6 +4,7 @@
  * The only writable paths are hard-coded in their modules: this Worker is
  * the path allowlist (docs/companion-vision.md §5).
  *   - research/inbox.md                              (append-spark, below)
+ *   - research/backlog.md                            (pass-backlog, worker/backlog.ts)
  *   - research/interviews/<date>-<slug>.md           (worker/interview.ts)
  *   - research/.companion/push-subscriptions.json    (worker/push.ts)
  *   - src/content/** and drafts/** on PR branches    (apply-slots only, worker/desk.ts)
@@ -19,6 +20,7 @@
 import type { Env } from './types';
 import { getFile, putFile, todayIn, collapse, json } from './github';
 import { getBrief, saveAnswer, closeBrief } from './interview';
+import { passBacklogItem } from './backlog';
 import { listDesk, shipPr, commentPr, killPr, applySlots } from './desk';
 import { getFlow } from './flow';
 import { getPublicKey, subscribe, notifyIfBriefOpen, notifyIfDeskOpen } from './push';
@@ -76,6 +78,8 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await appendSpark(request, env);
       case 'GET /api/sparks':
         return await recentSparks(env);
+      case 'POST /api/backlog/pass':
+        return await passBacklogItem(request, env);
       case 'GET /api/brief':
         return await getBrief(env);
       case 'POST /api/answer':

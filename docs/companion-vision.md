@@ -230,8 +230,8 @@ Decisions and their reasons:
 - **Worker as the only secret-holder, and the only path enforcer.** The PAT never
   reaches the phone. Fine-grained PATs scope to repositories and permission classes,
   not paths — `contents: write` can touch any file in the repo — so the blast-radius
-  containment lives in the Worker: it exposes ~7 narrow endpoints (`append-spark`,
-  `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`, `apply-slots`), hard-codes the
+  containment lives in the Worker: it exposes ~8 narrow endpoints (`append-spark`,
+  `pass-backlog`, `get-brief`, `save-answer`, `list-desk`, `merge-pr`, `comment-pr`, `apply-slots`), hard-codes the
   writable paths (`research/**`, `drafts/**`, plus one narrowly scoped `src/content/**`
   exception granted only to `apply-slots` — next bullet), and never proxies the GitHub API
   generically. Branch protection on `main` (PRs only for `src/content/**`) backs this

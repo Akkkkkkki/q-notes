@@ -23,6 +23,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     #quick input { flex: 1; min-width: 0; }
     #quick button { flex: 0 0 auto; }
     #empty-now { color: var(--green); font-size: 0.9rem; margin-bottom: 0.55rem; }
+    #backlog .explain { font-size: 0.78rem; color: var(--muted); margin: -0.25rem 0 0.55rem; }
+    .topic-actions { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
+    .topic-actions button {
+      font-size: 0.78rem; font-weight: 600; color: var(--body);
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 0.4rem; padding: 0.35rem 0.7rem; min-height: 2.1rem;
+    }
+    .topic-actions .pass { color: #d99; border-color: #3a2626; }
+    .take-panel { margin-top: 0.55rem; }
+    .take-panel textarea { min-height: 3.5rem; }
+    .take-panel .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.45rem; }
     #how { margin-top: 0.5rem; }
     #how summary { cursor: pointer; font-size: 0.8rem; color: var(--dim); }
     #how p { font-size: 0.82rem; color: var(--muted); padding-top: 0.5rem; }
@@ -46,6 +57,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     <section class="stage" id="backlog">
       <h2>Topic queue <span class="count" id="backlog-count"></span><span class="when">unused topics expire after 21 days</span></h2>
+      <p class="explain">You don't write these — Tuesday's pick turns the strongest one into
+        questions for you. Add your take to pull a topic forward, or pass to clear it.</p>
       <div id="backlog-list"></div>
     </section>
 
@@ -66,9 +79,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     <details id="how">
       <summary>How this works</summary>
-      <p>You do two small things: save thoughts (any tab, any time) and answer the
-        week's questions in your own words. The pipeline does the rest on a weekly
-        rhythm — Monday it picks topics from your thoughts, Tuesday it asks you
+      <p>You do three small things: save thoughts (any tab, any time), steer the topic
+        queue (add your take on a topic, or pass on it), and answer the week's questions
+        in your own words. The pipeline does the rest on a weekly rhythm — Monday it
+        picks topics from your thoughts, Tuesday it turns the strongest topic into
         questions, Thursday it writes bilingual drafts from your answers, Friday it
         checks them. You publish with one tap on the Publish tab.</p>
     </details>
@@ -77,9 +91,69 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint">Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges } = QN;
+    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges, refreshBadges, attachDictation } = QN;
 
     function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
+
+    // The two things you can do with a queued topic: put your thinking on it
+    // (a spark — author input outranks scouted topics, so it steers Tuesday's
+    // pick) or pass (marks it rejected so it stops counting down).
+    function topicActions(b, c, chips) {
+      const frag = document.createDocumentFragment();
+      const actions = el('div', 'topic-actions');
+      const panel = el('div', 'take-panel');
+      panel.hidden = true;
+
+      const take = el('button', '', 'Add your take');
+      take.addEventListener('click', () => {
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden) ta.focus();
+      });
+
+      const ta = el('textarea');
+      ta.placeholder = 'Dictate or type what you think — fragments are fine…';
+      ta.enterKeyHint = 'send';
+      const row = el('div', 'row');
+      const dict = attachDictation(ta);
+      if (dict) row.append(dict.mic, dict.lang);
+      const save = el('button', 'btn-primary', 'Save take');
+      save.addEventListener('click', async () => {
+        const text = ta.value.trim();
+        if (!text) return;
+        save.disabled = true;
+        try {
+          await api('/api/spark', { text: 'On “' + b.title + '”: ' + text, date: localDate() });
+          panel.replaceChildren(el('span', 'state', 'saved ✓ — your take steers Tuesday’s pick toward this topic'));
+          refreshBadges(true);
+        } catch (e) {
+          save.disabled = false;
+          if (!e.unauthorized && !e.config) setStatus(e.message);
+        }
+      });
+      row.appendChild(save);
+      panel.append(ta, row);
+
+      const pass = el('button', 'pass', 'Pass');
+      pass.addEventListener('click', async () => {
+        if (!confirm('Pass on “' + b.title + '”? It stops counting down and the pipeline moves on. Passing is a valid outcome.')) return;
+        pass.disabled = true;
+        try {
+          await api('/api/backlog/pass', { date: b.date, title: b.title });
+          c.classList.add('dim');
+          actions.remove();
+          panel.remove();
+          chips.replaceChildren(el('span', 'chip', 'passed ✓'));
+          refreshBadges(true);
+        } catch (e) {
+          pass.disabled = false;
+          if (!e.unauthorized && !e.config) setStatus(e.message);
+        }
+      });
+
+      actions.append(take, pass);
+      frag.append(actions, panel);
+      return frag;
+    }
 
     function render(flow) {
       // Up to you
@@ -128,6 +202,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd'));
         if (b.draftability) chips.appendChild(el('span', 'chip', 'draftability ' + b.draftability.toLowerCase()));
         c.appendChild(chips);
+        c.appendChild(topicActions(b, c, chips));
         backlog.appendChild(c);
       }
       if (flow.backlog.draftedCount || flow.backlog.expiredCount) {

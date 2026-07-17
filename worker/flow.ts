@@ -152,7 +152,7 @@ function attention(
   for (const item of expiring) {
     out.push({
       urgency: 'soon',
-      text: `Backlog: “${item.title}” expires in ${Math.max(item.expiresInDays, 0)}d. Worth an interview, or let it lapse?`,
+      text: `Topic “${item.title}” expires in ${Math.max(item.expiresInDays, 0)}d. Add your take to steer Tuesday's questions toward it, or pass on it.`,
       href: '#backlog',
     });
   }
