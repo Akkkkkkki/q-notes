@@ -251,7 +251,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-06-22 — Humanoid is an interface standard, not a body plan
 
-**Status:** Backlog
+**Status:** Rejected (2026-07-17, passed via Today)
 
 **One-line thesis:** General-purpose robots will copy the parts of humans that buildings and tools require, especially reach and hands, while discarding expensive anatomy such as legs whenever wheels can do the job.
 
