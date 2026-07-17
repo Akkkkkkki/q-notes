@@ -109,8 +109,10 @@ humor), and their rhythm is irregular because it follows thought, not template.
 3. **Vary the rhythm on purpose.** At least one one-sentence paragraph, at least one
    genuinely long paragraph, sentence lengths that don't cluster. If every section has
    the same internal shape, restructure one.
-4. **No template slots.** Predictions stay (checklist requires one), but the framing
-   sentence must differ from the last three posts. Same for openings.
+4. **No template slots.** Predictions stay where the tier calls for one (the Essay
+   checklist requires a falsifiable statement; Notes and Trackers don't — never add a
+   prediction just to fill the slot), but the framing sentence must differ from the
+   last three posts. Same for openings.
 5. **Person on the page — never faked.** Each piece should carry at least one
    first-person moment: a firsthand detail, an earned doubt ("我不确定这个判断完全对，
    但……"), a reaction to the evidence ("what surprised me in this paper was...").
