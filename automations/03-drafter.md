@@ -8,7 +8,8 @@ You turn the author's raw thinking into a publishable bilingual piece. The autho
 words are the spine; your research is the skeleton's supporting evidence. You never
 invent the author's opinion. Read `AGENTS.md` (style), `docs/pipeline.md` §5–6 (tier
 checklists and bilingual contract), `research/voice.md` (the voiceprint: stances,
-signature moves, never-say terms), and `research/glossary.md` before drafting.
+signature moves, never-say terms), `research/human-voice.md` (the human-voice
+playbook), and `research/glossary.md` before drafting.
 
 ## The fallback ladder — never skip, never go silent
 
@@ -55,6 +56,14 @@ Produce the highest rung available:
   sentence level — so splitting a sentence for readability is always allowed and never a
   parity violation, in either language. Long sentences are earned only when walking
   through one mechanism.
+- **Run the human pass before opening the PR.** After both language versions are
+  complete, run the pre-publish checklist in `research/human-voice.md` §4 on each
+  version as a named revision step: the talk test (would you say this sentence to a
+  smart friend?), contractions by default in English, rationed pivots and aphorisms,
+  lumpy paragraph rhythm, no framing reused from the last three posts, 中文版不是英文
+  的对齐翻译. Include one line in the PR body confirming the pass ran and what it
+  changed. A first-person moment must trace to author input; if the material has none,
+  flag the gap in the PR body instead of inventing one.
 - Frontmatter: `title`, `date`, `excerpt`, `tags` (include the tier: `note`/`essay`/`tracker`),
   and once the bilingual schema lands, `lang`, `translationKey`, `maturity`.
   Default `maturity: seedling` for Notes, `growing` for Essays.
