@@ -33,6 +33,8 @@ export interface BacklogItem {
   ageDays: number;
   /** Days until the 21-day expiry; meaningful for live items only. */
   expiresInDays: number;
+  /** The author's sparks that reference this topic (“On ‘<title>’: …”). */
+  takes: Array<{ date: string; text: string }>;
 }
 
 export interface Spark {
@@ -60,6 +62,7 @@ export async function getFlow(env: Env): Promise<Response> {
 
   const sparks = parseSparks(inbox?.content ?? '');
   const backlog = parseBacklog(backlogFile?.content ?? '');
+  for (const item of backlog) item.takes = takesFor(item.title, sparks);
   const live = backlog.filter((b) => b.status === 'live');
 
   const interview =
@@ -85,6 +88,7 @@ export async function getFlow(env: Env): Promise<Response> {
       live,
       draftedCount: backlog.filter((b) => b.status === 'drafted').length,
       expiredCount: backlog.filter((b) => b.status === 'expired').length,
+      passedCount: backlog.filter((b) => b.status === 'rejected').length,
     },
     interview,
     desk,
@@ -179,6 +183,27 @@ function attention(
   return out.sort((a, b) => rank[a.urgency] - rank[b.urgency]);
 }
 
+/**
+ * Sparks saved from a topic card ("On “<title>”: …", the Today tab's
+ * add-your-take flow) — matched back to the topic so the card can show the
+ * author what they already said. Display text drops the provenance URL and
+ * any `→ where it went` consumption annotation.
+ */
+export function takesFor(title: string, sparks: Spark[]): Array<{ date: string; text: string }> {
+  const esc = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`^On [“"]${esc}[”"][:：]\\s*(.+)$`);
+  const out: Array<{ date: string; text: string }> = [];
+  for (const s of sparks) {
+    const m = s.text.match(re);
+    if (!m) continue;
+    // Consumption first: a consumed line reads `take ← url → destination`,
+    // so the provenance URL is only at the end once the `→ …` tail is gone.
+    const text = m[1].replace(/\s*→.*$/, '').replace(/\s*←\s*\S+\s*$/, '').trim();
+    if (text) out.push({ date: s.date, text });
+  }
+  return out;
+}
+
 export function parseSparks(content: string): Spark[] {
   const out: Spark[] = [];
   for (const raw of content.split('\n')) {
@@ -216,6 +241,7 @@ export function parseBacklog(content: string): BacklogItem[] {
       status: classifyStatus(rawStatus),
       ageDays,
       expiresInDays: BACKLOG_EXPIRY_DAYS - ageDays,
+      takes: [],
     });
   }
   return out;

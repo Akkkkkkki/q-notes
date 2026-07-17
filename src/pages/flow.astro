@@ -31,6 +31,11 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       border-radius: 0.4rem; padding: 0.35rem 0.7rem; min-height: 2.1rem;
     }
     .topic-actions .pass { color: #d99; border-color: #3a2626; }
+    .take {
+      font-size: 0.85rem; color: var(--body);
+      background: #131313; border: 1px solid #242424; border-left: 2px solid var(--green);
+      border-radius: 0.4rem; padding: 0.45rem 0.6rem; margin-top: 0.5rem; margin-bottom: 0.35rem;
+    }
     .take-panel { margin-top: 0.55rem; }
     .take-panel textarea { min-height: 3.5rem; }
     .take-panel .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.45rem; }
@@ -95,6 +100,14 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
 
+    // A take the author saved on this topic, shown back on its card so a
+    // refresh proves it stuck (it lives as a spark in the inbox).
+    function takeLine(text, sub) {
+      const t = el('div', 'take', '“' + text + '”');
+      t.appendChild(el('div', 'sub', 'your take · ' + sub));
+      return t;
+    }
+
     // The two things you can do with a queued topic: put your thinking on it
     // (a spark — author input outranks scouted topics, so it steers Tuesday's
     // pick) or pass (marks it rejected so it stops counting down).
@@ -123,11 +136,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         save.disabled = true;
         try {
           await api('/api/spark', { text: 'On “' + b.title + '”: ' + text, date: localDate() });
-          panel.replaceChildren(el('span', 'state', 'saved ✓ — your take steers Tuesday’s pick toward this topic'));
+          // Show the take on the card right away — the same place it will
+          // reappear from the server on the next load.
+          chips.before(takeLine(text, 'saved ✓ · goes into Tuesday’s pick and the draft'));
+          ta.value = '';
+          panel.hidden = true;
+          setStatus('✓ saved to your thoughts');
           refreshBadges(true);
         } catch (e) {
-          save.disabled = false;
           if (!e.unauthorized && !e.config) setStatus(e.message);
+        } finally {
+          save.disabled = false;
         }
       });
       row.appendChild(save);
@@ -198,6 +217,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         const c = card();
         c.appendChild(el('div', 'title', b.title));
         if (b.thesis) c.appendChild(el('div', 'sub', b.thesis));
+        for (const t of b.takes || []) {
+          c.appendChild(takeLine(t.text, t.date + ' · goes into Tuesday’s pick and the draft'));
+        }
         const chips = el('div', 'sub');
         chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd'));
         if (b.draftability) chips.appendChild(el('span', 'chip', 'draftability ' + b.draftability.toLowerCase()));
@@ -205,9 +227,13 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         c.appendChild(topicActions(b, c, chips));
         backlog.appendChild(c);
       }
-      if (flow.backlog.draftedCount || flow.backlog.expiredCount) {
+      const decayed = [];
+      if (flow.backlog.draftedCount) decayed.push(flow.backlog.draftedCount + ' drafted');
+      if (flow.backlog.expiredCount) decayed.push(flow.backlog.expiredCount + ' expired');
+      if (flow.backlog.passedCount) decayed.push(flow.backlog.passedCount + ' passed by you');
+      if (decayed.length) {
         backlog.appendChild(card('dim')).textContent =
-          flow.backlog.draftedCount + ' drafted · ' + flow.backlog.expiredCount + ' expired (the queue decays by design)';
+          decayed.join(' · ') + ' (the queue decays by design)';
       }
 
       // This week's questions
