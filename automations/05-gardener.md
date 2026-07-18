@@ -37,8 +37,12 @@ Re-read the published posts in `src/content/posts/`:
 
 Re-read the month's interview answers, published pieces, the voice-samples corpus
 (`research/voice-samples/`), the A/B choices the author made in draft-PR comments, and
-the read-aloud marks the ship gate processed. Then propose 1–3 additions to
-`research/voice.md` under its `## Proposed (gardener)` heading:
+the read-aloud marks the ship gate processed. The Desk also appends raw dated records
+(`A/B choice` / `read-aloud mark` tags) directly to `voice.md ## Proposed` — those are
+signal, not finished entries: distill recurring raw records that point the same
+direction into one proposed rule and delete the raw records it came from (a raw record
+nobody distilled or promoted expires on the normal two-month clock). Then propose 1–3
+additions to `research/voice.md` under its `## Proposed (gardener)` heading:
 
 - a stance now taken in public (one line, citing the post that took it);
 - a signature phrasing worth preserving verbatim;

@@ -119,3 +119,22 @@ source tag) that the gardener mines monthly. Hard cap: **three questions per PR*
 each must be answerable from a phone in ten seconds, and a skipped question is a valid
 answer. Never block the PR on the A/B replies; the drafted version stands until the
 author says otherwise.
+
+The section must use this exact shape — the phone client (Publish tab) parses it into
+one-tap questions, and anything else is invisible to the author's thumb:
+
+```md
+## A/B calibration
+
+哪个像你说的？点选或回复编号（例：1B）；跳过也是有效回答。
+
+1. <where the passage sits — e.g. "en opening" / "zh 结尾">
+   - A. <the version used in the draft>
+   - B. <alternative>
+   - C. <optional third alternative>
+```
+
+Numbered question lines, lettered options as list items, the drafted version always A.
+The author's choices come back as PR comments (`**A/B calibration — Q1: B.**`) and as
+raw dated records the Desk appends to `research/voice.md ## Proposed`; treat an answered
+question as settled — apply the chosen rendering on your next pass over the PR.

@@ -58,14 +58,17 @@ resolve stuck work without waiting for the author to feel ready.
      `maturity: seedling` and ship — remind them of that contract in the comment, once,
      without nagging.
 4. **Author has marked "我不会这么说" sentences** (in PR comments or a review, on this
-   pass or a previous one) → each mark converts into a rule and a fix: rewrite the
-   marked sentence in place (staying inside claim parity), and append a one-line entry
-   to `research/voice.md` `## Proposed` with the `read-aloud mark` tag — a specific word
-   the author rejected becomes a Never candidate, a rejected sentence shape becomes a
-   Rhythm candidate. The mark needs no explanation from the author; inferring the rule
-   is your job, and a mark you can't generalize still gets the sentence fixed. These
-   marks are the highest-signal voice feedback the system gets — never let one expire
-   unprocessed.
+   pass or a previous one — Desk marks arrive as a `**读稿标记 — 我不会这么说：**`
+   comment with a bulleted sentence list) → each mark converts into a rule and a fix:
+   rewrite the marked sentence in place (staying inside claim parity), and record a
+   one-line entry in `research/voice.md` `## Proposed` with the `read-aloud mark` tag —
+   a specific word the author rejected becomes a Never candidate, a rejected sentence
+   shape becomes a Rhythm candidate. For Desk marks, the raw record is already there
+   (the Desk appends `不会这么说："…"` lines when the author taps) — refine that raw
+   line in place into the generalized rule instead of appending a duplicate. The mark
+   needs no explanation from the author; inferring the rule is your job, and a mark you
+   can't generalize still gets the sentence fixed. These marks are the highest-signal
+   voice feedback the system gets — never let one expire unprocessed.
 5. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
    gaps, build errors) and push to the PR branch. Only bounce to the author if the gap is
    substantive (a claim needs their judgment), and say precisely which checklist line

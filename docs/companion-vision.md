@@ -12,7 +12,11 @@ surfaces and the Worker API live in this repo (`src/pages/capture.astro`,
 `tests/`; setup steps are in the README. 2026-07 UX redesign: the four surfaces now
 share one shell (`src/layouts/CompanionLayout.astro`) with a bottom tab bar
 (Today / Capture / Answer / Publish), count badges, one connect-device onboarding,
-and plain-language copy throughout — same URLs, same Worker API. Builds on
+and plain-language copy throughout — same URLs, same Worker API. 2026-07: the
+voice-learning loop's phone half ([issue #44](https://github.com/Akkkkkkki/q-notes/issues/44)
+Phase 2) landed on the Publish tab — A/B calibration questions parsed from the draft
+PR body, a Read & mark view for "我不会这么说" sentences, and every tap recorded both
+as a PR comment and as a raw `## Proposed` record in `research/voice.md`. Builds on
 [`docs/pipeline.md`](./pipeline.md); references issues
 [#7](https://github.com/Akkkkkkki/q-notes/issues/7) (bilingual site) and
 [#8](https://github.com/Akkkkkkki/q-notes/issues/8) (inbox seeding).

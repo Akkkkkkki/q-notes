@@ -6,6 +6,7 @@
  *   - research/inbox.md                              (append-spark, below)
  *   - research/backlog.md                            (pass-backlog, worker/backlog.ts)
  *   - research/interviews/<date>-<slug>.md           (worker/interview.ts)
+ *   - research/voice.md                              (Proposed records only, worker/voice.ts)
  *   - research/.companion/push-subscriptions.json    (worker/push.ts)
  *   - src/content/** and drafts/** on PR branches    (apply-slots only, worker/desk.ts)
  *
@@ -21,7 +22,7 @@ import type { Env } from './types';
 import { getFile, putFile, todayIn, collapse, json } from './github';
 import { getBrief, saveAnswer, closeBrief } from './interview';
 import { passBacklogItem } from './backlog';
-import { listDesk, shipPr, commentPr, killPr, applySlots } from './desk';
+import { listDesk, shipPr, commentPr, killPr, applySlots, getDraft } from './desk';
 import { getFlow } from './flow';
 import { getPublicKey, subscribe, notifyIfBriefOpen, notifyIfDeskOpen } from './push';
 
@@ -88,6 +89,8 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await closeBrief(request, env);
       case 'GET /api/desk':
         return await listDesk(env);
+      case 'GET /api/desk/draft':
+        return await getDraft(env, url);
       case 'GET /api/flow':
         return await getFlow(env);
       case 'POST /api/desk/ship':

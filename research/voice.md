@@ -21,6 +21,11 @@ Source annotation: every proposed entry carries a date and a source tag —
 before use in prose — chat is raw material, not copy. Promoted entries may keep the tag
 or drop it; proposals must have one.
 
+`A/B choice` and `read-aloud mark` records land here automatically when the author taps
+on the Desk (Publish tab) — they are records of author decisions, not automation
+proposals. They start raw ("chose B — …" / "不会这么说：…"); the ship gate and gardener
+refine them into rules, and promotion stays the author's move like everything else.
+
 ## Stances
 
 Positions taken in public, one line each, with the post that took them. A good stance is

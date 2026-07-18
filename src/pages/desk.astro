@@ -72,6 +72,24 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       padding: 0.35rem 0.7rem;
       min-height: 2.1rem;
     }
+    .ab { margin-bottom: 0.7rem; }
+    .ab h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.3rem; }
+    .ab .q { margin-bottom: 0.6rem; }
+    .ab .q-label { font-size: 0.82rem; color: var(--body); margin-bottom: 0.3rem; }
+    .ab .why-row { display: flex; gap: 0.5rem; margin-top: 0.35rem; }
+    .ab .why-row input { flex: 1; min-width: 0; }
+    .readmark { margin-bottom: 0.7rem; }
+    .readmark .file-label { font-size: 0.75rem; color: var(--muted); margin: 0.7rem 0 0.35rem; font-family: ui-monospace, monospace; }
+    .readmark p.para { font-size: 0.92rem; line-height: 1.65; color: var(--body); margin-bottom: 0.7rem; }
+    .readmark p.para.heading { font-weight: 650; color: var(--text); }
+    .readmark .sentence { cursor: pointer; border-radius: 0.25rem; padding: 0.08rem 0; }
+    .readmark .sentence.marked {
+      background: rgba(229, 72, 77, 0.18);
+      color: #f0b0b3;
+      text-decoration: line-through;
+      text-decoration-color: rgba(229, 72, 77, 0.6);
+    }
+    .readmark .send-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
     .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
     .panel { border-top: 1px solid #242424; margin-top: 0.7rem; padding-top: 0.7rem; }
     .panel .panel-lede { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.3rem; }
@@ -103,6 +121,25 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     function showEmpty(msg) {
       $('empty').textContent = msg;
       $('empty').hidden = false;
+    }
+
+    // Rough markdown→text for the read-aloud view; the author marks what they
+    // see, and the ship gate locates the sentence in the file itself.
+    function plain(md) {
+      return md
+        .replace(/^#{1,6}\s*/, '')
+        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/^\s*(?:[-*]|\d+[.)])\s+/gm, '');
+    }
+
+    function splitSentences(text) {
+      return (text.match(/[^。！？.!?]+[。！？.!?]*["”』」)]*/g) || [text])
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
 
     function statusFor(verdict) {
@@ -169,6 +206,53 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         card.appendChild(voice);
       }
 
+      // A/B calibration (issue #44): the drafter's 2–3 ten-second questions,
+      // already-answered ones hidden. Tap an option, optionally say why, send.
+      // Skipping is a valid answer — it just dismisses the question here.
+      const abPending = pr.ab.questions.filter((q) => !pr.ab.answered.includes(q.n));
+      if (abPending.length) {
+        const ab = el('div', 'ab');
+        ab.appendChild(el('h3', '', '哪个像你说的？'));
+        for (const q of abPending) {
+          const wrap = el('div', 'q');
+          wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
+          const opts = el('div', 'options');
+          let picked = null;
+          const whyRow = el('div', 'why-row');
+          whyRow.hidden = true;
+          const why = el('input');
+          why.placeholder = '一句为什么 — 可留空';
+          const send = el('button', 'btn-primary', 'Send');
+          send.addEventListener('click', async () => {
+            if (!picked) return;
+            send.disabled = true;
+            try {
+              await api('/api/desk/comment', {
+                number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
+              });
+              wrap.replaceChildren(el('p', 'q-label', 'Q' + q.n + ' — ' + picked + ' ✓ 已记录'));
+            } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
+          });
+          why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
+          whyRow.append(why, send);
+          for (const option of q.options) {
+            const b = el('button', '', option.letter + ' · ' + option.text);
+            b.addEventListener('click', () => {
+              picked = option.letter;
+              whyRow.hidden = false;
+              for (const sib of opts.children) sib.classList.toggle('picked', sib === b);
+            });
+            opts.appendChild(b);
+          }
+          const skip = el('button', 'btn-ghost', '跳过');
+          skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
+          skip.addEventListener('click', () => wrap.remove());
+          wrap.append(opts, whyRow, skip);
+          ab.appendChild(wrap);
+        }
+        card.appendChild(ab);
+      }
+
       const actions = el('div', 'actions');
       const panel = el('div', 'panel');
       panel.hidden = true;
@@ -186,6 +270,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       ship.addEventListener('click', () => togglePanel('ship', buildShipPanel));
       const oneChange = el('button', 'btn-ghost', 'Ask for one change');
       oneChange.addEventListener('click', () => togglePanel('change', buildChangePanel));
+      const readMark = el('button', 'btn-ghost', 'Read & mark');
+      readMark.addEventListener('click', () => togglePanel('marks', buildMarkPanel));
       const downgrade = el('button', 'btn-ghost', 'Make it a note');
       downgrade.addEventListener('click', async () => {
         if (!confirm('Ask the pipeline to shrink this into a short note instead of a full post?')) return;
@@ -205,7 +291,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           refreshBadges(true);
         } catch (e) { kill.disabled = false; setStatus('didn’t work — try again'); }
       });
-      actions.append(ship, oneChange, downgrade, kill);
+      actions.append(ship, oneChange, readMark, downgrade, kill);
       card.appendChild(actions);
       card.appendChild(panel);
 
@@ -267,6 +353,64 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           }
         });
         panel.append(go, state);
+      }
+
+      // Read & mark (issue #44): the draft as tappable sentences. Tap what
+      // you'd never say — no explanation needed; the Friday editor rewrites
+      // each marked sentence and distills the rule into the voiceprint.
+      function buildMarkPanel(panel) {
+        panel.appendChild(el('p', 'panel-lede',
+          '通读一遍（最好朗读），点出“我不会这么说”的句子 — 不用解释，编辑会改写并沉淀成规则。'));
+        const container = el('div', 'readmark');
+        panel.appendChild(container);
+        const marked = new Set();
+        const sendRow = el('div', 'send-row');
+        const send = el('button', 'btn-primary', 'Send marks');
+        send.disabled = true;
+        const state = el('span', 'state');
+        sendRow.append(send, state);
+        panel.appendChild(sendRow);
+        const update = () => {
+          send.textContent = marked.size ? 'Send ' + marked.size + ' 句' : 'Send marks';
+          send.disabled = !marked.size;
+        };
+
+        (async () => {
+          for (const path of pr.contentFiles.slice(0, 3)) {
+            container.appendChild(el('div', 'file-label', path));
+            try {
+              const { paragraphs } = await api(
+                '/api/desk/draft?number=' + pr.number + '&path=' + encodeURIComponent(path));
+              for (const para of paragraphs) {
+                const p = el('p', 'para' + (/^#{1,6}\s/.test(para) ? ' heading' : ''));
+                for (const s of splitSentences(plain(para))) {
+                  const span = el('span', 'sentence', s);
+                  span.addEventListener('click', () => {
+                    if (marked.has(s)) { marked.delete(s); span.classList.remove('marked'); }
+                    else { marked.add(s); span.classList.add('marked'); }
+                    update();
+                  });
+                  p.append(span, ' ');
+                }
+                container.appendChild(p);
+              }
+            } catch (e) {
+              container.appendChild(el('p', 'para', 'couldn’t load this file — read it in the preview instead'));
+            }
+          }
+        })();
+
+        send.addEventListener('click', async () => {
+          send.disabled = true;
+          try {
+            const n = marked.size;
+            await api('/api/desk/comment', { number: pr.number, kind: 'marks', marks: [...marked] });
+            panel.replaceChildren(el('span', 'state', '✓ ' + n + ' 句已记录 — 改写和规则交给周五的编辑'));
+          } catch (e) {
+            send.disabled = false;
+            state.textContent = 'didn’t send — try again';
+          }
+        });
       }
 
       function buildChangePanel(panel) {
