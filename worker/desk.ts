@@ -67,7 +67,7 @@ interface PrSummary {
   html_url: string;
   created_at: string;
   draft: boolean;
-  head: { ref: string; repo: { full_name: string } | null };
+  head: { ref: string; sha: string; repo: { full_name: string } | null };
 }
 
 export async function listOpenContentPrs(
@@ -98,9 +98,12 @@ export async function listDesk(env: Env): Promise<Response> {
       SLOT_WRITABLE_PREFIXES.some((p) => f.startsWith(p)) && f.endsWith('.md')
     );
 
+    // Read by commit SHA, not branch name: a fork PR's branch doesn't exist
+    // in this repo, but its commits are reachable in the repo's object
+    // network. Writes stay branch-scoped and same-repo-only (applySlots).
     const lastLines: DeskPr['lastLines'] = [];
     for (const path of contentFiles.slice(0, 3)) {
-      const file = await getFile(env, path, pr.head.ref);
+      const file = await getFile(env, path, pr.head.sha);
       if (file) lastLines.push({ path, text: lastParagraph(file.content) });
     }
 
@@ -280,7 +283,7 @@ export async function getDraft(env: Env, url: URL): Promise<Response> {
   if (!pr.files.includes(path) || !slotWritable) {
     return json({ error: 'path must be a content file changed by this PR' }, 400);
   }
-  const file = await getFile(env, path, pr.pr.head.ref);
+  const file = await getFile(env, path, pr.pr.head.sha);
   if (!file) return json({ error: 'File not found on PR branch' }, 404);
   const prose = file.content.replace(/^---\n[\s\S]*?\n---\n?/, '');
   const paragraphs = prose

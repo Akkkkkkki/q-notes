@@ -16,7 +16,7 @@ export interface MockPr {
   body: string | null;
   draft?: boolean;
   created_at?: string;
-  head?: { ref: string; repo: { full_name: string } | null };
+  head?: { ref: string; sha?: string; repo: { full_name: string } | null };
   files: string[];
   comments: string[];
   merged?: boolean;
@@ -164,7 +164,9 @@ export class MockGitHub {
       draft: pr.draft ?? false,
       html_url: `https://github.com/${REPO}/pull/${pr.number}`,
       created_at: pr.created_at,
-      head: pr.head,
+      // Like the real API, head carries both the branch name and the commit
+      // SHA; the default aliases sha to the ref so branch-keyed seeds resolve.
+      head: pr.head ? { ...pr.head, sha: pr.head.sha ?? pr.head.ref } : pr.head,
       merged: pr.merged ?? false,
     };
   }

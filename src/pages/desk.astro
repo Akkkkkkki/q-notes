@@ -363,6 +363,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           '通读一遍（最好朗读），点出“我不会这么说”的句子 — 不用解释，编辑会改写并沉淀成规则。'));
         const container = el('div', 'readmark');
         panel.appendChild(container);
+        // Keyed by span, not sentence text: a repeated sentence must toggle
+        // per occurrence. Duplicates collapse at send time.
         const marked = new Set();
         const sendRow = el('div', 'send-row');
         const send = el('button', 'btn-primary', 'Send marks');
@@ -386,8 +388,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
                 for (const s of splitSentences(plain(para))) {
                   const span = el('span', 'sentence', s);
                   span.addEventListener('click', () => {
-                    if (marked.has(s)) { marked.delete(s); span.classList.remove('marked'); }
-                    else { marked.add(s); span.classList.add('marked'); }
+                    if (marked.has(span)) { marked.delete(span); span.classList.remove('marked'); }
+                    else { marked.add(span); span.classList.add('marked'); }
                     update();
                   });
                   p.append(span, ' ');
@@ -403,9 +405,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         send.addEventListener('click', async () => {
           send.disabled = true;
           try {
-            const n = marked.size;
-            await api('/api/desk/comment', { number: pr.number, kind: 'marks', marks: [...marked] });
-            panel.replaceChildren(el('span', 'state', '✓ ' + n + ' 句已记录 — 改写和规则交给周五的编辑'));
+            const marks = [...new Set([...marked].map((s) => s.textContent))];
+            await api('/api/desk/comment', { number: pr.number, kind: 'marks', marks });
+            panel.replaceChildren(el('span', 'state', '✓ ' + marks.length + ' 句已记录 — 改写和规则交给周五的编辑'));
           } catch (e) {
             send.disabled = false;
             state.textContent = 'didn’t send — try again';

@@ -241,6 +241,19 @@ describe('GET /api/desk/draft', () => {
     ]);
   });
 
+  it('reads by commit SHA, so a fork PR draft still loads', async () => {
+    gh.prs[0].head = { ref: 'fork-branch', sha: 'fork-sha-1', repo: { full_name: 'someone/else' } };
+    gh.seedFile('src/content/posts/something-sharp.md', POST, 'fork-sha-1');
+    const { status, data } = await call(
+      worker,
+      makeEnv(),
+      'GET',
+      '/api/desk/draft?number=7&path=' + encodeURIComponent('src/content/posts/something-sharp.md')
+    );
+    expect(status).toBe(200);
+    expect(data.paragraphs[0]).toContain('First paragraph');
+  });
+
   it('rejects files outside the PR diff or outside content paths', async () => {
     for (const path of [
       'src/content/posts/other.md',
