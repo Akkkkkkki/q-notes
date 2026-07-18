@@ -14,6 +14,13 @@ Automations only ever *propose* (bottom section) and never promote their own pro
 Keep every entry to one line. If an entry stops being true, delete it; a stale
 voiceprint is worse than none.
 
+Source annotation: every proposed entry carries a date and a source tag —
+`chat observation`, `voice sample`, `interview`, `retell`, `A/B choice`, or
+`read-aloud mark`. Entries from spoken sources (chat, voice memos, retells) add
+`spoken register`: they capture word choice and stance, but their syntax gets adapted
+before use in prose — chat is raw material, not copy. Promoted entries may keep the tag
+or drop it; proposals must have one.
+
 ## Stances
 
 Positions taken in public, one line each, with the post that took them. A good stance is
@@ -72,9 +79,10 @@ Sentence-level texture, per language and for the 中英 mix.
 
 ## Proposed (gardener)
 
-Monthly candidates mined from interview answers and published pieces. Promote a line up
-into its section or delete it; entries untouched for two months get deleted by the
-gardener.
+Monthly candidates mined from interview answers, published pieces, the voice-samples
+corpus (`research/voice-samples/`), retell comparisons, and the month's A/B choices and
+read-aloud marks. Promote a line up into its section or delete it; entries untouched
+for two months get deleted by the gardener.
 
 - 2026-07-17 (chat observation — spoken register, confirm before promoting) Stance: 博客声音的目标是"像人写的"先于"像我写的"；可以偶尔口语和幽默，但不轻浮。
 - 2026-07-17 (chat observation) Rhythm: 中英自然混排——中文句里嵌英文词组（放下 ego / take a step back / best practice），写作中可保留但节制。
