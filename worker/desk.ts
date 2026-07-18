@@ -1,5 +1,6 @@
 import type { Env } from './types';
 import { getFile, putFile, gh, json, collapse, todayIn } from './github';
+import { appendProposed, excerpt } from './voice';
 
 /**
  * Desk surface (Companion Phase 3, docs/companion-vision.md §3.3).
@@ -28,6 +29,17 @@ const MAX_PR_FILES = 100;
 const MAX_COMMENT_LENGTH = 4000;
 const MAX_TITLE_LENGTH = 200;
 const MAX_LAST_LINE_LENGTH = 1000;
+const MAX_AB_WHY_LENGTH = 500;
+const MAX_MARKS = 30;
+const MAX_MARK_LENGTH = 600;
+
+export interface AbQuestion {
+  /** 1-based question number as written in the PR body. */
+  n: number;
+  /** Where the passage sits ("en opening", "zh closer", …). */
+  label: string;
+  options: Array<{ letter: string; text: string }>;
+}
 
 export interface DeskPr {
   number: number;
@@ -41,6 +53,8 @@ export interface DeskPr {
   verdict: string | null;
   previewUrl: string | null;
   voice: { spine: string[]; flags: string[] };
+  /** A/B calibration questions from the PR body, minus already-answered ones. */
+  ab: { questions: AbQuestion[]; answered: number[] };
   titleOptions: string[];
   /** Current last paragraph per content file, for the last-line slot. */
   lastLines: Array<{ path: string; text: string }>;
@@ -53,7 +67,7 @@ interface PrSummary {
   html_url: string;
   created_at: string;
   draft: boolean;
-  head: { ref: string; repo: { full_name: string } | null };
+  head: { ref: string; sha: string; repo: { full_name: string } | null };
 }
 
 export async function listOpenContentPrs(
@@ -84,9 +98,12 @@ export async function listDesk(env: Env): Promise<Response> {
       SLOT_WRITABLE_PREFIXES.some((p) => f.startsWith(p)) && f.endsWith('.md')
     );
 
+    // Read by commit SHA, not branch name: a fork PR's branch doesn't exist
+    // in this repo, but its commits are reachable in the repo's object
+    // network. Writes stay branch-scoped and same-repo-only (applySlots).
     const lastLines: DeskPr['lastLines'] = [];
     for (const path of contentFiles.slice(0, 3)) {
-      const file = await getFile(env, path, pr.head.ref);
+      const file = await getFile(env, path, pr.head.sha);
       if (file) lastLines.push({ path, text: lastParagraph(file.content) });
     }
 
@@ -102,6 +119,7 @@ export async function listDesk(env: Env): Promise<Response> {
       verdict: latestVerdict(comments),
       previewUrl: extractPreviewUrl(comments),
       voice: { spine: body.spine, flags: body.flags },
+      ab: { questions: parseAbQuestions(pr.body ?? ''), answered: answeredAbQuestions(comments) },
       titleOptions: body.titleOptions,
       lastLines,
     });
@@ -159,6 +177,10 @@ export async function commentPr(request: Request, env: Env): Promise<Response> {
     kind?: string;
     text?: string;
     decision?: string;
+    question?: number;
+    choice?: string;
+    why?: string;
+    marks?: string[];
   }>(request);
   if (!body) return json({ error: 'Body must be JSON' }, 400);
   const pr = await contentPrOrNull(env, body.number);
@@ -171,7 +193,11 @@ export async function commentPr(request: Request, env: Env): Promise<Response> {
 
   // The Worker, not the client, decides what a Desk comment looks like —
   // each kind maps to a phrasing the ship gate / drafter prompts understand.
+  // The voice-learning kinds (ab, marks) also append a raw record to
+  // research/voice.md ## Proposed, tagged with its source (issue #44 Phase 2).
   let comment: string;
+  let proposed: string[] = [];
+  const date = todayIn(env.SPARK_TIMEZONE);
   switch (body.kind) {
     case 'one-change':
       if (!text) return json({ error: 'text is required' }, 400);
@@ -191,13 +217,80 @@ export async function commentPr(request: Request, env: Env): Promise<Response> {
     case 'downgrade':
       comment = `**Downgrade to note** — extract the strongest single idea, re-tier the frontmatter, trim the rest (the documented remedy).${text ? ` ${text}` : ''}\n\n_(via Desk)_`;
       break;
+    case 'ab': {
+      // The chosen text comes from the PR body on the server side, so the
+      // record always quotes what the drafter actually offered.
+      const questions = parseAbQuestions(pr.pr.body ?? '');
+      const question = questions.find((q) => q.n === Number(body.question));
+      const option = question?.options.find((o) => o.letter === body.choice);
+      if (!question || !option) {
+        return json({ error: 'question/choice does not match an A/B option in this PR' }, 400);
+      }
+      const why = collapse(body.why ?? '');
+      if (why.length > MAX_AB_WHY_LENGTH) {
+        return json({ error: `why exceeds ${MAX_AB_WHY_LENGTH} characters` }, 400);
+      }
+      comment =
+        `**A/B calibration — Q${question.n}: ${option.letter}.** “${option.text}”` +
+        (why ? `\n\nWhy: ${why}` : '') +
+        `\n\n_(via Desk)_`;
+      proposed = [
+        `- ${date} (A/B choice, PR #${pr.number}) ${question.label}: chose ${option.letter} — “${excerpt(option.text)}”${why ? `; why: ${why}` : ''}`,
+      ];
+      break;
+    }
+    case 'marks': {
+      const marks = Array.isArray(body.marks) ? body.marks.map((m) => collapse(String(m))).filter(Boolean) : [];
+      if (!marks.length) return json({ error: 'marks must be a non-empty array of sentences' }, 400);
+      if (marks.length > MAX_MARKS) return json({ error: `at most ${MAX_MARKS} marks per send` }, 400);
+      if (marks.some((m) => m.length > MAX_MARK_LENGTH)) {
+        return json({ error: `each mark must be under ${MAX_MARK_LENGTH} characters` }, 400);
+      }
+      comment =
+        `**读稿标记 — 我不会这么说：**\n\n` +
+        marks.map((m) => `- “${m}”`).join('\n') +
+        `\n\n_(via Desk)_`;
+      proposed = marks.map(
+        (m) => `- ${date} (read-aloud mark, PR #${pr.number}) 不会这么说：“${excerpt(m)}”`
+      );
+      break;
+    }
     default:
-      return json({ error: 'kind must be one-change, voice, or downgrade' }, 400);
+      return json({ error: 'kind must be one-change, voice, downgrade, ab, or marks' }, 400);
   }
 
   const res = await gh(env, 'POST', `issues/${pr.number}/comments`, { body: comment });
   if (!res.ok) return json({ error: `GitHub API error (${res.status})` }, 502);
-  return json({ ok: true });
+
+  // Best-effort: the PR comment is the primary record the automations act on;
+  // a failed voiceprint append is reported, never a failed request.
+  let voiceprint = true;
+  if (proposed.length) {
+    voiceprint = await appendProposed(env, proposed, `desk: voice signal (#${pr.number})`).catch(() => false);
+  }
+  return json({ ok: true, voiceprint });
+}
+
+/**
+ * The draft's prose for the read-aloud marking UI: frontmatter stripped,
+ * paragraphs split, read from the PR's own branch. Read-only.
+ */
+export async function getDraft(env: Env, url: URL): Promise<Response> {
+  const pr = await contentPrOrNull(env, Number(url.searchParams.get('number')));
+  if (!pr) return json({ error: 'Not an open content PR' }, 400);
+  const path = url.searchParams.get('path') ?? '';
+  const slotWritable = SLOT_WRITABLE_PREFIXES.some((p) => path.startsWith(p)) && path.endsWith('.md');
+  if (!pr.files.includes(path) || !slotWritable) {
+    return json({ error: 'path must be a content file changed by this PR' }, 400);
+  }
+  const file = await getFile(env, path, pr.pr.head.sha);
+  if (!file) return json({ error: 'File not found on PR branch' }, 404);
+  const prose = file.content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  const paragraphs = prose
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return json({ path, paragraphs });
 }
 
 export async function killPr(request: Request, env: Env): Promise<Response> {
@@ -370,6 +463,41 @@ export function parsePrBody(body: string): {
   const titleOptions = bullets(sectionAfter(body, /title options/i));
 
   return { tier, spine, flags, titleOptions };
+}
+
+/**
+ * A/B calibration questions from the drafter's PR body (routine 03 defines
+ * the machine-readable shape: numbered question lines, lettered options as
+ * list items, the drafted version first). Tolerant of ./)/、 delimiters.
+ */
+export function parseAbQuestions(body: string): AbQuestion[] {
+  const section = sectionAfter(body, /a\s*\/\s*b/i);
+  if (!section) return [];
+  const questions: AbQuestion[] = [];
+  let current: AbQuestion | null = null;
+  for (const line of section.split('\n')) {
+    const q = line.match(/^\s*(\d+)[.)、]\s+(.*)$/);
+    if (q) {
+      current = { n: Number(q[1]), label: q[2].trim(), options: [] };
+      questions.push(current);
+      continue;
+    }
+    const o = line.match(/^\s*(?:[-*]\s*)?([A-E])[.)、]\s+(.*)$/);
+    if (o && current) current.options.push({ letter: o[1], text: o[2].trim() });
+  }
+  // A question needs a real choice; the drafter's hard cap is three.
+  return questions.filter((q) => q.options.length >= 2).slice(0, 3);
+}
+
+/** Question numbers already answered via Desk comments ("**A/B calibration — Q1: B.**"). */
+export function answeredAbQuestions(comments: string[]): number[] {
+  const answered = new Set<number>();
+  for (const c of comments) {
+    for (const m of c.matchAll(/\*\*A\/B[^*]*?Q(\d+)[:：]\s*[A-E]/gi)) {
+      answered.add(Number(m[1]));
+    }
+  }
+  return [...answered];
 }
 
 /** Lines of the body from the heading/label matching `pattern` to the next heading. */
