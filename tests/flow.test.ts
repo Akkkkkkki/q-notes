@@ -131,6 +131,17 @@ describe('parseBacklog', () => {
     expect(items[0].expiresInDays).toBe(19);
     expect(items[1].expiresInDays).toBe(3);
   });
+
+  it('projects the 21-day clock: a still-Backlog item past expiry reads as expired', () => {
+    // The scout marks these Expired in the file, but it's an external routine;
+    // until it runs the file still says Backlog. The view must not leave the
+    // item stuck in the live queue at "expires in 0d".
+    const items = parseBacklog(
+      `# Research Backlog\n\n## ${daysAgo(21)} — Aged out, scout hasn't run\n\n**Status:** Backlog\n\n**One-line thesis:** Past its clock.\n`
+    );
+    expect(items[0].status).toBe('expired');
+    expect(items[0].expiresInDays).toBeLessThanOrEqual(0);
+  });
 });
 
 describe('parseSparks', () => {
