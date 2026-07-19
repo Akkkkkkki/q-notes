@@ -238,7 +238,7 @@ export function parseBacklog(content: string): BacklogItem[] {
       title: head[2].trim(),
       thesis: body.match(/\*\*One-line thesis:\*\*\s*(.+)/)?.[1].trim() ?? '',
       draftability: body.match(/\*\*Draftability:\*\*\s*(High|Medium|Low)/i)?.[1] ?? null,
-      status: classifyStatus(rawStatus),
+      status: deriveStatus(rawStatus, ageDays),
       ageDays,
       expiresInDays: BACKLOG_EXPIRY_DAYS - ageDays,
       takes: [],
@@ -252,6 +252,31 @@ function classifyStatus(raw: string): BacklogItem['status'] {
   if (/^drafted/i.test(raw)) return 'drafted';
   if (/^rejected/i.test(raw)) return 'rejected';
   return 'live';
+}
+
+/**
+ * Status as the surface should show it. The 21-day clock is enforced by the
+ * Monday scout, which writes `Status: Expired` into the file — but that's an
+ * external routine, so between an item aging out and the next scout run the
+ * file can still say `Backlog`. If we trusted the file alone, an aged-out item
+ * would sit in the live queue forever showing "expires in 0d" with no action
+ * that resolves it. Project the clock here instead: once such an item reaches
+ * its expiry it reads as expired (and drops out of the live queue), whether or
+ * not the scout has caught up. Live items therefore always have at least a day
+ * on the clock, so the confusing "expires in 0d" card can't occur. The scout
+ * still owns the durable write back to the file.
+ *
+ * Scoped to raw `Status: Backlog`, exactly like the scout — an in-flight
+ * interview (`Interviewing since ...`) also classifies as live but must not
+ * decay out from under an unanswered brief, even when the original topic date
+ * is past 21 days.
+ */
+function deriveStatus(raw: string, ageDays: number): BacklogItem['status'] {
+  const status = classifyStatus(raw);
+  if (status === 'live' && /^backlog\b/i.test(raw) && ageDays >= BACKLOG_EXPIRY_DAYS) {
+    return 'expired';
+  }
+  return status;
 }
 
 /** The last few commits touching the posts collection — the "shipped" rail. */

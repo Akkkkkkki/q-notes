@@ -14,8 +14,10 @@ queue format before doing anything.
 ## Steps
 
 1. **Expire first.** Any item in `research/backlog.md` with `Status: Backlog` whose date
-   is more than 21 days old: change its status to `Expired (YYYY-MM-DD)`. Do not delete
-   the entry; decay should be visible.
+   is 21 days or older: change its status to `Expired (YYYY-MM-DD)`. Do not delete
+   the entry; decay should be visible. (The flow surface projects this same 21-day cutoff
+   at read time, so an item already reads as expired the day the scout is due to reap it —
+   keep the two in step.)
 2. **Read the author's own material.** Review `research/inbox.md` (the author's raw
    sparks) and skim the published posts in `src/content/posts/`. Note the positions and
    predictions the author has already committed to.
