@@ -157,7 +157,7 @@ function attention(
     out.push({
       urgency: 'soon',
       text: `Topic “${item.title}” expires in ${Math.max(item.expiresInDays, 0)}d. Add your take to steer Tuesday's questions toward it, or pass on it.`,
-      href: '#backlog',
+      href: '#fold-backlog',
     });
   }
 
@@ -174,7 +174,7 @@ function attention(
       out.push({
         urgency: 'later',
         text: `A spark from ${oldest.date} is still unconsumed: “${truncate(oldest.text, 90)}” — still true?`,
-        href: '#sparks',
+        href: '#fold-sparks',
       });
     }
   }

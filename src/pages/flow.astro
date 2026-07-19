@@ -287,6 +287,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('board').hidden = false;
     }
 
+    // "Up to you" cards deep-link to a fold (e.g. #fold-backlog from /api/flow).
+    // A collapsed <details> swallows the jump, so open the target and scroll to it.
+    function revealFromHash() {
+      const target = location.hash && document.getElementById(location.hash.slice(1));
+      if (target && target.tagName === 'DETAILS') {
+        target.open = true;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    window.addEventListener('hashchange', revealFromHash);
+
     async function load() {
       if (!getToken()) { needToken(); return; }
       setStatus('loading…');
@@ -295,6 +306,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         render(flow);
         applyBadges(flow);
         setStatus('');
+        revealFromHash(); // honor a deep link once the folds exist
       } catch (e) {
         setStatus(e.unauthorized || e.config ? '' : e.message);
       }
