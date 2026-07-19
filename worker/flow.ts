@@ -260,15 +260,22 @@ function classifyStatus(raw: string): BacklogItem['status'] {
  * external routine, so between an item aging out and the next scout run the
  * file can still say `Backlog`. If we trusted the file alone, an aged-out item
  * would sit in the live queue forever showing "expires in 0d" with no action
- * that resolves it. Project the clock here instead: once a still-"live" item
- * reaches its expiry it reads as expired (and drops out of the live queue),
- * whether or not the scout has caught up. Live items therefore always have at
- * least a day on the clock, so the confusing "expires in 0d" card can't occur.
- * The scout still owns the durable write back to the file.
+ * that resolves it. Project the clock here instead: once such an item reaches
+ * its expiry it reads as expired (and drops out of the live queue), whether or
+ * not the scout has caught up. Live items therefore always have at least a day
+ * on the clock, so the confusing "expires in 0d" card can't occur. The scout
+ * still owns the durable write back to the file.
+ *
+ * Scoped to raw `Status: Backlog`, exactly like the scout — an in-flight
+ * interview (`Interviewing since ...`) also classifies as live but must not
+ * decay out from under an unanswered brief, even when the original topic date
+ * is past 21 days.
  */
 function deriveStatus(raw: string, ageDays: number): BacklogItem['status'] {
   const status = classifyStatus(raw);
-  if (status === 'live' && ageDays >= BACKLOG_EXPIRY_DAYS) return 'expired';
+  if (status === 'live' && /^backlog\b/i.test(raw) && ageDays >= BACKLOG_EXPIRY_DAYS) {
+    return 'expired';
+  }
   return status;
 }
 

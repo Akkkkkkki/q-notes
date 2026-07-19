@@ -142,6 +142,16 @@ describe('parseBacklog', () => {
     expect(items[0].status).toBe('expired');
     expect(items[0].expiresInDays).toBeLessThanOrEqual(0);
   });
+
+  it('does not expire an in-flight interview whose topic date is past 21 days', () => {
+    // The interviewer stamps `Interviewing since ...`; the brief may still be
+    // awaiting answers. The clock projection is scoped to raw `Backlog` (like
+    // the scout), so an active interview never decays out of the live queue.
+    const items = parseBacklog(
+      `# Research Backlog\n\n## ${daysAgo(30)} — Being interviewed right now\n\n**Status:** Interviewing since ${daysAgo(2)}\n\n**One-line thesis:** Still live.\n`
+    );
+    expect(items[0].status).toBe('live');
+  });
 });
 
 describe('parseSparks', () => {
