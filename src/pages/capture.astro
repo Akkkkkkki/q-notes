@@ -8,7 +8,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 <CompanionLayout
   title="Capture"
   tab="capture"
-  lede="Catch a thought before it escapes. Type or talk, hit save — done. Half-formed is fine; English, 中文, or both."
+  lede="Catch a thought — type or talk, hit save. Half-formed is fine."
 >
   <style is:global>
     #composer { position: relative; }
@@ -62,7 +62,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     <ul></ul>
   </section>
 
-  <p class="hint">Saved to your notes inbox, one line each · works offline · nothing is lost</p>
+  <p class="hint">One line each · works offline · nothing is lost</p>
 
   <script is:inline>
     const { $, api, getToken, setStatus, needToken, localDate, attachDictation, refreshBadges } = QN;

@@ -23,7 +23,6 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     #quick input { flex: 1; min-width: 0; }
     #quick button { flex: 0 0 auto; }
     #empty-now { color: var(--green); font-size: 0.9rem; margin-bottom: 0.55rem; }
-    #backlog .explain { font-size: 0.78rem; color: var(--muted); margin: -0.25rem 0 0.55rem; }
     .topic-actions { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
     .topic-actions button {
       font-size: 0.78rem; font-weight: 600; color: var(--body);
@@ -39,7 +38,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     .take-panel { margin-top: 0.55rem; }
     .take-panel textarea { min-height: 3.5rem; }
     .take-panel .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.45rem; }
-    #how { margin-top: 0.5rem; }
+    #how { border-top: 1px solid var(--border-soft); margin-top: 0.5rem; padding-top: 0.7rem; }
     #how summary { cursor: pointer; font-size: 0.8rem; color: var(--dim); }
     #how p { font-size: 0.82rem; color: var(--muted); padding-top: 0.5rem; }
   </style>
@@ -55,41 +54,36 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       <button id="quick-send" class="btn-primary">Save</button>
     </div>
 
-    <section class="stage" id="sparks">
-      <h2>Your thoughts <span class="count" id="sparks-count"></span><span class="when">picked as topics every Mon</span></h2>
-      <div id="sparks-list"></div>
-    </section>
+    <details class="stage-fold" id="fold-sparks">
+      <summary>Your thoughts <span class="count" id="sparks-count"></span><span class="when">picked Mon</span></summary>
+      <div class="fold-body"><div id="sparks-list"></div></div>
+    </details>
 
-    <section class="stage" id="backlog">
-      <h2>Topic queue <span class="count" id="backlog-count"></span><span class="when">unused topics expire after 21 days</span></h2>
-      <p class="explain">You don't write these — Tuesday's pick turns the strongest one into
-        questions for you. Add your take to pull a topic forward, or pass to clear it.</p>
-      <div id="backlog-list"></div>
-    </section>
+    <details class="stage-fold" id="fold-backlog">
+      <summary>Topic queue <span class="count" id="backlog-count"></span><span class="when">expire in 21d</span></summary>
+      <div class="fold-body"><div id="backlog-list"></div></div>
+    </details>
 
-    <section class="stage" id="interview">
-      <h2>This week's questions <span class="when">arrive Tue · drafts written Thu</span></h2>
-      <div id="interview-list"></div>
-    </section>
+    <details class="stage-fold" id="fold-interview">
+      <summary>This week's questions <span class="count" id="interview-count"></span><span class="when">answer by Thu</span></summary>
+      <div class="fold-body"><div id="interview-list"></div></div>
+    </details>
 
-    <section class="stage" id="desk">
-      <h2>Waiting to publish <span class="count" id="desk-count"></span><span class="when">checked every Fri</span></h2>
-      <div id="desk-list"></div>
-    </section>
+    <details class="stage-fold" id="fold-desk">
+      <summary>Waiting to publish <span class="count" id="desk-count"></span><span class="when">checked Fri</span></summary>
+      <div class="fold-body"><div id="desk-list"></div></div>
+    </details>
 
-    <section class="stage" id="published">
-      <h2>Published <span class="when"><a href="/" style="color:var(--dim)">the site →</a></span></h2>
-      <div id="published-list"></div>
-    </section>
+    <details class="stage-fold" id="fold-published">
+      <summary>Published <span class="when"><a href="/" style="color:var(--dim)">the site →</a></span></summary>
+      <div class="fold-body"><div id="published-list"></div></div>
+    </details>
 
     <details id="how">
       <summary>How this works</summary>
-      <p>You do three small things: save thoughts (any tab, any time), steer the topic
-        queue (add your take on a topic, or pass on it), and answer the week's questions
-        in your own words. The pipeline does the rest on a weekly rhythm — Monday it
-        picks topics from your thoughts, Tuesday it turns the strongest topic into
-        questions, Thursday it writes bilingual drafts from your answers, Friday it
-        checks them. You publish with one tap on the Publish tab.</p>
+      <p>Save thoughts any time, steer the topic queue, and answer the week's questions in
+        your own words. The pipeline runs the rest on a weekly rhythm: picks topics Mon,
+        writes questions Tue, drafts Thu, checks Fri. You publish with one tap.</p>
     </details>
   </main>
 
@@ -138,7 +132,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           await api('/api/spark', { text: 'On “' + b.title + '”: ' + text, date: localDate() });
           // Show the take on the card right away — the same place it will
           // reappear from the server on the next load.
-          chips.before(takeLine(text, 'saved ✓ · goes into Tuesday’s pick and the draft'));
+          chips.before(takeLine(text, 'saved ✓'));
           ta.value = '';
           panel.hidden = true;
           setStatus('✓ saved to your thoughts');
@@ -218,7 +212,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         c.appendChild(el('div', 'title', b.title));
         if (b.thesis) c.appendChild(el('div', 'sub', b.thesis));
         for (const t of b.takes || []) {
-          c.appendChild(takeLine(t.text, t.date + ' · goes into Tuesday’s pick and the draft'));
+          c.appendChild(takeLine(t.text, t.date));
         }
         const chips = el('div', 'sub');
         chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd'));
@@ -236,26 +230,31 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           decayed.join(' · ') + ' (the queue decays by design)';
       }
 
-      // This week's questions
+      // This week's questions — the fold opens itself while any remain unanswered.
       const interview = $('interview-list');
       interview.replaceChildren();
       if (flow.interview) {
+        const done = flow.interview.answered >= flow.interview.total && flow.interview.total > 0;
+        const left = Math.max(flow.interview.total - flow.interview.answered, 0);
+        $('interview-count').textContent = done ? 'answered' : left + ' left';
+        $('fold-interview').open = !done;
         const c = card();
         const a = el('a');
         a.href = '/interview/';
         a.appendChild(el('div', 'title', flow.interview.title));
-        const done = flow.interview.answered >= flow.interview.total && flow.interview.total > 0;
         a.appendChild(el('div', 'sub', flow.interview.answered + ' of ' + flow.interview.total + ' answered — ' +
           (done ? 'ready for Thursday’s draft ✓' : 'dictate a few on a walk →')));
         c.appendChild(a);
         if (done) c.querySelector('.sub').prepend(el('span', 'chip ok', 'answered'));
         interview.appendChild(c);
       } else {
+        $('interview-count').textContent = '';
         interview.appendChild(card('dim')).textContent = 'No questions this week yet — they arrive Tuesday when there’s a live topic.';
       }
 
-      // Waiting to publish
+      // Waiting to publish — opens itself when a draft is actually waiting.
       $('desk-count').textContent = flow.desk.length + ' draft' + (flow.desk.length === 1 ? '' : 's');
+      $('fold-desk').open = flow.desk.length > 0;
       const desk = $('desk-list');
       desk.replaceChildren();
       for (const pr of flow.desk) {
@@ -288,6 +287,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('board').hidden = false;
     }
 
+    // "Up to you" cards deep-link to a fold (e.g. #fold-backlog from /api/flow).
+    // A collapsed <details> swallows the jump, so open the target and scroll to it.
+    function revealFromHash() {
+      const target = location.hash && document.getElementById(location.hash.slice(1));
+      if (target && target.tagName === 'DETAILS') {
+        target.open = true;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    window.addEventListener('hashchange', revealFromHash);
+
     async function load() {
       if (!getToken()) { needToken(); return; }
       setStatus('loading…');
@@ -296,6 +306,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         render(flow);
         applyBadges(flow);
         setStatus('');
+        revealFromHash(); // honor a deep link once the folds exist
       } catch (e) {
         setStatus(e.unauthorized || e.config ? '' : e.message);
       }

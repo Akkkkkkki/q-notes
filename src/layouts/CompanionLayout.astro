@@ -99,7 +99,7 @@ const tabs = [
       }
       .screen-head h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
       #qn-status { font-size: 0.78rem; color: var(--muted); text-align: right; min-height: 1rem; }
-      .lede { font-size: 0.92rem; color: var(--muted); padding-bottom: 1rem; }
+      .lede { font-size: 0.85rem; color: var(--muted); padding-bottom: 0.85rem; }
 
       /* ---- bottom tab bar ---- */
       #qn-tabs {
@@ -243,6 +243,57 @@ const tabs = [
         margin-left: auto;
         text-align: right;
       }
+
+      /* ---- collapsible stage (standing context, opened on tap) ---- */
+      .stage-fold {
+        border-top: 1px solid var(--border-soft);
+        padding: 0.15rem 0;
+      }
+      .stage-fold > summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        min-height: 2.6rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .stage-fold > summary::-webkit-details-marker { display: none; }
+      .stage-fold > summary .count {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0 0.5rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+      .stage-fold > summary .when {
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--dim);
+        margin-left: auto;
+        text-align: right;
+      }
+      .stage-fold > summary::after {
+        content: '';
+        flex: 0 0 auto;
+        width: 0.5rem;
+        height: 0.5rem;
+        margin-left: 0.15rem;
+        align-self: center;
+        border-right: 1.5px solid var(--dim);
+        border-bottom: 1.5px solid var(--dim);
+        transform: rotate(45deg);
+        transition: transform 0.15s ease;
+      }
+      .stage-fold[open] > summary::after { transform: rotate(-135deg); }
+      .stage-fold .fold-body { padding: 0.15rem 0 0.75rem; }
+
       .sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
       .state { font-size: 0.78rem; color: var(--muted); }
       .fine { font-size: 0.72rem; color: var(--dim); }

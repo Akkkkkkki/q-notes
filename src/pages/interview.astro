@@ -9,7 +9,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 <CompanionLayout
   title="Answer"
   tab="answer"
-  lede="This week's questions about your idea. Talk or type in your own words — fragments, mixed English / 中文, typos: all exactly right."
+  lede="This week's questions — talk or type in your own words. Fragments are fine."
 >
   <style is:global>
     #idea {
@@ -45,7 +45,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
   <p id="empty" class="card dim" hidden></p>
 
-  <p class="hint">Answers save straight to your notes · skip any question · Thursday's draft uses whatever exists</p>
+  <p class="hint">Skip any question · Thursday's draft uses whatever exists</p>
 
   <script is:inline>
     const { $, api, el, getToken, setStatus, needToken, attachDictation, refreshBadges } = QN;

@@ -11,7 +11,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 <CompanionLayout
   title="Publish"
   tab="publish"
-  lede="Drafts waiting for your OK. Read each one as a normal page, then publish it, ask for one change, or let it go."
+  lede="Drafts waiting for your OK — read, then publish or let it go."
 >
   <style is:global>
     .draft h2 { font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; color: var(--text); }
@@ -108,12 +108,53 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       margin-bottom: 0.35rem;
     }
     .options button.picked { border-color: var(--text); color: var(--text); }
+
+    /* Voice & calibration fold — collapsed by default, opens to the panels. */
+    .vc-fold { border-top: 1px solid #242424; margin-bottom: 0.7rem; }
+    .vc-fold > summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .vc-fold > summary::-webkit-details-marker { display: none; }
+    .vc-fold > summary .vc-count {
+      min-width: 1.15rem;
+      height: 1.15rem;
+      padding: 0 0.3rem;
+      border-radius: 999px;
+      background: var(--amber);
+      color: #0a0a0a;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .vc-fold > summary::after {
+      content: '';
+      flex: 0 0 auto;
+      width: 0.5rem;
+      height: 0.5rem;
+      margin-left: auto;
+      border-right: 1.5px solid var(--dim);
+      border-bottom: 1.5px solid var(--dim);
+      transform: rotate(45deg);
+      transition: transform 0.15s ease;
+    }
+    .vc-fold[open] > summary::after { transform: rotate(-135deg); }
+    .vc-fold .fold-body { padding-top: 0.5rem; }
   </style>
 
   <main id="cards"></main>
   <p id="empty" class="card dim" hidden></p>
 
-  <p class="hint">Publishing merges the draft and it goes live in minutes · letting one go is a valid outcome</p>
+  <p class="hint">Goes live minutes after you publish · letting one go is valid</p>
 
   <script is:inline>
     const { $, api, el, getToken, setStatus, needToken, refreshBadges } = QN;
@@ -173,84 +214,100 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       }
 
       const preview = el('a', 'btn-ghost btn-block preview',
-        pr.previewUrl ? 'Read it — the real page, not a diff →' : 'Open the draft on GitHub →');
+        pr.previewUrl ? 'Read it →' : 'Open on GitHub →');
       preview.href = pr.previewUrl || pr.url;
       preview.target = '_blank';
       preview.rel = 'noopener';
+      preview.title = pr.previewUrl ? 'The real page, not a diff' : 'Open the draft on GitHub';
       card.appendChild(preview);
 
-      if (pr.voice.spine.length || pr.voice.flags.length) {
-        const voice = el('div', 'voice');
-        if (pr.voice.spine.length) {
-          voice.appendChild(el('h3', '', 'Your words, kept'));
-          const ul = el('ul', 'spine');
-          for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
-          voice.appendChild(ul);
-        }
-        for (const flag of pr.voice.flags) {
-          const row = el('div', 'flag');
-          row.appendChild(el('span', '', 'The draft says “' + flag + '” — is that yours?'));
-          for (const [decision, label] of [['keep', 'Keep'], ['cut', 'Cut']]) {
-            const b = el('button', '', label);
-            b.addEventListener('click', async () => {
-              b.disabled = true;
-              try {
-                await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
-                row.replaceChildren(el('span', '', '“' + flag + '” — ' + decision + ' ✓'));
-              } catch (e) { b.disabled = false; setStatus('didn’t send — try again'); }
-            });
-            row.appendChild(b);
-          }
-          voice.appendChild(row);
-        }
-        card.appendChild(voice);
-      }
-
-      // A/B calibration (issue #44): the drafter's 2–3 ten-second questions,
-      // already-answered ones hidden. Tap an option, optionally say why, send.
-      // Skipping is a valid answer — it just dismisses the question here.
+      // Voice & calibration — folded away so the card stays a decision
+      // surface. Opens to the kept-words list, the keep/cut flags, and the
+      // A/B questions; the summary badge counts only what still needs a tap.
       const abPending = pr.ab.questions.filter((q) => !pr.ab.answered.includes(q.n));
-      if (abPending.length) {
-        const ab = el('div', 'ab');
-        ab.appendChild(el('h3', '', '哪个像你说的？'));
-        for (const q of abPending) {
-          const wrap = el('div', 'q');
-          wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
-          const opts = el('div', 'options');
-          let picked = null;
-          const whyRow = el('div', 'why-row');
-          whyRow.hidden = true;
-          const why = el('input');
-          why.placeholder = '一句为什么 — 可留空';
-          const send = el('button', 'btn-primary', 'Send');
-          send.addEventListener('click', async () => {
-            if (!picked) return;
-            send.disabled = true;
-            try {
-              await api('/api/desk/comment', {
-                number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
-              });
-              wrap.replaceChildren(el('p', 'q-label', 'Q' + q.n + ' — ' + picked + ' ✓ 已记录'));
-            } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
-          });
-          why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
-          whyRow.append(why, send);
-          for (const option of q.options) {
-            const b = el('button', '', option.letter + ' · ' + option.text);
-            b.addEventListener('click', () => {
-              picked = option.letter;
-              whyRow.hidden = false;
-              for (const sib of opts.children) sib.classList.toggle('picked', sib === b);
-            });
-            opts.appendChild(b);
+      if (pr.voice.spine.length || pr.voice.flags.length || abPending.length) {
+        const fold = el('details', 'vc-fold');
+        const summary = el('summary');
+        summary.appendChild(el('span', '', 'Voice & calibration'));
+        const pending = pr.voice.flags.length + abPending.length;
+        if (pending) summary.appendChild(el('span', 'vc-count', String(pending)));
+        fold.appendChild(summary);
+        const foldBody = el('div', 'fold-body');
+        fold.appendChild(foldBody);
+
+        if (pr.voice.spine.length || pr.voice.flags.length) {
+          const voice = el('div', 'voice');
+          if (pr.voice.spine.length) {
+            voice.appendChild(el('h3', '', 'Your words, kept'));
+            const ul = el('ul', 'spine');
+            for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
+            voice.appendChild(ul);
           }
-          const skip = el('button', 'btn-ghost', '跳过');
-          skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
-          skip.addEventListener('click', () => wrap.remove());
-          wrap.append(opts, whyRow, skip);
-          ab.appendChild(wrap);
+          for (const flag of pr.voice.flags) {
+            const row = el('div', 'flag');
+            row.appendChild(el('span', '', 'The draft says “' + flag + '” — is that yours?'));
+            for (const [decision, label] of [['keep', 'Keep'], ['cut', 'Cut']]) {
+              const b = el('button', '', label);
+              b.addEventListener('click', async () => {
+                b.disabled = true;
+                try {
+                  await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
+                  row.replaceChildren(el('span', '', '“' + flag + '” — ' + decision + ' ✓'));
+                } catch (e) { b.disabled = false; setStatus('didn’t send — try again'); }
+              });
+              row.appendChild(b);
+            }
+            voice.appendChild(row);
+          }
+          foldBody.appendChild(voice);
         }
-        card.appendChild(ab);
+
+        // A/B calibration (issue #44): the drafter's 2–3 ten-second questions,
+        // already-answered ones hidden. Tap an option, optionally say why, send.
+        // Skipping is a valid answer — it just dismisses the question here.
+        if (abPending.length) {
+          const ab = el('div', 'ab');
+          ab.appendChild(el('h3', '', '哪个像你说的？'));
+          for (const q of abPending) {
+            const wrap = el('div', 'q');
+            wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
+            const opts = el('div', 'options');
+            let picked = null;
+            const whyRow = el('div', 'why-row');
+            whyRow.hidden = true;
+            const why = el('input');
+            why.placeholder = '一句为什么 — 可留空';
+            const send = el('button', 'btn-primary', 'Send');
+            send.addEventListener('click', async () => {
+              if (!picked) return;
+              send.disabled = true;
+              try {
+                await api('/api/desk/comment', {
+                  number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
+                });
+                wrap.replaceChildren(el('p', 'q-label', 'Q' + q.n + ' — ' + picked + ' ✓ 已记录'));
+              } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
+            });
+            why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
+            whyRow.append(why, send);
+            for (const option of q.options) {
+              const b = el('button', '', option.letter + ' · ' + option.text);
+              b.addEventListener('click', () => {
+                picked = option.letter;
+                whyRow.hidden = false;
+                for (const sib of opts.children) sib.classList.toggle('picked', sib === b);
+              });
+              opts.appendChild(b);
+            }
+            const skip = el('button', 'btn-ghost', '跳过');
+            skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
+            skip.addEventListener('click', () => wrap.remove());
+            wrap.append(opts, whyRow, skip);
+            ab.appendChild(wrap);
+          }
+          foldBody.appendChild(ab);
+        }
+        card.appendChild(fold);
       }
 
       const actions = el('div', 'actions');
@@ -299,7 +356,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       // "Publish now" with everything blank ships the draft exactly as-is.
       function buildShipPanel(panel) {
         panel.appendChild(el('p', 'panel-lede',
-          'Two optional touches before it goes live. Leave both blank and it publishes exactly as written.'));
+          'Two optional touches — leave both blank to publish as written.'));
         const slots = []; // one row per content file: { path, titleInput, lineInput }
         for (const entry of pr.lastLines.length ? pr.lastLines : pr.contentFiles.map((p) => ({ path: p, text: '' }))) {
           panel.appendChild(el('label', '', entry.path));
@@ -360,7 +417,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       // each marked sentence and distills the rule into the voiceprint.
       function buildMarkPanel(panel) {
         panel.appendChild(el('p', 'panel-lede',
-          '通读一遍（最好朗读），点出“我不会这么说”的句子 — 不用解释，编辑会改写并沉淀成规则。'));
+          '点出“我不会这么说”的句子 — 不用解释，编辑会改写并沉淀成规则。'));
         const container = el('div', 'readmark');
         panel.appendChild(container);
         // Keyed by span, not sentence text: a repeated sentence must toggle
@@ -417,7 +474,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
       function buildChangePanel(panel) {
         panel.appendChild(el('p', 'panel-lede',
-          'One sentence on what to change — the pipeline redrafts around it on its next pass.'));
+          'One sentence on what to change — the next pass redrafts around it.'));
         const ta = el('textarea');
         ta.placeholder = 'Dictate or type the one change…';
         panel.appendChild(ta);
