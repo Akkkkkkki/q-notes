@@ -10,8 +10,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
 <CompanionLayout
   title="Publish"
+  titleKey="publish.title"
   tab="publish"
   lede="Drafts waiting for your OK — read, then publish or let it go."
+  ledeKey="publish.lede"
 >
   <style is:global>
     .draft h2 { font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; color: var(--text); }
@@ -154,10 +156,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <main id="cards"></main>
   <p id="empty" class="card dim" hidden></p>
 
-  <p class="hint">Goes live minutes after you publish · letting one go is valid</p>
+  <p class="hint" data-i18n="publish.hint">Goes live minutes after you publish · letting one go is valid</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, refreshBadges } = QN;
+    const { $, api, el, getToken, setStatus, needToken, refreshBadges, t } = QN;
 
     function showEmpty(msg) {
       $('empty').textContent = msg;
@@ -184,10 +186,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
 
     function statusFor(verdict) {
-      if (!verdict) return { cls: 'none', label: 'Not checked yet — the editor check runs Friday morning' };
-      if (/ready to ship/i.test(verdict)) return { cls: 'ready', label: 'Ready to publish' };
-      if (/needs your call/i.test(verdict)) return { cls: 'attention', label: 'Needs your call' };
-      return { cls: 'attention', label: 'Checked — see what the editor said' };
+      if (!verdict) return { cls: 'none', label: t('publish.notCheckedStatus') };
+      if (/ready to ship/i.test(verdict)) return { cls: 'ready', label: t('publish.readyStatus') };
+      if (/needs your call/i.test(verdict)) return { cls: 'attention', label: t('publish.needsCallStatus') };
+      return { cls: 'attention', label: t('publish.checkedStatus') };
     }
 
     function renderCard(pr) {
@@ -197,7 +199,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const meta = el('p', 'meta');
       meta.appendChild(el('span', 'chip', '#' + pr.number));
       if (pr.tier) meta.appendChild(el('span', 'chip', pr.tier));
-      meta.appendChild(el('span', 'chip', 'waiting ' + pr.ageDays + 'd'));
+      meta.appendChild(el('span', 'chip', t('publish.waitingNd', { n: pr.ageDays })));
       card.appendChild(meta);
 
       const st = statusFor(pr.verdict);
@@ -208,17 +210,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
       if (pr.verdict) {
         const details = el('details', 'verdict-details');
-        details.appendChild(el('summary', '', 'What the editor check said'));
+        details.appendChild(el('summary', '', t('publish.whatEditorSaid')));
         details.appendChild(el('div', 'verdict', pr.verdict));
         card.appendChild(details);
       }
 
       const preview = el('a', 'btn-ghost btn-block preview',
-        pr.previewUrl ? 'Read it →' : 'Open on GitHub →');
+        pr.previewUrl ? t('publish.readIt') : t('publish.openGithub'));
       preview.href = pr.previewUrl || pr.url;
       preview.target = '_blank';
       preview.rel = 'noopener';
-      preview.title = pr.previewUrl ? 'The real page, not a diff' : 'Open the draft on GitHub';
+      preview.title = pr.previewUrl ? t('publish.previewTitleReal') : t('publish.previewTitleGithub');
       card.appendChild(preview);
 
       // Voice & calibration — folded away so the card stays a decision
@@ -228,7 +230,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       if (pr.voice.spine.length || pr.voice.flags.length || abPending.length) {
         const fold = el('details', 'vc-fold');
         const summary = el('summary');
-        summary.appendChild(el('span', '', 'Voice & calibration'));
+        summary.appendChild(el('span', '', t('publish.voiceCalib')));
         const pending = pr.voice.flags.length + abPending.length;
         if (pending) summary.appendChild(el('span', 'vc-count', String(pending)));
         fold.appendChild(summary);
@@ -238,22 +240,22 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         if (pr.voice.spine.length || pr.voice.flags.length) {
           const voice = el('div', 'voice');
           if (pr.voice.spine.length) {
-            voice.appendChild(el('h3', '', 'Your words, kept'));
+            voice.appendChild(el('h3', '', t('publish.wordsKept')));
             const ul = el('ul', 'spine');
             for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
             voice.appendChild(ul);
           }
           for (const flag of pr.voice.flags) {
             const row = el('div', 'flag');
-            row.appendChild(el('span', '', 'The draft says “' + flag + '” — is that yours?'));
-            for (const [decision, label] of [['keep', 'Keep'], ['cut', 'Cut']]) {
+            row.appendChild(el('span', '', t('publish.draftSaysFlag', { flag })));
+            for (const [decision, label] of [['keep', t('publish.keep')], ['cut', t('publish.cut')]]) {
               const b = el('button', '', label);
               b.addEventListener('click', async () => {
                 b.disabled = true;
                 try {
                   await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
-                  row.replaceChildren(el('span', '', '“' + flag + '” — ' + decision + ' ✓'));
-                } catch (e) { b.disabled = false; setStatus('didn’t send — try again'); }
+                  row.replaceChildren(el('span', '', t('publish.flagResolved', { flag, decision: label })));
+                } catch (e) { b.disabled = false; setStatus(t('publish.didntSend')); }
               });
               row.appendChild(b);
             }
@@ -267,7 +269,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         // Skipping is a valid answer — it just dismisses the question here.
         if (abPending.length) {
           const ab = el('div', 'ab');
-          ab.appendChild(el('h3', '', '哪个像你说的？'));
+          ab.appendChild(el('h3', '', t('publish.abHeading')));
           for (const q of abPending) {
             const wrap = el('div', 'q');
             wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
@@ -276,8 +278,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
             const whyRow = el('div', 'why-row');
             whyRow.hidden = true;
             const why = el('input');
-            why.placeholder = '一句为什么 — 可留空';
-            const send = el('button', 'btn-primary', 'Send');
+            why.placeholder = t('publish.abWhyPlaceholder');
+            const send = el('button', 'btn-primary', t('publish.send'));
             send.addEventListener('click', async () => {
               if (!picked) return;
               send.disabled = true;
@@ -285,8 +287,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
                 await api('/api/desk/comment', {
                   number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
                 });
-                wrap.replaceChildren(el('p', 'q-label', 'Q' + q.n + ' — ' + picked + ' ✓ 已记录'));
-              } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
+                wrap.replaceChildren(el('p', 'q-label', t('publish.abRecorded', { n: q.n, picked })));
+              } catch (e) { send.disabled = false; setStatus(t('publish.didntSend')); }
             });
             why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
             whyRow.append(why, send);
@@ -299,7 +301,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
               });
               opts.appendChild(b);
             }
-            const skip = el('button', 'btn-ghost', '跳过');
+            const skip = el('button', 'btn-ghost', t('publish.skip'));
             skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
             skip.addEventListener('click', () => wrap.remove());
             wrap.append(opts, whyRow, skip);
@@ -323,30 +325,30 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         build(panel);
       }
 
-      const ship = el('button', 'btn-primary', 'Publish');
+      const ship = el('button', 'btn-primary', t('publish.publish'));
       ship.addEventListener('click', () => togglePanel('ship', buildShipPanel));
-      const oneChange = el('button', 'btn-ghost', 'Ask for one change');
+      const oneChange = el('button', 'btn-ghost', t('publish.askChange'));
       oneChange.addEventListener('click', () => togglePanel('change', buildChangePanel));
-      const readMark = el('button', 'btn-ghost', 'Read & mark');
+      const readMark = el('button', 'btn-ghost', t('publish.readMark'));
       readMark.addEventListener('click', () => togglePanel('marks', buildMarkPanel));
-      const downgrade = el('button', 'btn-ghost', 'Make it a note');
+      const downgrade = el('button', 'btn-ghost', t('publish.makeNote'));
       downgrade.addEventListener('click', async () => {
-        if (!confirm('Ask the pipeline to shrink this into a short note instead of a full post?')) return;
+        if (!confirm(t('publish.confirmDowngrade'))) return;
         downgrade.disabled = true;
         try {
           await api('/api/desk/comment', { number: pr.number, kind: 'downgrade' });
-          downgrade.textContent = 'Note requested ✓';
-        } catch (e) { downgrade.disabled = false; setStatus('didn’t send — try again'); }
+          downgrade.textContent = t('publish.noteRequested');
+        } catch (e) { downgrade.disabled = false; setStatus(t('publish.didntSend')); }
       });
-      const kill = el('button', 'btn-ghost btn-danger', 'Discard');
+      const kill = el('button', 'btn-ghost btn-danger', t('publish.discard'));
       kill.addEventListener('click', async () => {
-        if (!confirm('Discard this draft for good? Letting one go is a valid outcome.')) return;
+        if (!confirm(t('publish.confirmDiscard'))) return;
         kill.disabled = true;
         try {
           await api('/api/desk/kill', { number: pr.number });
           card.remove();
           refreshBadges(true);
-        } catch (e) { kill.disabled = false; setStatus('didn’t work — try again'); }
+        } catch (e) { kill.disabled = false; setStatus(t('publish.didntWork')); }
       });
       actions.append(ship, oneChange, readMark, downgrade, kill);
       card.appendChild(actions);
@@ -355,8 +357,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       // Publish panel: the two author-owned touches, both optional —
       // "Publish now" with everything blank ships the draft exactly as-is.
       function buildShipPanel(panel) {
-        panel.appendChild(el('p', 'panel-lede',
-          'Two optional touches — leave both blank to publish as written.'));
+        panel.appendChild(el('p', 'panel-lede', t('publish.shipLede')));
         const slots = []; // one row per content file: { path, titleInput, lineInput }
         for (const entry of pr.lastLines.length ? pr.lastLines : pr.contentFiles.map((p) => ({ path: p, text: '' }))) {
           panel.appendChild(el('label', '', entry.path));
@@ -374,19 +375,19 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
             }
           }
           const titleInput = el('input');
-          titleInput.placeholder = 'Your title — blank keeps the draft’s';
+          titleInput.placeholder = t('publish.yourTitle');
           panel.appendChild(titleInput);
 
           panel.appendChild(el('label', '', entry.text
-            ? 'Last line (currently: “' + entry.text.slice(0, 120) + (entry.text.length > 120 ? '…' : '') + '”)'
-            : 'Last line'));
+            ? t('publish.lastLineCurrent', { text: entry.text.slice(0, 120) + (entry.text.length > 120 ? '…' : '') })
+            : t('publish.lastLine')));
           const lineInput = el('textarea');
-          lineInput.placeholder = 'Dictate a replacement last line — blank keeps it';
+          lineInput.placeholder = t('publish.lastLinePlaceholder');
           panel.appendChild(lineInput);
           slots.push({ path: entry.path, titleInput, lineInput });
         }
 
-        const go = el('button', 'btn-primary', 'Publish now');
+        const go = el('button', 'btn-primary', t('publish.publishNow'));
         go.style.marginTop = '0.6rem';
         const state = el('span', 'state');
         state.style.marginLeft = '0.5rem';
@@ -397,16 +398,16 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
               const title = slot.titleInput.value.trim();
               const lastLine = slot.lineInput.value.trim();
               if (!title && !lastLine) continue;
-              state.textContent = 'applying your touches…';
+              state.textContent = t('publish.applyingTouches');
               await api('/api/desk/slots', { number: pr.number, path: slot.path, title, lastLine });
             }
-            state.textContent = 'publishing…';
+            state.textContent = t('publish.publishing');
             await api('/api/desk/ship', { number: pr.number });
-            card.replaceChildren(el('h2', '', pr.title), el('p', 'meta', 'Published ✓ — live on the site in a few minutes.'));
+            card.replaceChildren(el('h2', '', pr.title), el('p', 'meta', t('publish.published')));
             refreshBadges(true);
           } catch (e) {
             go.disabled = false;
-            state.textContent = e.unauthorized ? 'connect below first' : e.message;
+            state.textContent = e.unauthorized ? t('publish.connectFirst') : e.message;
           }
         });
         panel.append(go, state);
@@ -416,21 +417,20 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       // you'd never say — no explanation needed; the Friday editor rewrites
       // each marked sentence and distills the rule into the voiceprint.
       function buildMarkPanel(panel) {
-        panel.appendChild(el('p', 'panel-lede',
-          '点出“我不会这么说”的句子 — 不用解释，编辑会改写并沉淀成规则。'));
+        panel.appendChild(el('p', 'panel-lede', t('publish.markLede')));
         const container = el('div', 'readmark');
         panel.appendChild(container);
         // Keyed by span, not sentence text: a repeated sentence must toggle
         // per occurrence. Duplicates collapse at send time.
         const marked = new Set();
         const sendRow = el('div', 'send-row');
-        const send = el('button', 'btn-primary', 'Send marks');
+        const send = el('button', 'btn-primary', t('publish.sendMarks'));
         send.disabled = true;
         const state = el('span', 'state');
         sendRow.append(send, state);
         panel.appendChild(sendRow);
         const update = () => {
-          send.textContent = marked.size ? 'Send ' + marked.size + ' 句' : 'Send marks';
+          send.textContent = marked.size ? t('publish.sendNMarks', { n: marked.size }) : t('publish.sendMarks');
           send.disabled = !marked.size;
         };
 
@@ -454,7 +454,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
                 container.appendChild(p);
               }
             } catch (e) {
-              container.appendChild(el('p', 'para', 'couldn’t load this file — read it in the preview instead'));
+              container.appendChild(el('p', 'para', t('publish.markFileError')));
             }
           }
         })();
@@ -464,21 +464,20 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           try {
             const marks = [...new Set([...marked].map((s) => s.textContent))];
             await api('/api/desk/comment', { number: pr.number, kind: 'marks', marks });
-            panel.replaceChildren(el('span', 'state', '✓ ' + marks.length + ' 句已记录 — 改写和规则交给周五的编辑'));
+            panel.replaceChildren(el('span', 'state', t('publish.marksRecorded', { n: marks.length })));
           } catch (e) {
             send.disabled = false;
-            state.textContent = 'didn’t send — try again';
+            state.textContent = t('publish.didntSend');
           }
         });
       }
 
       function buildChangePanel(panel) {
-        panel.appendChild(el('p', 'panel-lede',
-          'One sentence on what to change — the next pass redrafts around it.'));
+        panel.appendChild(el('p', 'panel-lede', t('publish.changeLede')));
         const ta = el('textarea');
-        ta.placeholder = 'Dictate or type the one change…';
+        ta.placeholder = t('publish.changePlaceholder');
         panel.appendChild(ta);
-        const send = el('button', 'btn-primary', 'Send');
+        const send = el('button', 'btn-primary', t('publish.send'));
         send.style.marginTop = '0.6rem';
         send.addEventListener('click', async () => {
           const text = ta.value.trim();
@@ -486,8 +485,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           send.disabled = true;
           try {
             await api('/api/desk/comment', { number: pr.number, kind: 'one-change', text });
-            panel.replaceChildren(el('span', 'state', 'sent ✓ — the next pass acts on it'));
-          } catch (e) { send.disabled = false; setStatus('didn’t send — try again'); }
+            panel.replaceChildren(el('span', 'state', t('publish.changeSent')));
+          } catch (e) { send.disabled = false; setStatus(t('publish.didntSend')); }
         });
         panel.appendChild(send);
       }
@@ -498,28 +497,28 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     async function load() {
       if (!getToken()) {
         needToken();
-        showEmpty('Connect this phone below to see the drafts waiting for you.');
+        showEmpty(t('publish.connectToSee'));
         return;
       }
-      setStatus('loading…');
+      setStatus(t('publish.loading'));
       try {
         const { prs } = await api('/api/desk');
         setStatus('');
         const cards = $('cards');
         cards.replaceChildren();
         if (!prs.length) {
-          showEmpty('No drafts waiting for you — new ones are written Thursday from your answers.');
+          showEmpty(t('publish.noDrafts'));
           return;
         }
         $('empty').hidden = true;
         for (const pr of prs) cards.appendChild(renderCard(pr));
       } catch (e) {
         if (e.unauthorized) {
-          showEmpty('Connect this phone below to see the drafts waiting for you.');
+          showEmpty(t('publish.connectToSee'));
         } else if (e.config) {
-          showEmpty('The drafts can’t load until the server is fixed (see above).');
+          showEmpty(t('publish.cantLoadServer'));
         } else {
-          showEmpty('Couldn’t load the drafts: ' + e.message);
+          showEmpty(t('publish.cantLoad', { msg: e.message }));
         }
         setStatus('');
       }

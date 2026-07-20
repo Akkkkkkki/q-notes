@@ -9,32 +9,41 @@ interface Props {
   title: string;
   tab: 'today' | 'capture' | 'answer' | 'publish';
   lede?: string;
+  // i18n keys resolved client-side from the shared dictionary (QN.t). The
+  // English text above stays as the SSR/no-JS default; localizeStatic swaps
+  // it for the reader's UI language on load.
+  titleKey?: string;
+  ledeKey?: string;
 }
-const { title, tab, lede } = Astro.props;
+const { title, tab, lede, titleKey, ledeKey } = Astro.props;
 
 const tabs = [
   {
     id: 'today',
     href: '/flow/',
     label: 'Today',
+    labelKey: 'tab.today',
     icon: 'M3 10.5 12 3l9 7.5 M5 9.5 V20 a1 1 0 0 0 1 1 h12 a1 1 0 0 0 1 -1 V9.5 M9.5 21 v-5.5 h5 V21',
   },
   {
     id: 'capture',
     href: '/capture/',
     label: 'Capture',
+    labelKey: 'tab.capture',
     icon: 'M12 3 a9 9 0 1 0 0 18 a9 9 0 1 0 0 -18 M12 8 v8 M8 12 h8',
   },
   {
     id: 'answer',
     href: '/interview/',
     label: 'Answer',
+    labelKey: 'tab.answer',
     icon: 'M21 11.5 a8.5 8.5 0 0 1 -8.5 8.5 c-1.2 0 -2.35 -.24 -3.4 -.68 L4 21 l1.68 -5.1 A8.5 8.5 0 1 1 21 11.5 z',
   },
   {
     id: 'publish',
     href: '/desk/',
     label: 'Publish',
+    labelKey: 'tab.publish',
     icon: 'M22 2 11 13 M22 2 l-7 20 -4 -9 -9 -4 z',
   },
 ];
@@ -98,6 +107,18 @@ const tabs = [
         padding-bottom: 0.3rem;
       }
       .screen-head h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+      .head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex: 0 0 auto; }
+      #qn-lang {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.15rem 0.55rem;
+        min-height: 1.6rem;
+        line-height: 1;
+      }
       #qn-status { font-size: 0.78rem; color: var(--muted); text-align: right; min-height: 1rem; }
       .lede { font-size: 0.85rem; color: var(--muted); padding-bottom: 0.85rem; }
 
@@ -359,8 +380,301 @@ const tabs = [
       window.QN = (() => {
         const TOKEN_KEY = 'qn-capture-token';
         const LANG_KEY = 'qn-capture-lang';
+        const UI_LANG_KEY = 'qn-ui-lang';
         const FLOW_KEY = 'qn-flow-cache';
         const FLOW_TTL = 5 * 60 * 1000;
+
+        // ---- UI language (en / zh) ----
+        // Separate from the dictation language (LANG_KEY): this governs the app
+        // chrome. Defaults to the browser preference, then remembers the reader's
+        // choice. Page scripts call t(...) at render time, so a toggle just sets
+        // the pref and reloads — every string is re-resolved from the dictionary.
+        const getUiLang = () => {
+          const v = localStorage.getItem(UI_LANG_KEY);
+          if (v === 'en' || v === 'zh') return v;
+          return (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+        };
+        const setUiLang = (l) => { localStorage.setItem(UI_LANG_KEY, l); };
+
+        const I18N = {
+          en: {
+            'tab.today': 'Today', 'tab.capture': 'Capture', 'tab.answer': 'Answer', 'tab.publish': 'Publish',
+            'shell.configTitle': 'The notebook server needs attention',
+            'shell.configBody': ' — nothing can load or save right now. Anything you capture stays safe on this phone and syncs once it’s fixed.',
+            'shell.configSummary': 'How to fix it (2 minutes, on a computer)',
+            'shell.configDetail': 'The Worker lost its secrets. Re-add them on Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>) — see <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.',
+            'shell.configMissing': 'The Worker is missing {names}. Re-pasting your key on this phone cannot fix it — re-add {pron} on Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>), see <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.',
+            'shell.and': 'and', 'shell.pronThem': 'them', 'shell.pronIt': 'it',
+            'shell.connectTitle': 'Connect this phone',
+            'shell.connectBody': 'Paste your access key once. It’s stored only on this device and unlocks loading and saving on every screen.',
+            'shell.connectPlaceholder': 'Access key',
+            'shell.connectBtn': 'Connect',
+            'shell.connectFine': 'The key is the Worker’s <code>CAPTURE_TOKEN</code> secret. Lost it? Set a fresh one with <code>npx wrangler secret put CAPTURE_TOKEN</code> and paste it here.',
+            'shell.notConnected': 'not connected',
+            'shell.micLabel': 'Dictate', 'shell.dictLangLabel': 'Dictation language',
+
+            'capture.title': 'Capture', 'capture.lede': 'Catch a thought — type or talk, hit save. Half-formed is fine.',
+            'capture.placeholder': 'e.g. “consulting outcomes are unfalsifiable” — one thought, one line.',
+            'capture.save': 'Save thought', 'capture.recentTitle': 'Recent thoughts',
+            'capture.hint': 'One line each · works offline · nothing is lost',
+            'capture.saved': '✓ Saved', 'capture.savedHere': '✓ Saved here',
+            'capture.saving': 'saving…', 'capture.inInbox': 'in your inbox',
+            'capture.connectToSync': 'connect below to sync',
+            'capture.willSyncServer': 'will sync once the server is back ({n} waiting)',
+            'capture.cantReach': 'couldn’t reach the server — tap Save to try again',
+            'capture.willSyncOnline': 'will sync when back online ({n} waiting)',
+            'capture.waitingToSync': '{n} waiting to sync',
+            'capture.recentEmpty': 'Your saved thoughts will show up here — try one above.',
+            'capture.recentEg': '2026-07-08 — consulting outcomes are unfalsifiable',
+            'capture.syncing': 'syncing…', 'capture.listening': 'listening…',
+
+            'answer.title': 'Answer', 'answer.lede': 'This week’s questions — talk or type in your own words. Fragments are fine.',
+            'answer.notify': 'Notify me when questions arrive',
+            'answer.decline': 'Not this topic — skip this week',
+            'answer.hint': 'Skip any question · Thursday’s draft uses whatever exists',
+            'answer.progress': '{done} of {total} answered — {tail}',
+            'answer.progressAllSet': 'all set. Thursday’s draft will use every answer. ✓',
+            'answer.progressSome': 'answer what you can; Thursday’s draft takes whatever exists.',
+            'answer.emptyNone': 'No questions this week yet — they arrive Tuesday when there’s a live topic. Save thoughts on the Capture tab in the meantime.',
+            'answer.emptyClosed': 'This week’s questions are closed ({status}). Thursday’s draft will pick another route — that’s fine.',
+            'answer.cardPlaceholder': 'Talk or type your take — then Save. Or skip it.',
+            'answer.update': 'Update', 'answer.save': 'Save', 'answer.savedTick': 'saved ✓',
+            'answer.saving': 'saving…', 'answer.connectFirst': 'connect below first',
+            'answer.didntSave': 'didn’t save — tap Save again',
+            'answer.confirmDecline': 'Skip this topic for the week? Thursday’s draft will pick another route instead.',
+            'answer.closing': 'closing…', 'answer.didntClose': 'didn’t close — try again',
+            'answer.notifyOn': 'Notifications on ✓', 'answer.notifyUnavailable': 'Notifications unavailable',
+            'answer.connectToLoad': 'Connect this phone below to load the week’s questions.',
+            'answer.cantLoadServer': 'The questions can’t load until the server is fixed (see above).',
+            'answer.cantLoad': 'Couldn’t load the questions: {msg}', 'answer.loading': 'loading…',
+            'answer.listening': 'listening…',
+
+            'today.title': 'Today', 'today.lede': 'What the writing pipeline needs from you — usually nothing, sometimes two minutes.',
+            'today.now': 'Up to you', 'today.quickPlaceholder': 'Save a quick thought…', 'today.quickSave': 'Save',
+            'today.foldSparks': 'Your thoughts', 'today.whenSparks': 'picked Mon',
+            'today.foldBacklog': 'Topic queue', 'today.whenBacklog': 'expire in 21d',
+            'today.foldInterview': 'This week’s questions', 'today.whenInterview': 'answer by Thu',
+            'today.foldDesk': 'Waiting to publish', 'today.whenDesk': 'checked Fri',
+            'today.foldPublished': 'Published', 'today.siteLink': 'the site →',
+            'today.howSummary': 'How this works',
+            'today.howBody': 'Save thoughts any time, steer the topic queue, and answer the week’s questions in your own words. The pipeline runs the rest on a weekly rhythm: picks topics Mon, writes questions Tue, drafts Thu, checks Fri. You publish with one tap.',
+            'today.hint': 'Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view',
+            'today.yourTake': 'your take · {sub}', 'today.savedTick': 'saved ✓',
+            'today.addTake': 'Add your take', 'today.takePlaceholder': 'Dictate or type what you think — fragments are fine…',
+            'today.saveTake': 'Save take', 'today.savedToThoughts': '✓ saved to your thoughts',
+            'today.pass': 'Pass',
+            'today.confirmPass': 'Pass on “{title}”? It stops counting down and the pipeline moves on. Passing is a valid outcome.',
+            'today.passedTick': 'passed ✓',
+            'today.nothingNeeds': 'Nothing needs you right now — the pipeline is running on its own.',
+            'today.nWaiting': '{n} waiting',
+            'today.noThoughts': 'No thoughts saved yet — the box above takes one line.',
+            'today.becameTopic': ' · became a topic', 'today.waitingPicked': ' · waiting to be picked',
+            'today.nLive': '{n} live',
+            'today.noTopics': 'No topics queued — Monday’s pick fills this from your thoughts.',
+            'today.expiresIn': 'expires in {n}d', 'today.draftability': 'draftability {v}',
+            'today.nDrafted': '{n} drafted', 'today.nExpired': '{n} expired', 'today.nPassed': '{n} passed by you',
+            'today.queueDecays': '{list} (the queue decays by design)',
+            'today.answered': 'answered', 'today.nLeft': '{n} left',
+            'today.readyThu': 'ready for Thursday’s draft ✓', 'today.dictateWalk': 'dictate a few on a walk →',
+            'today.noQuestions': 'No questions this week yet — they arrive Tuesday when there’s a live topic.',
+            'today.deskCountOne': '{n} draft', 'today.deskCountMany': '{n} drafts', 'today.ndWaiting': '{n}d waiting',
+            'today.readyToPublish': 'ready to publish', 'today.needsCall': 'needs your call', 'today.notChecked': 'not checked yet',
+            'today.noDrafts': 'No drafts waiting — new ones are written Thursday.',
+            'today.publishedEmpty': 'Recently published pieces show up here.', 'today.loading': 'loading…',
+
+            'publish.title': 'Publish', 'publish.lede': 'Drafts waiting for your OK — read, then publish or let it go.',
+            'publish.hint': 'Goes live minutes after you publish · letting one go is valid',
+            'publish.notCheckedStatus': 'Not checked yet — the editor check runs Friday morning',
+            'publish.readyStatus': 'Ready to publish', 'publish.needsCallStatus': 'Needs your call',
+            'publish.checkedStatus': 'Checked — see what the editor said',
+            'publish.waitingNd': 'waiting {n}d', 'publish.whatEditorSaid': 'What the editor check said',
+            'publish.readIt': 'Read it →', 'publish.openGithub': 'Open on GitHub →',
+            'publish.previewTitleReal': 'The real page, not a diff', 'publish.previewTitleGithub': 'Open the draft on GitHub',
+            'publish.voiceCalib': 'Voice & calibration', 'publish.wordsKept': 'Your words, kept',
+            'publish.draftSaysFlag': 'The draft says “{flag}” — is that yours?',
+            'publish.keep': 'Keep', 'publish.cut': 'Cut', 'publish.flagResolved': '“{flag}” — {decision} ✓',
+            'publish.didntSend': 'didn’t send — try again',
+            'publish.abHeading': 'Which one sounds like you?', 'publish.abWhyPlaceholder': 'one line why — optional',
+            'publish.send': 'Send', 'publish.abRecorded': 'Q{n} — {picked} ✓ recorded', 'publish.skip': 'Skip',
+            'publish.publish': 'Publish', 'publish.askChange': 'Ask for one change', 'publish.readMark': 'Read & mark',
+            'publish.makeNote': 'Make it a note', 'publish.noteRequested': 'Note requested ✓', 'publish.discard': 'Discard',
+            'publish.confirmDowngrade': 'Ask the pipeline to shrink this into a short note instead of a full post?',
+            'publish.confirmDiscard': 'Discard this draft for good? Letting one go is a valid outcome.',
+            'publish.didntWork': 'didn’t work — try again',
+            'publish.shipLede': 'Two optional touches — leave both blank to publish as written.',
+            'publish.yourTitle': 'Your title — blank keeps the draft’s',
+            'publish.lastLinePlaceholder': 'Dictate a replacement last line — blank keeps it',
+            'publish.lastLineCurrent': 'Last line (currently: “{text}”)', 'publish.lastLine': 'Last line',
+            'publish.publishNow': 'Publish now', 'publish.applyingTouches': 'applying your touches…',
+            'publish.publishing': 'publishing…', 'publish.published': 'Published ✓ — live on the site in a few minutes.',
+            'publish.connectFirst': 'connect below first',
+            'publish.markLede': 'Tap the sentences you’d never say — no explanation needed; the editor rewrites them and distills the rule.',
+            'publish.sendMarks': 'Send marks', 'publish.sendNMarks': 'Send {n}',
+            'publish.marksRecorded': '✓ {n} marked — the Friday editor handles the rewrites and the rule.',
+            'publish.markFileError': 'couldn’t load this file — read it in the preview instead',
+            'publish.changeLede': 'One sentence on what to change — the next pass redrafts around it.',
+            'publish.changePlaceholder': 'Dictate or type the one change…',
+            'publish.changeSent': 'sent ✓ — the next pass acts on it',
+            'publish.connectToSee': 'Connect this phone below to see the drafts waiting for you.',
+            'publish.noDrafts': 'No drafts waiting for you — new ones are written Thursday from your answers.',
+            'publish.cantLoadServer': 'The drafts can’t load until the server is fixed (see above).',
+            'publish.cantLoad': 'Couldn’t load the drafts: {msg}', 'publish.loading': 'loading…',
+          },
+          zh: {
+            'tab.today': '今天', 'tab.capture': '记录', 'tab.answer': '回答', 'tab.publish': '发布',
+            'shell.configTitle': '笔记本服务器需要处理一下',
+            'shell.configBody': '——现在什么都加载不了、也存不了。你记下的东西都安全留在这台手机上，修好后会自动同步。',
+            'shell.configSummary': '怎么修（在电脑上，2 分钟）',
+            'shell.configDetail': 'Worker 丢了它的密钥。请在 Cloudflare 上以 <em>Secret</em> 类型重新添加（<code>npx wrangler secret put …</code>），参见 <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">运维手册</a>。',
+            'shell.configMissing': 'Worker 缺少 {names}。在这台手机上重新粘贴你的密钥无法解决——请在 Cloudflare 上以 <em>Secret</em> 类型重新添加{pron}（<code>npx wrangler secret put …</code>），参见 <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">运维手册</a>。',
+            'shell.and': '和', 'shell.pronThem': '它们', 'shell.pronIt': '它',
+            'shell.connectTitle': '连接这台手机',
+            'shell.connectBody': '粘贴一次你的访问密钥。它只存在这台设备上，用来解锁每个页面的加载和保存。',
+            'shell.connectPlaceholder': '访问密钥',
+            'shell.connectBtn': '连接',
+            'shell.connectFine': '这个密钥就是 Worker 的 <code>CAPTURE_TOKEN</code>。丢了？用 <code>npx wrangler secret put CAPTURE_TOKEN</code> 设一个新的，再粘到这里。',
+            'shell.notConnected': '未连接',
+            'shell.micLabel': '语音输入', 'shell.dictLangLabel': '语音输入语言',
+
+            'capture.title': '记录', 'capture.lede': '抓住一个想法——打字或说话，点保存。没成形也没关系。',
+            'capture.placeholder': '例如“咨询的成果无法证伪”——一个想法，一行。',
+            'capture.save': '保存想法', 'capture.recentTitle': '最近的想法',
+            'capture.hint': '一行一条 · 离线可用 · 不会丢',
+            'capture.saved': '✓ 已保存', 'capture.savedHere': '✓ 已存到本机',
+            'capture.saving': '保存中…', 'capture.inInbox': '已进你的收件箱',
+            'capture.connectToSync': '在下方连接后同步',
+            'capture.willSyncServer': '服务器恢复后自动同步（{n} 条等待中）',
+            'capture.cantReach': '连不上服务器——点保存再试一次',
+            'capture.willSyncOnline': '恢复联网后自动同步（{n} 条等待中）',
+            'capture.waitingToSync': '{n} 条等待同步',
+            'capture.recentEmpty': '你保存的想法会显示在这里——先在上面写一条试试。',
+            'capture.recentEg': '2026-07-08 — 咨询的成果无法证伪',
+            'capture.syncing': '同步中…', 'capture.listening': '聆听中…',
+
+            'answer.title': '回答', 'answer.lede': '本周的问题——用你自己的话说或打。碎片式也行。',
+            'answer.notify': '有问题时通知我',
+            'answer.decline': '不是这个话题——本周跳过',
+            'answer.hint': '任何一题都可跳过 · 周四的草稿有什么用什么',
+            'answer.progress': '已回答 {done}/{total} —— {tail}',
+            'answer.progressAllSet': '都齐了。周四的草稿会用上每一条回答。✓',
+            'answer.progressSome': '能答多少答多少；周四的草稿有什么用什么。',
+            'answer.emptyNone': '本周还没有问题——有活跃话题时，它们会在周二送到。这期间可以先在“记录”页存想法。',
+            'answer.emptyClosed': '本周的问题已关闭（{status}）。周四的草稿会走另一条路——没关系。',
+            'answer.cardPlaceholder': '说或打出你的看法——然后保存。或者跳过。',
+            'answer.update': '更新', 'answer.save': '保存', 'answer.savedTick': '已保存 ✓',
+            'answer.saving': '保存中…', 'answer.connectFirst': '先在下方连接',
+            'answer.didntSave': '没存上——再点一次保存',
+            'answer.confirmDecline': '本周跳过这个话题？周四的草稿会改走另一条路。',
+            'answer.closing': '关闭中…', 'answer.didntClose': '没关成——再试一次',
+            'answer.notifyOn': '通知已开 ✓', 'answer.notifyUnavailable': '通知不可用',
+            'answer.connectToLoad': '在下方连接这台手机，加载本周的问题。',
+            'answer.cantLoadServer': '服务器修好前，问题无法加载（见上方）。',
+            'answer.cantLoad': '加载问题失败：{msg}', 'answer.loading': '加载中…',
+            'answer.listening': '聆听中…',
+
+            'today.title': '今天', 'today.lede': '写作流程需要你做的事——通常没有，偶尔两分钟。',
+            'today.now': '需要你', 'today.quickPlaceholder': '随手存个想法…', 'today.quickSave': '保存',
+            'today.foldSparks': '你的想法', 'today.whenSparks': '周一挑选',
+            'today.foldBacklog': '话题队列', 'today.whenBacklog': '21 天后过期',
+            'today.foldInterview': '本周的问题', 'today.whenInterview': '周四前回答',
+            'today.foldDesk': '等待发布', 'today.whenDesk': '周五检查',
+            'today.foldPublished': '已发布', 'today.siteLink': '去网站 →',
+            'today.howSummary': '这套流程怎么运转',
+            'today.howBody': '随时存想法、给话题队列指方向、用自己的话回答本周的问题。其余的由流程按周节奏跑：周一挑话题，周二写问题，周四出草稿，周五检查。你一键发布。',
+            'today.hint': '想法 → 话题 → 问题 → 草稿 → 发布 · 流程负责传送带，你负责观点',
+            'today.yourTake': '你的看法 · {sub}', 'today.savedTick': '已保存 ✓',
+            'today.addTake': '写下你的看法', 'today.takePlaceholder': '说或打出你的想法——碎片式也行…',
+            'today.saveTake': '保存看法', 'today.savedToThoughts': '✓ 已存到你的想法',
+            'today.pass': '放过',
+            'today.confirmPass': '放过“{title}”？它会停止倒计时，流程继续往前走。放过也是一种有效结果。',
+            'today.passedTick': '已放过 ✓',
+            'today.nothingNeeds': '现在没什么需要你——流程在自己跑。',
+            'today.nWaiting': '{n} 条等待',
+            'today.noThoughts': '还没存任何想法——上面的框里一行就够。',
+            'today.becameTopic': ' · 已成为话题', 'today.waitingPicked': ' · 等待被挑中',
+            'today.nLive': '{n} 条活跃',
+            'today.noTopics': '队列里还没有话题——周一的挑选会从你的想法里补上。',
+            'today.expiresIn': '{n} 天后过期', 'today.draftability': '可成稿度 {v}',
+            'today.nDrafted': '{n} 条已成稿', 'today.nExpired': '{n} 条已过期', 'today.nPassed': '{n} 条被你放过',
+            'today.queueDecays': '{list}（队列的衰减是设计好的）',
+            'today.answered': '已回答', 'today.nLeft': '还剩 {n}',
+            'today.readyThu': '可供周四成稿 ✓', 'today.dictateWalk': '散步时口述几条 →',
+            'today.noQuestions': '本周还没有问题——有活跃话题时，它们会在周二送到。',
+            'today.deskCountOne': '{n} 篇草稿', 'today.deskCountMany': '{n} 篇草稿', 'today.ndWaiting': '已等 {n} 天',
+            'today.readyToPublish': '可以发布', 'today.needsCall': '需要你拿主意', 'today.notChecked': '还没检查',
+            'today.noDrafts': '没有草稿在等——新的会在周四写。',
+            'today.publishedEmpty': '最近发布的文章会显示在这里。', 'today.loading': '加载中…',
+
+            'publish.title': '发布', 'publish.lede': '等你点头的草稿——读一遍，然后发布或放手。',
+            'publish.hint': '发布几分钟后上线 · 放手一篇也是有效的',
+            'publish.notCheckedStatus': '还没检查——编辑检查在周五上午跑',
+            'publish.readyStatus': '可以发布', 'publish.needsCallStatus': '需要你拿主意',
+            'publish.checkedStatus': '已检查——看看编辑说了什么',
+            'publish.waitingNd': '已等 {n} 天', 'publish.whatEditorSaid': '编辑检查说了什么',
+            'publish.readIt': '读一读 →', 'publish.openGithub': '在 GitHub 打开 →',
+            'publish.previewTitleReal': '真实页面，不是 diff', 'publish.previewTitleGithub': '在 GitHub 打开这份草稿',
+            'publish.voiceCalib': '声音与校准', 'publish.wordsKept': '你的原话，保留了',
+            'publish.draftSaysFlag': '草稿里写了“{flag}”——这是你的意思吗？',
+            'publish.keep': '保留', 'publish.cut': '删掉', 'publish.flagResolved': '“{flag}” —— {decision} ✓',
+            'publish.didntSend': '没发出去——再试一次',
+            'publish.abHeading': '哪个像你说的？', 'publish.abWhyPlaceholder': '一句为什么 —— 可留空',
+            'publish.send': '发送', 'publish.abRecorded': 'Q{n} —— {picked} ✓ 已记录', 'publish.skip': '跳过',
+            'publish.publish': '发布', 'publish.askChange': '要求改一处', 'publish.readMark': '读并标记',
+            'publish.makeNote': '改成笔记', 'publish.noteRequested': '已请求改成笔记 ✓', 'publish.discard': '丢弃',
+            'publish.confirmDowngrade': '让流程把它缩成一篇短笔记，而不是完整文章？',
+            'publish.confirmDiscard': '彻底丢弃这份草稿？放手一篇也是有效的结果。',
+            'publish.didntWork': '没成功——再试一次',
+            'publish.shipLede': '两处可选的润色——两个都留空就按原样发布。',
+            'publish.yourTitle': '你的标题——留空就用草稿的',
+            'publish.lastLinePlaceholder': '口述一句新的最后一句——留空就保持不变',
+            'publish.lastLineCurrent': '最后一句（当前：“{text}”）', 'publish.lastLine': '最后一句',
+            'publish.publishNow': '现在发布', 'publish.applyingTouches': '正在应用你的润色…',
+            'publish.publishing': '发布中…', 'publish.published': '已发布 ✓ —— 几分钟后上线。',
+            'publish.connectFirst': '先在下方连接',
+            'publish.markLede': '点出“我不会这么说”的句子——不用解释，编辑会改写并沉淀成规则。',
+            'publish.sendMarks': '发送标记', 'publish.sendNMarks': '发送 {n} 句',
+            'publish.marksRecorded': '✓ {n} 句已记录——改写和规则交给周五的编辑。',
+            'publish.markFileError': '这个文件加载不了——去预览里读吧',
+            'publish.changeLede': '用一句话说要改什么——下一轮会围绕它重写。',
+            'publish.changePlaceholder': '说或打出这一处改动…',
+            'publish.changeSent': '已发送 ✓ —— 下一轮会照着改',
+            'publish.connectToSee': '在下方连接这台手机，看看有哪些草稿在等你。',
+            'publish.noDrafts': '没有草稿在等你——新的会在周四根据你的回答写出来。',
+            'publish.cantLoadServer': '服务器修好前，草稿无法加载（见上方）。',
+            'publish.cantLoad': '加载草稿失败：{msg}', 'publish.loading': '加载中…',
+          },
+        };
+
+        function t(key, params) {
+          if (!key) return '';
+          const lang = getUiLang();
+          let s = (I18N[lang] && I18N[lang][key]);
+          if (s === undefined) s = I18N.en[key];
+          if (s === undefined) return key;
+          if (params) for (const k in params) s = s.split('{' + k + '}').join(params[k]);
+          return s;
+        }
+
+        // Swap the static, server-rendered chrome (marked with data-i18n /
+        // data-i18n-html / data-i18n-ph) into the current UI language. Runs once
+        // on load; dynamic page strings come straight from t(...) at render time.
+        function localizeStatic() {
+          document.querySelectorAll('[data-i18n]').forEach((n) => {
+            const k = n.getAttribute('data-i18n');
+            if (k) n.textContent = t(k);
+          });
+          document.querySelectorAll('[data-i18n-html]').forEach((n) => {
+            n.innerHTML = t(n.getAttribute('data-i18n-html'));
+          });
+          document.querySelectorAll('[data-i18n-ph]').forEach((n) => {
+            n.setAttribute('placeholder', t(n.getAttribute('data-i18n-ph')));
+          });
+          document.documentElement.lang = getUiLang() === 'zh' ? 'zh-CN' : 'en';
+          const h1 = document.querySelector('.screen-head h1');
+          if (h1 && h1.textContent) document.title = h1.textContent + ' — Q’s Notes';
+          const lb = document.getElementById('qn-lang');
+          if (lb) lb.textContent = getUiLang() === 'zh' ? 'EN' : '中';
+        }
 
         const $ = (id) => document.getElementById(id);
         const getToken = () => localStorage.getItem(TOKEN_KEY) || '';
@@ -375,7 +689,7 @@ const tabs = [
         function needToken() {
           whenReady(() => {
             $('qn-connect').hidden = false;
-            if (!$('qn-status').textContent) setStatus('not connected');
+            if (!$('qn-status').textContent) setStatus(t('shell.notConnected'));
           });
         }
 
@@ -383,12 +697,11 @@ const tabs = [
         function showConfigNow(secrets) {
           const missing = ['GITHUB_TOKEN', 'CAPTURE_TOKEN'].filter((k) => !(secrets || {})[k]);
           if (missing.length) {
-            $('qn-config-detail').innerHTML =
-              'The Worker is missing <code>' + missing.join('</code> and <code>') + '</code>. ' +
-              'Re-pasting your key on this phone cannot fix it — re-add ' +
-              (missing.length > 1 ? 'them' : 'it') + ' on Cloudflare as type <em>Secret</em> ' +
-              '(<code>npx wrangler secret put …</code>), see ' +
-              '<a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.';
+            const names = '<code>' + missing.join('</code> ' + t('shell.and') + ' <code>') + '</code>';
+            $('qn-config-detail').innerHTML = t('shell.configMissing', {
+              names,
+              pron: t(missing.length > 1 ? 'shell.pronThem' : 'shell.pronIt'),
+            });
           }
           $('qn-config').hidden = false;
           $('qn-connect').hidden = true;
@@ -441,10 +754,10 @@ const tabs = [
           let base = '';
           const mic = el('button', 'mic-btn', '🎙');
           mic.type = 'button';
-          mic.setAttribute('aria-label', 'Dictate');
+          mic.setAttribute('aria-label', t('shell.micLabel'));
           const lang = el('button', 'lang-btn');
           lang.type = 'button';
-          lang.setAttribute('aria-label', 'Dictation language');
+          lang.setAttribute('aria-label', t('shell.dictLangLabel'));
           const renderLang = () => { lang.textContent = getDictLang().startsWith('zh') ? '中' : 'EN'; };
           renderLang();
           lang.addEventListener('click', () => {
@@ -516,6 +829,12 @@ const tabs = [
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+          localizeStatic();
+          const langBtn = $('qn-lang');
+          if (langBtn) langBtn.addEventListener('click', () => {
+            setUiLang(getUiLang() === 'zh' ? 'en' : 'zh');
+            location.reload();
+          });
           $('qn-token-save').addEventListener('click', () => {
             const v = $('qn-token').value.trim();
             if (!v) return;
@@ -534,23 +853,27 @@ const tabs = [
           refreshBadges(false);
         });
 
-        return { $, getToken, setStatus, needToken, showConfig, api, el, localDate, attachDictation, flowData, applyBadges, refreshBadges };
+        return { $, getToken, setStatus, needToken, showConfig, api, el, localDate, attachDictation, flowData, applyBadges, refreshBadges, t, getUiLang, setUiLang, localizeStatic };
       })();
     </script>
   </head>
   <body>
     <header class="screen-head">
-      <h1>{title}</h1>
-      <span id="qn-status"></span>
+      <h1 data-i18n={titleKey}>{title}</h1>
+      <div class="head-right">
+        <button id="qn-lang" type="button" aria-label="Switch language / 切换语言"></button>
+        <span id="qn-status"></span>
+      </div>
     </header>
-    {lede && <p class="lede">{lede}</p>}
+    {lede && <p class="lede" data-i18n={ledeKey}>{lede}</p>}
 
     <div id="qn-config" hidden>
-      <strong>The notebook server needs attention</strong> — nothing can load or save
-      right now. Anything you capture stays safe on this phone and syncs once it's fixed.
+      <strong data-i18n="shell.configTitle">The notebook server needs attention</strong>
+      <span data-i18n="shell.configBody"> — nothing can load or save
+      right now. Anything you capture stays safe on this phone and syncs once it's fixed.</span>
       <details>
-        <summary>How to fix it (2 minutes, on a computer)</summary>
-        <span class="ops" id="qn-config-detail">The Worker lost its secrets. Re-add them on
+        <summary data-i18n="shell.configSummary">How to fix it (2 minutes, on a computer)</summary>
+        <span class="ops" id="qn-config-detail" data-i18n-html="shell.configDetail">The Worker lost its secrets. Re-add them on
         Cloudflare as type <em>Secret</em> (<code>npx wrangler secret put …</code>) — see
         <a href="https://github.com/Akkkkkkki/q-notes/blob/main/docs/ops-runbook.md" target="_blank" rel="noopener">the runbook</a>.</span>
       </details>
@@ -559,14 +882,14 @@ const tabs = [
     <slot />
 
     <section id="qn-connect" hidden>
-      <h2>Connect this phone</h2>
-      <p>Paste your access key once. It's stored only on this device and unlocks
+      <h2 data-i18n="shell.connectTitle">Connect this phone</h2>
+      <p data-i18n="shell.connectBody">Paste your access key once. It's stored only on this device and unlocks
         loading and saving on every screen.</p>
       <div class="row">
-        <input id="qn-token" type="password" autocomplete="off" placeholder="Access key" />
-        <button id="qn-token-save" class="btn-primary">Connect</button>
+        <input id="qn-token" type="password" autocomplete="off" placeholder="Access key" data-i18n-ph="shell.connectPlaceholder" />
+        <button id="qn-token-save" class="btn-primary" data-i18n="shell.connectBtn">Connect</button>
       </div>
-      <p class="fine">The key is the Worker's <code>CAPTURE_TOKEN</code> secret. Lost it?
+      <p class="fine" data-i18n-html="shell.connectFine">The key is the Worker's <code>CAPTURE_TOKEN</code> secret. Lost it?
         Set a fresh one with <code>npx wrangler secret put CAPTURE_TOKEN</code> and paste
         it here.</p>
     </section>
@@ -579,7 +902,7 @@ const tabs = [
             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d={t.icon} />
           </svg>
-          <span>{t.label}</span>
+          <span data-i18n={t.labelKey}>{t.label}</span>
           <span class="badge" hidden></span>
         </a>
       ))}

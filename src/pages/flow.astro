@@ -8,8 +8,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
 <CompanionLayout
   title="Today"
+  titleKey="today.title"
   tab="today"
   lede="What the writing pipeline needs from you — usually nothing, sometimes two minutes."
+  ledeKey="today.lede"
 >
   <style is:global>
     .attn { display: flex; gap: 0.55rem; align-items: baseline; }
@@ -45,61 +47,61 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
   <main id="board" hidden>
     <section class="stage" id="now">
-      <h2>Up to you</h2>
+      <h2 data-i18n="today.now">Up to you</h2>
       <div id="now-list"></div>
     </section>
 
     <div id="quick">
-      <input id="quick-text" enterkeyhint="send" placeholder="Save a quick thought…" />
-      <button id="quick-send" class="btn-primary">Save</button>
+      <input id="quick-text" enterkeyhint="send" placeholder="Save a quick thought…" data-i18n-ph="today.quickPlaceholder" />
+      <button id="quick-send" class="btn-primary" data-i18n="today.quickSave">Save</button>
     </div>
 
     <details class="stage-fold" id="fold-sparks">
-      <summary>Your thoughts <span class="count" id="sparks-count"></span><span class="when">picked Mon</span></summary>
+      <summary><span data-i18n="today.foldSparks">Your thoughts</span> <span class="count" id="sparks-count"></span><span class="when" data-i18n="today.whenSparks">picked Mon</span></summary>
       <div class="fold-body"><div id="sparks-list"></div></div>
     </details>
 
     <details class="stage-fold" id="fold-backlog">
-      <summary>Topic queue <span class="count" id="backlog-count"></span><span class="when">expire in 21d</span></summary>
+      <summary><span data-i18n="today.foldBacklog">Topic queue</span> <span class="count" id="backlog-count"></span><span class="when" data-i18n="today.whenBacklog">expire in 21d</span></summary>
       <div class="fold-body"><div id="backlog-list"></div></div>
     </details>
 
     <details class="stage-fold" id="fold-interview">
-      <summary>This week's questions <span class="count" id="interview-count"></span><span class="when">answer by Thu</span></summary>
+      <summary><span data-i18n="today.foldInterview">This week's questions</span> <span class="count" id="interview-count"></span><span class="when" data-i18n="today.whenInterview">answer by Thu</span></summary>
       <div class="fold-body"><div id="interview-list"></div></div>
     </details>
 
     <details class="stage-fold" id="fold-desk">
-      <summary>Waiting to publish <span class="count" id="desk-count"></span><span class="when">checked Fri</span></summary>
+      <summary><span data-i18n="today.foldDesk">Waiting to publish</span> <span class="count" id="desk-count"></span><span class="when" data-i18n="today.whenDesk">checked Fri</span></summary>
       <div class="fold-body"><div id="desk-list"></div></div>
     </details>
 
     <details class="stage-fold" id="fold-published">
-      <summary>Published <span class="when"><a href="/" style="color:var(--dim)">the site →</a></span></summary>
+      <summary><span data-i18n="today.foldPublished">Published</span> <span class="when"><a href="/" style="color:var(--dim)" data-i18n="today.siteLink">the site →</a></span></summary>
       <div class="fold-body"><div id="published-list"></div></div>
     </details>
 
     <details id="how">
-      <summary>How this works</summary>
-      <p>Save thoughts any time, steer the topic queue, and answer the week's questions in
+      <summary data-i18n="today.howSummary">How this works</summary>
+      <p data-i18n="today.howBody">Save thoughts any time, steer the topic queue, and answer the week's questions in
         your own words. The pipeline runs the rest on a weekly rhythm: picks topics Mon,
         writes questions Tue, drafts Thu, checks Fri. You publish with one tap.</p>
     </details>
   </main>
 
-  <p class="hint">Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view</p>
+  <p class="hint" data-i18n="today.hint">Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges, refreshBadges, attachDictation } = QN;
+    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges, refreshBadges, attachDictation, t } = QN;
 
     function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
 
     // A take the author saved on this topic, shown back on its card so a
     // refresh proves it stuck (it lives as a spark in the inbox).
     function takeLine(text, sub) {
-      const t = el('div', 'take', '“' + text + '”');
-      t.appendChild(el('div', 'sub', 'your take · ' + sub));
-      return t;
+      const node = el('div', 'take', '“' + text + '”');
+      node.appendChild(el('div', 'sub', t('today.yourTake', { sub })));
+      return node;
     }
 
     // The two things you can do with a queued topic: put your thinking on it
@@ -111,19 +113,19 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const panel = el('div', 'take-panel');
       panel.hidden = true;
 
-      const take = el('button', '', 'Add your take');
+      const take = el('button', '', t('today.addTake'));
       take.addEventListener('click', () => {
         panel.hidden = !panel.hidden;
         if (!panel.hidden) ta.focus();
       });
 
       const ta = el('textarea');
-      ta.placeholder = 'Dictate or type what you think — fragments are fine…';
+      ta.placeholder = t('today.takePlaceholder');
       ta.enterKeyHint = 'send';
       const row = el('div', 'row');
       const dict = attachDictation(ta);
       if (dict) row.append(dict.mic, dict.lang);
-      const save = el('button', 'btn-primary', 'Save take');
+      const save = el('button', 'btn-primary', t('today.saveTake'));
       save.addEventListener('click', async () => {
         const text = ta.value.trim();
         if (!text) return;
@@ -132,10 +134,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           await api('/api/spark', { text: 'On “' + b.title + '”: ' + text, date: localDate() });
           // Show the take on the card right away — the same place it will
           // reappear from the server on the next load.
-          chips.before(takeLine(text, 'saved ✓'));
+          chips.before(takeLine(text, t('today.savedTick')));
           ta.value = '';
           panel.hidden = true;
-          setStatus('✓ saved to your thoughts');
+          setStatus(t('today.savedToThoughts'));
           refreshBadges(true);
         } catch (e) {
           if (!e.unauthorized && !e.config) setStatus(e.message);
@@ -146,16 +148,16 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       row.appendChild(save);
       panel.append(ta, row);
 
-      const pass = el('button', 'pass', 'Pass');
+      const pass = el('button', 'pass', t('today.pass'));
       pass.addEventListener('click', async () => {
-        if (!confirm('Pass on “' + b.title + '”? It stops counting down and the pipeline moves on. Passing is a valid outcome.')) return;
+        if (!confirm(t('today.confirmPass', { title: b.title }))) return;
         pass.disabled = true;
         try {
           await api('/api/backlog/pass', { date: b.date, title: b.title });
           c.classList.add('dim');
           actions.remove();
           panel.remove();
-          chips.replaceChildren(el('span', 'chip', 'passed ✓'));
+          chips.replaceChildren(el('span', 'chip', t('today.passedTick')));
           refreshBadges(true);
         } catch (e) {
           pass.disabled = false;
@@ -173,7 +175,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const now = $('now-list');
       now.replaceChildren();
       if (!flow.needsYou.length) {
-        now.appendChild(el('p', '', 'Nothing needs you right now — the pipeline is running on its own.')).id = 'empty-now';
+        now.appendChild(el('p', '', t('today.nothingNeeds'))).id = 'empty-now';
       }
       for (const item of flow.needsYou) {
         const c = card();
@@ -187,47 +189,46 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       }
 
       // Your thoughts
-      $('sparks-count').textContent = flow.sparks.unconsumed + ' waiting';
+      $('sparks-count').textContent = t('today.nWaiting', { n: flow.sparks.unconsumed });
       const sparks = $('sparks-list');
       sparks.replaceChildren();
       if (!flow.sparks.recent.length) {
-        sparks.appendChild(card('dim')).textContent = 'No thoughts saved yet — the box above takes one line.';
+        sparks.appendChild(card('dim')).textContent = t('today.noThoughts');
       }
       for (const s of flow.sparks.recent) {
         const c = card(s.consumed ? 'dim' : '');
         c.appendChild(el('div', '', s.text));
-        c.appendChild(el('div', 'sub', s.date + (s.consumed ? ' · became a topic' : ' · waiting to be picked')));
+        c.appendChild(el('div', 'sub', s.date + t(s.consumed ? 'today.becameTopic' : 'today.waitingPicked')));
         sparks.appendChild(c);
       }
 
       // Topic queue
-      $('backlog-count').textContent = flow.backlog.live.length + ' live';
+      $('backlog-count').textContent = t('today.nLive', { n: flow.backlog.live.length });
       const backlog = $('backlog-list');
       backlog.replaceChildren();
       if (!flow.backlog.live.length) {
-        backlog.appendChild(card('dim')).textContent = 'No topics queued — Monday’s pick fills this from your thoughts.';
+        backlog.appendChild(card('dim')).textContent = t('today.noTopics');
       }
       for (const b of flow.backlog.live) {
         const c = card();
         c.appendChild(el('div', 'title', b.title));
         if (b.thesis) c.appendChild(el('div', 'sub', b.thesis));
-        for (const t of b.takes || []) {
-          c.appendChild(takeLine(t.text, t.date));
+        for (const take of b.takes || []) {
+          c.appendChild(takeLine(take.text, take.date));
         }
         const chips = el('div', 'sub');
-        chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), 'expires in ' + Math.max(b.expiresInDays, 0) + 'd'));
-        if (b.draftability) chips.appendChild(el('span', 'chip', 'draftability ' + b.draftability.toLowerCase()));
+        chips.appendChild(el('span', 'chip' + (b.expiresInDays <= 5 ? ' warn' : ''), t('today.expiresIn', { n: Math.max(b.expiresInDays, 0) })));
+        if (b.draftability) chips.appendChild(el('span', 'chip', t('today.draftability', { v: b.draftability.toLowerCase() })));
         c.appendChild(chips);
         c.appendChild(topicActions(b, c, chips));
         backlog.appendChild(c);
       }
       const decayed = [];
-      if (flow.backlog.draftedCount) decayed.push(flow.backlog.draftedCount + ' drafted');
-      if (flow.backlog.expiredCount) decayed.push(flow.backlog.expiredCount + ' expired');
-      if (flow.backlog.passedCount) decayed.push(flow.backlog.passedCount + ' passed by you');
+      if (flow.backlog.draftedCount) decayed.push(t('today.nDrafted', { n: flow.backlog.draftedCount }));
+      if (flow.backlog.expiredCount) decayed.push(t('today.nExpired', { n: flow.backlog.expiredCount }));
+      if (flow.backlog.passedCount) decayed.push(t('today.nPassed', { n: flow.backlog.passedCount }));
       if (decayed.length) {
-        backlog.appendChild(card('dim')).textContent =
-          decayed.join(' · ') + ' (the queue decays by design)';
+        backlog.appendChild(card('dim')).textContent = t('today.queueDecays', { list: decayed.join(' · ') });
       }
 
       // This week's questions — the fold opens itself while any remain unanswered.
@@ -236,24 +237,26 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       if (flow.interview) {
         const done = flow.interview.answered >= flow.interview.total && flow.interview.total > 0;
         const left = Math.max(flow.interview.total - flow.interview.answered, 0);
-        $('interview-count').textContent = done ? 'answered' : left + ' left';
+        $('interview-count').textContent = done ? t('today.answered') : t('today.nLeft', { n: left });
         $('fold-interview').open = !done;
         const c = card();
         const a = el('a');
         a.href = '/interview/';
         a.appendChild(el('div', 'title', flow.interview.title));
-        a.appendChild(el('div', 'sub', flow.interview.answered + ' of ' + flow.interview.total + ' answered — ' +
-          (done ? 'ready for Thursday’s draft ✓' : 'dictate a few on a walk →')));
+        a.appendChild(el('div', 'sub', t('answer.progress', {
+          done: flow.interview.answered, total: flow.interview.total,
+          tail: t(done ? 'today.readyThu' : 'today.dictateWalk'),
+        })));
         c.appendChild(a);
-        if (done) c.querySelector('.sub').prepend(el('span', 'chip ok', 'answered'));
+        if (done) c.querySelector('.sub').prepend(el('span', 'chip ok', t('today.answered')));
         interview.appendChild(c);
       } else {
         $('interview-count').textContent = '';
-        interview.appendChild(card('dim')).textContent = 'No questions this week yet — they arrive Tuesday when there’s a live topic.';
+        interview.appendChild(card('dim')).textContent = t('today.noQuestions');
       }
 
       // Waiting to publish — opens itself when a draft is actually waiting.
-      $('desk-count').textContent = flow.desk.length + ' draft' + (flow.desk.length === 1 ? '' : 's');
+      $('desk-count').textContent = t(flow.desk.length === 1 ? 'today.deskCountOne' : 'today.deskCountMany', { n: flow.desk.length });
       $('fold-desk').open = flow.desk.length > 0;
       const desk = $('desk-list');
       desk.replaceChildren();
@@ -264,14 +267,14 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         a.appendChild(el('div', 'title', '#' + pr.number + ' ' + pr.title));
         const chips = el('div', 'sub');
         if (pr.tier) chips.appendChild(el('span', 'chip', pr.tier));
-        chips.appendChild(el('span', 'chip' + (pr.ageDays >= 5 ? ' warn' : ''), pr.ageDays + 'd waiting'));
+        chips.appendChild(el('span', 'chip' + (pr.ageDays >= 5 ? ' warn' : ''), t('today.ndWaiting', { n: pr.ageDays })));
         chips.appendChild(el('span', 'chip' + (pr.verdict === 'ready' ? ' ok' : pr.verdict === 'attention' ? ' warn' : ''),
-          pr.verdict === 'ready' ? 'ready to publish' : pr.verdict === 'attention' ? 'needs your call' : 'not checked yet'));
+          pr.verdict === 'ready' ? t('today.readyToPublish') : pr.verdict === 'attention' ? t('today.needsCall') : t('today.notChecked')));
         a.appendChild(chips);
         c.appendChild(a);
         desk.appendChild(c);
       }
-      if (!flow.desk.length) desk.appendChild(card('dim')).textContent = 'No drafts waiting — new ones are written Thursday.';
+      if (!flow.desk.length) desk.appendChild(card('dim')).textContent = t('today.noDrafts');
 
       // Published
       const published = $('published-list');
@@ -282,7 +285,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         c.appendChild(el('div', 'sub', p.date));
         published.appendChild(c);
       }
-      if (!flow.published.length) published.appendChild(card('dim')).textContent = 'Recently published pieces show up here.';
+      if (!flow.published.length) published.appendChild(card('dim')).textContent = t('today.publishedEmpty');
 
       $('board').hidden = false;
     }
@@ -300,7 +303,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     async function load() {
       if (!getToken()) { needToken(); return; }
-      setStatus('loading…');
+      setStatus(t('today.loading'));
       try {
         const flow = await flowData(true); // home always shows fresh state
         render(flow);
@@ -317,11 +320,11 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const text = input.value.trim();
       if (!text) return;
       $('quick-send').disabled = true;
-      setStatus('saving…');
+      setStatus(t('capture.saving'));
       try {
         await api('/api/spark', { text, date: localDate() });
         input.value = '';
-        setStatus('✓ saved to your thoughts');
+        setStatus(t('today.savedToThoughts'));
         load();
       } catch (e) {
         if (!e.unauthorized && !e.config) setStatus(e.message);

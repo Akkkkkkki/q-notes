@@ -38,6 +38,7 @@ npm test             # Companion Worker API test suite (vitest)
 ├── automations/        # Editorial pipeline prompts (scout, interview, drafter, ship gate, gardener)
 ├── docs/
 │   ├── pipeline.md          # Editorial pipeline design - source of truth
+│   ├── pipeline.zh.md       # Simplified Chinese companion to pipeline.md
 │   ├── companion-vision.md  # Vision for a phone-first companion app
 │   └── ops-runbook.md       # Worker secrets: setup, health check, why tokens vanish
 ├── research/
@@ -101,7 +102,9 @@ All four screens share one shell (`src/layouts/CompanionLayout.astro`): a bottom
 bar sized for thumbs, count badges fed by `GET /api/flow` (cached a few minutes so
 Capture stays fast), one "Connect this phone" onboarding for the device key, one
 plain-language banner when the Worker loses its secrets (ops detail folded behind a
-"how to fix" disclosure), and shared `window.QN` helpers (auth'd fetch, status line,
+"how to fix" disclosure), a header **EN / 中 language toggle** for the app chrome
+(English or Simplified Chinese, remembered per device via a centralized `QN.t`
+dictionary), and shared `window.QN` helpers (auth'd fetch, status line,
 Web Speech dictation). On-screen copy speaks plain language — thoughts, questions,
 drafts — while URLs, file formats, and the API keep the pipeline's original names.
 
