@@ -7,8 +7,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
 <CompanionLayout
   title="Capture"
+  titleKey="capture.title"
   tab="capture"
   lede="Catch a thought — type or talk, hit save. Half-formed is fine."
+  ledeKey="capture.lede"
 >
   <style is:global>
     #composer { position: relative; }
@@ -52,20 +54,21 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       autofocus
       maxlength="2000"
       enterkeyhint="send"
-      placeholder="e.g. “consulting outcomes are unfalsifiable” — one thought, one line."></textarea>
+      placeholder="e.g. “consulting outcomes are unfalsifiable” — one thought, one line."
+      data-i18n-ph="capture.placeholder"></textarea>
   </div>
   <div id="source" hidden></div>
-  <button id="send" type="button" class="btn-primary btn-block">Save thought</button>
+  <button id="send" type="button" class="btn-primary btn-block" data-i18n="capture.save">Save thought</button>
 
   <section id="recent" class="stage" hidden>
-    <h2>Recent thoughts</h2>
+    <h2 data-i18n="capture.recentTitle">Recent thoughts</h2>
     <ul></ul>
   </section>
 
-  <p class="hint">One line each · works offline · nothing is lost</p>
+  <p class="hint" data-i18n="capture.hint">One line each · works offline · nothing is lost</p>
 
   <script is:inline>
-    const { $, api, getToken, setStatus, needToken, localDate, attachDictation, refreshBadges } = QN;
+    const { $, api, getToken, setStatus, needToken, localDate, attachDictation, refreshBadges, t } = QN;
     const sparkEl = $('spark');
     const sendEl = $('send');
     const sourceEl = $('source');
@@ -96,11 +99,11 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     // grey text in the header corner reads as "did anything happen?".
     let savedTimer;
     function flashSaved(label) {
-      sendEl.textContent = label || '✓ Saved';
+      sendEl.textContent = label || t('capture.saved');
       sendEl.classList.add('saved');
       clearTimeout(savedTimer);
       savedTimer = setTimeout(() => {
-        sendEl.textContent = 'Save thought';
+        sendEl.textContent = t('capture.save');
         sendEl.classList.remove('saved');
       }, 1800);
     }
@@ -126,7 +129,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           if (e.unauthorized) needToken();
           setQueue(queue);
           if (e.serverError) throw e;
-          setStatus(queue.length + ' waiting to sync');
+          setStatus(t('capture.waitingToSync', { n: queue.length }));
           return false;
         }
         queue = queue.slice(1);
@@ -141,7 +144,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const spark = { text, url: sharedUrl, date: localDate() };
 
       sendEl.disabled = true;
-      setStatus('saving…');
+      setStatus(t('capture.saving'));
       try {
         const flushed = await flushQueue();
         if (!flushed) throw new Error('offline');
@@ -149,21 +152,21 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         sparkEl.value = '';
         sharedUrl = '';
         sourceEl.hidden = true;
-        flashSaved('✓ Saved');
-        setStatus('in your inbox');
+        flashSaved(t('capture.saved'));
+        setStatus(t('capture.inInbox'));
         loadRecent();
       } catch (e) {
         if (e.unauthorized) {
           // Don't lose the thought: keep it on this phone until the key exists.
           queueSpark(spark);
-          flashSaved('✓ Saved here');
-          setStatus('connect below to sync');
+          flashSaved(t('capture.savedHere'));
+          setStatus(t('capture.connectToSync'));
         } else if (e.config) {
           // Queue it like an offline send. To the author it's simply "saved" —
           // the server-side fix is the banner's job.
           queueSpark(spark);
-          flashSaved('✓ Saved here');
-          setStatus('will sync once the server is back (' + getQueue().length + ' waiting)');
+          flashSaved(t('capture.savedHere'));
+          setStatus(t('capture.willSyncServer', { n: getQueue().length }));
         } else if (e.serverError && e.status >= 400 && e.status < 500) {
           // A validation failure (e.g. too long): retrying can't help, so show the
           // server's own actionable message and keep the thought in the box to edit.
@@ -172,11 +175,11 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           // Network / 5xx: retrying may help. Keep the thought in the box; don't
           // surface the opaque server/proxy text.
           console.error('spark send failed:', e.message);
-          setStatus("couldn't reach the server — tap Save to try again");
+          setStatus(t('capture.cantReach'));
         } else {
           queueSpark(spark);
-          flashSaved('✓ Saved');
-          setStatus('will sync when back online (' + getQueue().length + ' waiting)');
+          flashSaved(t('capture.saved'));
+          setStatus(t('capture.willSyncOnline', { n: getQueue().length }));
         }
       } finally {
         sendEl.disabled = false;
@@ -190,7 +193,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       // Locally-queued thoughts (not yet synced) sit on top as proof the box works,
       // even before a key exists.
       const pending = getQueue().map(
-        (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · syncing…</li>'
+        (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · ' + t('capture.syncing') + '</li>'
       );
       let synced = [];
       if (getToken()) {
@@ -201,15 +204,15 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const rows = pending.concat(synced.map((s) => '<li>' + esc(s) + '</li>')).slice(0, 3);
       ul.innerHTML = rows.length
         ? rows.join('')
-        : '<li class="empty">Your saved thoughts will show up here — try one above.</li>'
-          + '<li class="eg">2026-07-08 — consulting outcomes are unfalsifiable</li>';
+        : '<li class="empty">' + esc(t('capture.recentEmpty')) + '</li>'
+          + '<li class="eg">' + esc(t('capture.recentEg')) + '</li>';
     }
 
     // Voice-first (vision §3.1, §6): dictation buttons appear only where the
     // Web Speech API exists; OS-keyboard dictation is the fallback elsewhere.
     const dict = attachDictation(sparkEl, (on) => {
-      if (on) setStatus('listening…');
-      else if ($('qn-status').textContent === 'listening…') setStatus('');
+      if (on) setStatus(t('capture.listening'));
+      else if ($('qn-status').textContent === t('capture.listening')) setStatus('');
     });
     if (dict) $('composer').append(dict.lang, dict.mic);
 
@@ -224,7 +227,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     if (!getToken()) needToken();
     const pendingCount = getQueue().length;
-    if (pendingCount) setStatus(pendingCount + ' waiting to sync');
+    if (pendingCount) setStatus(t('capture.waitingToSync', { n: pendingCount }));
     flushQueue().then((ok) => { if (ok) refreshBadges(false); loadRecent(); })
       .catch(() => loadRecent());
   </script>

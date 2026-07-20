@@ -8,6 +8,8 @@ This document is the source of truth. The runnable prompts for each stage live i
 [`automations/`](../automations/). The old `.codex/automations/` prompts are superseded by
 this pipeline and should be unscheduled once the new routines are live.
 
+> 中文版：[`docs/pipeline.zh.md`](./pipeline.zh.md)（对照译本；如有冲突以本文为准）。
+
 ---
 
 ## 1. Why the previous setup produced nothing

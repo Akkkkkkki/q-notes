@@ -8,8 +8,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
 <CompanionLayout
   title="Answer"
+  titleKey="answer.title"
   tab="answer"
   lede="This week's questions — talk or type in your own words. Fragments are fine."
+  ledeKey="answer.lede"
 >
   <style is:global>
     #idea {
@@ -38,17 +40,17 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     <p id="progress"></p>
     <div id="cards"></div>
     <footer>
-      <button id="notify" class="btn-ghost" hidden>Notify me when questions arrive</button>
-      <button id="decline" class="btn-ghost btn-danger">Not this topic — skip this week</button>
+      <button id="notify" class="btn-ghost" hidden data-i18n="answer.notify">Notify me when questions arrive</button>
+      <button id="decline" class="btn-ghost btn-danger" data-i18n="answer.decline">Not this topic — skip this week</button>
     </footer>
   </main>
 
   <p id="empty" class="card dim" hidden></p>
 
-  <p class="hint">Skip any question · Thursday's draft uses whatever exists</p>
+  <p class="hint" data-i18n="answer.hint">Skip any question · Thursday's draft uses whatever exists</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, attachDictation, refreshBadges } = QN;
+    const { $, api, el, getToken, setStatus, needToken, attachDictation, refreshBadges, t } = QN;
 
     let brief = null;
 
@@ -60,19 +62,20 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     function renderProgress() {
       const done = brief.questions.filter((q) => q.answer).length;
-      $('progress').textContent = done + ' of ' + brief.questions.length + ' answered — ' +
-        (done === brief.questions.length
-          ? 'all set. Thursday’s draft will use every answer. ✓'
-          : 'answer what you can; Thursday’s draft takes whatever exists.');
+      const total = brief.questions.length;
+      $('progress').textContent = t('answer.progress', {
+        done, total,
+        tail: t(done === total ? 'answer.progressAllSet' : 'answer.progressSome'),
+      });
     }
 
     function render() {
       if (!brief) {
-        showEmpty('No questions this week yet — they arrive Tuesday when there’s a live topic. Save thoughts on the Capture tab in the meantime.');
+        showEmpty(t('answer.emptyNone'));
         return;
       }
       if (brief.closed) {
-        showEmpty('This week’s questions are closed (' + brief.status + '). Thursday’s draft will pick another route — that’s fine.');
+        showEmpty(t('answer.emptyClosed', { status: brief.status }));
         return;
       }
       $('main').hidden = false;
@@ -89,34 +92,34 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         h.appendChild(el('span', 'qn', 'Q' + q.n));
         h.appendChild(document.createTextNode(q.text));
         const ta = el('textarea');
-        ta.placeholder = 'Talk or type your take — then Save. Or skip it.';
+        ta.placeholder = t('answer.cardPlaceholder');
         ta.value = q.answer || '';
         ta.enterKeyHint = 'done';
         const row = el('div', 'row');
-        const save = el('button', 'btn-primary', q.answer ? 'Update' : 'Save');
+        const save = el('button', 'btn-primary', q.answer ? t('answer.update') : t('answer.save'));
         const state = el('span', 'state');
-        if (q.answer) state.textContent = 'saved ✓';
+        if (q.answer) state.textContent = t('answer.savedTick');
         save.addEventListener('click', async () => {
           const text = ta.value.trim();
           if (!text) return;
           save.disabled = true;
-          state.textContent = 'saving…';
+          state.textContent = t('answer.saving');
           try {
             await api('/api/answer', { path: brief.path, question: q.n, text });
             q.answer = text;
             card.classList.add('answered');
-            save.textContent = 'Update';
-            state.textContent = 'saved ✓';
+            save.textContent = t('answer.update');
+            state.textContent = t('answer.savedTick');
             renderProgress();
             refreshBadges(true);
           } catch (e) {
-            state.textContent = e.unauthorized ? 'connect below first' : 'didn’t save — tap Save again';
+            state.textContent = e.unauthorized ? t('answer.connectFirst') : t('answer.didntSave');
           } finally {
             save.disabled = false;
           }
         });
         row.appendChild(save);
-        const dict = attachDictation(ta, (on) => { state.textContent = on ? 'listening…' : state.textContent === 'listening…' ? '' : state.textContent; });
+        const dict = attachDictation(ta, (on) => { state.textContent = on ? t('answer.listening') : state.textContent === t('answer.listening') ? '' : state.textContent; });
         if (dict) row.append(dict.lang, dict.mic);
         row.appendChild(state);
         card.append(h, ta, row);
@@ -126,8 +129,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     $('decline').addEventListener('click', async () => {
       if (!brief) return;
-      if (!confirm('Skip this topic for the week? Thursday’s draft will pick another route instead.')) return;
-      setStatus('closing…');
+      if (!confirm(t('answer.confirmDecline'))) return;
+      setStatus(t('answer.closing'));
       try {
         await api('/api/brief/close', { path: brief.path });
         brief.closed = true;
@@ -136,7 +139,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         render();
         refreshBadges(true);
       } catch (e) {
-        setStatus(e.unauthorized ? '' : 'didn’t close — try again');
+        setStatus(e.unauthorized ? '' : t('answer.didntClose'));
       }
     });
 
@@ -160,9 +163,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
             ),
           });
           await api('/api/push/subscribe', sub.toJSON());
-          btn.textContent = 'Notifications on ✓';
+          btn.textContent = t('answer.notifyOn');
         } catch (e) {
-          btn.textContent = 'Notifications unavailable';
+          btn.textContent = t('answer.notifyUnavailable');
         }
       });
     }
@@ -170,10 +173,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     async function load() {
       if (!getToken()) {
         needToken();
-        showEmpty('Connect this phone below to load the week’s questions.');
+        showEmpty(t('answer.connectToLoad'));
         return;
       }
-      setStatus('loading…');
+      setStatus(t('answer.loading'));
       try {
         brief = (await api('/api/brief')).brief;
         setStatus('');
@@ -181,11 +184,11 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         setupNotifyButton();
       } catch (e) {
         if (e.unauthorized) {
-          showEmpty('Connect this phone below to load the week’s questions.');
+          showEmpty(t('answer.connectToLoad'));
         } else if (e.config) {
-          showEmpty('The questions can’t load until the server is fixed (see above).');
+          showEmpty(t('answer.cantLoadServer'));
         } else {
-          showEmpty('Couldn’t load the questions: ' + e.message);
+          showEmpty(t('answer.cantLoad', { msg: e.message }));
         }
         setStatus('');
       }
