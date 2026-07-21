@@ -73,6 +73,7 @@ export async function getFlow(env: Env): Promise<Response> {
           date: brief.date,
           answered: brief.questions.filter((q) => q.answer).length,
           total: brief.questions.length,
+          ready: brief.ready,
         }
       : null;
 
@@ -105,7 +106,7 @@ export async function getFlow(env: Env): Promise<Response> {
  */
 function attention(
   desk: DeskSummary[],
-  interview: { title: string; answered: number; total: number } | null,
+  interview: { title: string; answered: number; total: number; ready: boolean } | null,
   live: BacklogItem[],
   sparks: Spark[],
   weekday: number
@@ -140,11 +141,13 @@ function attention(
     }
   }
 
-  if (interview && interview.answered < interview.total) {
+  // Once the author has marked the brief ready to draft, they've signed off —
+  // stop nagging even if some questions are still blank.
+  if (interview && !interview.ready && interview.answered < interview.total) {
     const days = (4 - weekday + 7) % 7; // days until Thursday's drafter
     out.push({
       urgency: days <= 1 ? 'now' : 'soon',
-      text: `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. The drafter takes whatever exists ${days === 0 ? 'today' : `in ${days}d (Thursday)`}; answers are what turn it into an Essay instead of a Note.`,
+      text: `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then mark it ready to draft when you're happy; marking it ready is what turns it into a full Essay ${days === 0 ? 'today' : `by Thursday (in ${days}d)`}.`,
       href: '/interview/',
     });
   }

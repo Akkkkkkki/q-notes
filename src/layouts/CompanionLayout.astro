@@ -431,16 +431,25 @@ const tabs = [
             'answer.title': 'Answer', 'answer.lede': 'This week’s questions — talk or type in your own words. Fragments are fine.',
             'answer.notify': 'Notify me when questions arrive',
             'answer.decline': 'Not this topic — skip this week',
-            'answer.hint': 'Skip any question · Thursday’s draft uses whatever exists',
+            'answer.hint': 'Answer some now, finish later · nothing’s drafted until you mark it ready',
             'answer.progress': '{done} of {total} answered — {tail}',
-            'answer.progressAllSet': 'all set. Thursday’s draft will use every answer. ✓',
-            'answer.progressSome': 'answer what you can; Thursday’s draft takes whatever exists.',
+            'answer.progressAllSet': 'all answered. Tap “Ready to draft” when you want Thursday to build the essay. ✓',
+            'answer.progressSome': 'answer what you can, come back any time — nothing is drafted until you mark it ready.',
+            'answer.progressReady': 'marked ready ✓ — Thursday drafts the essay from these.',
             'answer.emptyNone': 'No questions this week yet — they arrive Tuesday when there’s a live topic. Save thoughts on the Capture tab in the meantime.',
             'answer.emptyClosed': 'This week’s questions are closed ({status}). Thursday’s draft will pick another route — that’s fine.',
             'answer.cardPlaceholder': 'Talk or type your take — then Save. Or skip it.',
+            'answer.tryLabel': 'Not sure where to start? Tap a direction:',
             'answer.update': 'Update', 'answer.save': 'Save', 'answer.savedTick': 'saved ✓',
             'answer.saving': 'saving…', 'answer.connectFirst': 'connect below first',
             'answer.didntSave': 'didn’t save — tap Save again',
+            'answer.readyCaption': 'Answer as much or as little as you want, whenever suits you. Nothing gets the full-essay treatment until you tap this.',
+            'answer.markReady': 'Ready to draft →',
+            'answer.marking': 'marking ready…',
+            'answer.readyBanner': '✓ Marked ready. Thursday builds the full essay from your answers — you can still edit them, or reopen below.',
+            'answer.reopen': 'Keep editing — not ready yet',
+            'answer.reopening': 'reopening…',
+            'answer.readyFailed': 'couldn’t update — try again',
             'answer.confirmDecline': 'Skip this topic for the week? Thursday’s draft will pick another route instead.',
             'answer.closing': 'closing…', 'answer.didntClose': 'didn’t close — try again',
             'answer.notifyOn': 'Notifications on ✓', 'answer.notifyUnavailable': 'Notifications unavailable',
@@ -554,16 +563,25 @@ const tabs = [
             'answer.title': '回答', 'answer.lede': '本周的问题——用你自己的话说或打。碎片式也行。',
             'answer.notify': '有问题时通知我',
             'answer.decline': '不是这个话题——本周跳过',
-            'answer.hint': '任何一题都可跳过 · 周四的草稿有什么用什么',
+            'answer.hint': '现在答几题，回头再补 · 在你点“可以成稿”之前，不会动手写',
             'answer.progress': '已回答 {done}/{total} —— {tail}',
-            'answer.progressAllSet': '都齐了。周四的草稿会用上每一条回答。✓',
-            'answer.progressSome': '能答多少答多少；周四的草稿有什么用什么。',
+            'answer.progressAllSet': '都答完了。想让周四动笔时，点一下“可以成稿”。✓',
+            'answer.progressSome': '能答多少答多少，随时回来补——在你标记“可以成稿”之前，不会动手写。',
+            'answer.progressReady': '已标记可以成稿 ✓ —— 周四据此写成文章。',
             'answer.emptyNone': '本周还没有问题——有活跃话题时，它们会在周二送到。这期间可以先在“记录”页存想法。',
             'answer.emptyClosed': '本周的问题已关闭（{status}）。周四的草稿会走另一条路——没关系。',
             'answer.cardPlaceholder': '说或打出你的看法——然后保存。或者跳过。',
+            'answer.tryLabel': '不知从何说起？点一个方向开个头：',
             'answer.update': '更新', 'answer.save': '保存', 'answer.savedTick': '已保存 ✓',
             'answer.saving': '保存中…', 'answer.connectFirst': '先在下方连接',
             'answer.didntSave': '没存上——再点一次保存',
+            'answer.readyCaption': '想答多少答多少，什么时候都行。在你点这里之前，不会被写成完整文章。',
+            'answer.markReady': '可以成稿 →',
+            'answer.marking': '标记中…',
+            'answer.readyBanner': '✓ 已标记可以成稿。周四会据此写成完整文章——你仍可继续编辑，或在下方撤回。',
+            'answer.reopen': '继续编辑——还没准备好',
+            'answer.reopening': '撤回中…',
+            'answer.readyFailed': '没更新成——再试一次',
             'answer.confirmDecline': '本周跳过这个话题？周四的草稿会改走另一条路。',
             'answer.closing': '关闭中…', 'answer.didntClose': '没关成——再试一次',
             'answer.notifyOn': '通知已开 ✓', 'answer.notifyUnavailable': '通知不可用',
@@ -820,7 +838,10 @@ const tabs = [
             b.hidden = !n;
           };
           set('today', flow.needsYou.filter((i) => i.urgency === 'now').length);
-          set('answer', flow.interview ? Math.max(flow.interview.total - flow.interview.answered, 0) : 0);
+          // Once the brief is marked ready to draft, the author has signed
+          // off — no outstanding count, even with blank questions.
+          set('answer', flow.interview && !flow.interview.ready
+            ? Math.max(flow.interview.total - flow.interview.answered, 0) : 0);
           set('publish', flow.desk.length);
         }
 

@@ -18,8 +18,10 @@ export interface Brief {
   title: string;
   status: string;
   closed: boolean;
+  /** The author explicitly green-lit this brief (`Status: Ready to draft`). */
+  ready: boolean;
   idea: string;
-  questions: Array<{ n: number; text: string; answer: string | null }>;
+  questions: Array<{ n: number; text: string; answer: string | null; hints: string[] }>;
 }
 
 export async function latestBrief(env: Env): Promise<Brief | null> {
@@ -106,6 +108,46 @@ export async function closeBrief(request: Request, env: Env): Promise<Response> 
   return json({ error: 'Write conflict, please retry' }, 409);
 }
 
+/**
+ * Author-controlled green light. `ready: true` marks the brief
+ * `Ready to draft` so Thursday's drafter builds a full Essay from the
+ * answers; `ready: false` reopens it to `Answers in progress`. Nothing here
+ * touches the answers themselves — the author stays in control of when a
+ * half-finished brief gets drafted.
+ */
+export async function setBriefReady(request: Request, env: Env): Promise<Response> {
+  let body: { path?: string; ready?: boolean };
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: 'Body must be JSON' }, 400);
+  }
+  const path = body.path ?? '';
+  if (!isBriefPath(path)) return json({ error: 'Invalid brief path' }, 400);
+  const ready = body.ready !== false; // default to marking ready
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const file = await getFile(env, path);
+    if (!file) return json({ error: 'Brief not found' }, 404);
+
+    const date = todayIn(env.SPARK_TIMEZONE);
+    const status = ready ? `Ready to draft (${date})` : `Answers in progress (${date})`;
+    let content;
+    if (/^\*\*Status:\*\*.*$/m.test(file.content)) {
+      content = file.content.replace(/^\*\*Status:\*\*.*$/m, `**Status:** ${status}`);
+    } else {
+      content = file.content.replace(/\n/, `\n\n**Status:** ${status}\n`);
+    }
+
+    const slug = path.split('/').pop()!.replace(/\.md$/, '');
+    const message = ready ? `interview: ready to draft (${slug})` : `interview: reopened (${slug})`;
+    const result = await putFile(env, path, content, message, file.sha);
+    if (result.ok) return json({ ok: true, ready });
+    if (result.status !== 409) return json({ error: `GitHub API error (${result.status})` }, 502);
+  }
+  return json({ error: 'Write conflict, please retry' }, 409);
+}
+
 function isBriefPath(path: string): boolean {
   const parts = path.split('/');
   return (
@@ -125,27 +167,42 @@ export function parseBrief(path: string, content: string): Brief {
   const answers = parseAnswers(section(content, /author answers/i));
 
   const questions: Brief['questions'] = [];
-  let current: { n: number; lines: string[] } | null = null;
+  let current: { n: number; lines: string[]; hints: string[] } | null = null;
   for (const line of section(content, /questions/i).split('\n')) {
     const start = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
     if (start) {
       if (current) pushQuestion(questions, current, answers);
-      current = { n: Number(start[1]), lines: [start[2]] };
-    } else if (current && line.trim()) {
-      current.lines.push(line.trim());
+      current = { n: Number(start[1]), lines: [start[2]], hints: [] };
+    } else if (current) {
+      // A `→ …` (or `-> …`, optionally after a list bullet) line under a
+      // question is an optional answer direction the interviewer offered;
+      // any other non-empty line continues the question text.
+      const hint = line.match(/^\s*(?:[-*]\s*)?(?:→|->)\s*(.+?)\s*$/);
+      if (hint) current.hints.push(hint[1]);
+      else if (line.trim()) current.lines.push(line.trim());
     }
   }
   if (current) pushQuestion(questions, current, answers);
 
-  return { path, date, title, status, closed: /^closed|^declined/i.test(status), idea, questions };
+  return {
+    path, date, title, status,
+    closed: /^closed|^declined/i.test(status),
+    ready: /^ready to draft/i.test(status),
+    idea, questions,
+  };
 }
 
 function pushQuestion(
   questions: Brief['questions'],
-  q: { n: number; lines: string[] },
+  q: { n: number; lines: string[]; hints: string[] },
   answers: Map<number, string>
 ) {
-  questions.push({ n: q.n, text: q.lines.join(' ').trim(), answer: answers.get(q.n) ?? null });
+  questions.push({
+    n: q.n,
+    text: q.lines.join(' ').trim(),
+    answer: answers.get(q.n) ?? null,
+    hints: q.hints,
+  });
 }
 
 /** Body of the `## <heading>` section matching `pattern` (up to the next `## `). */

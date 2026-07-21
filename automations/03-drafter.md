@@ -15,18 +15,30 @@ playbook), and `research/glossary.md` before drafting.
 
 Produce the highest rung available:
 
-1. **An interview file in `research/interviews/` has author answers** → draft an
-   **Essay** (800–1,500 words) built on those answers: their claims, their examples,
-   their phrasings where usable, sharpened and structured by you. Re-validate every
-   external source before relying on it.
-2. **No answers, but `research/inbox.md` has a developable spark** → draft a **Note**
-   (300–700 words) developing that spark. One idea, one concrete example, one
+1. **An interview file is marked `Status: Ready to draft`** (the author's explicit
+   green light) → draft an **Essay** (800–1,500 words) built on those answers: their
+   claims, their examples, their phrasings where usable, sharpened and structured by
+   you. Re-validate every external source before relying on it. Only a ready brief
+   earns the full-essay treatment.
+2. **An interview file has answers but is *not* marked ready** → the author is still
+   in control of it; do **not** build a full Essay on answers they haven't signed off,
+   and do **not** change its `Status`. Prefer to leave it for the author to finish and
+   mark ready. Use it only as **Note** material (300–700 words) when it is the only
+   developable thing available or the brief is near expiry — and say in the PR body
+   that this came from an unsigned-off brief, so a fuller Essay can still follow once
+   the author marks it ready.
+3. **No usable answers, but `research/inbox.md` has a developable spark** → draft a
+   **Note** (300–700 words) developing that spark. One idea, one concrete example, one
    acknowledged counterpoint.
-3. **Neither** → draft a **Tracker** or Note connecting a published post's claim or
-   prediction to something that happened since.
-4. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
+4. **None of the above** → draft a **Tracker** or Note connecting a published post's
+   claim or prediction to something that happened since.
+5. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
    newest interview file (or `research/backlog.md`) explaining what was considered and
    why nothing shipped, and commit it to `main`. This rung should be rare.
+
+Answer directions (`→ ` lines under a question) are prompts the interviewer offered,
+not the author's words — treat a question as unanswered unless the author actually
+wrote something under it in `## Author answers`.
 
 ## Drafting rules
 
@@ -94,8 +106,10 @@ Produce the highest rung available:
 
 ## Closing the loop
 
-1. Mark the source backlog item `Drafted in <path> on YYYY-MM-DD` and the interview file
-   `Status: Drafted`.
+1. Mark the source backlog item `Drafted in <path> on YYYY-MM-DD`. For a **rung 1**
+   (ready) brief, also mark the interview file `Status: Drafted`. For a **rung 2**
+   (unsigned) brief used only as Note material, leave its `Status` untouched so the
+   author can still finish it and mark it ready for a fuller pass.
 2. Run `npm run build`; fix what breaks.
 3. Open a **ready** pull request. Body must include: tier and thesis; which rung of the
    ladder this came from; sources re-checked; the 2–3 things the author should challenge

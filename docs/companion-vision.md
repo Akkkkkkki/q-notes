@@ -121,8 +121,18 @@ an answer, move on. Partial answers save immediately (each answer commits into t
 - **Mirror question card**: when the brief quotes one of the author's own published
   sentences back at them (§4.4), it renders as a distinct quote card — visually, the
   author being interviewed by their own archive.
-- **Resumable**: answer two questions Tuesday, three Thursday morning; the drafter takes
-  whatever exists at draft time, exactly as the pipeline already specifies.
+- **Answer directions**: where the interviewer offered them (optional `→ ` lines under
+  a question), the card shows a few tap-to-start chips — angles the author could take,
+  never answers put in their mouth. Tapping one seeds the box with an opening to edit or
+  talk over; a chip is a prompt for the cold-start moment, and ignoring it is fine.
+- **Resumable, and the author owns the green light**: answer two questions Tuesday,
+  three Thursday morning — nothing is drafted automatically. A **Ready to draft** button
+  marks the brief `Status: Ready to draft` when the author decides; only then does the
+  drafter build a full Essay from the answers. Leave it un-marked and the drafter won't
+  spend a full Essay on answers the author hasn't signed off (soft gate — it may still
+  draw on them for a Note if nothing better exists, never changing their status). A ready
+  brief can be reopened any time to keep editing. This replaces "the drafter takes
+  whatever exists" with "the drafter takes what the author signed off."
 - A skip button per question and a "not this topic" button for the whole brief (marks it
   closed, frees Thursday's drafter to use the fallback ladder). Declining must be as
   easy as answering — guilt is a churn mechanism.
