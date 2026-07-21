@@ -32,12 +32,18 @@ You do not write the article. You write the questions that make the article poss
    ## Questions
    1–5, each designed to surface what only the author can contribute, plus a final
    numbered retell question (see step 4). Numbered lines only — the phone client
-   renders exactly these as answer cards.
+   renders exactly these as answer cards. Under a question you may add up to three
+   optional **answer directions**, each on its own line starting with `→ ` (see
+   step 4a); the phone renders them as tap-to-start chips and ignores anything else.
 
    ## Author answers
    _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are
    exactly right — the drafter will do the structuring. 15–30 minutes is enough._
    ```
+
+   The author owns the green light: the brief stays `Awaiting answers` /
+   `Answers in progress` until they mark it `Ready to draft` from the phone. Never
+   pre-set a brief to `Ready to draft`.
 
 4. **Write questions that extract, not quiz.** Good archetypes:
    - "Where have you seen this firsthand — a project, a client, a team?"
@@ -61,11 +67,25 @@ You do not write the article. You write the questions that make the article poss
    voiceprint entries; the answer itself is archived as a voice sample. If no published
    post is close enough to the topic, pick the author's most recent post instead — any
    retell is signal.
+4a. **Offer answer directions, sparingly.** For questions where a cold start is
+   the hard part — an abstract "what is taste?", a "where have you seen this?" that
+   needs a memory jog — add up to three `→ ` lines under the question naming
+   *angles the author could take*, not answers you'd write for them. Good
+   directions are concrete openings the author can accept, reject, or ignore: a
+   kind of example ("→ a staffing call where the room disagreed"), a stance to
+   react to ("→ or: taste is just confidence dressed up"), a contrast to draw
+   ("→ how the consultant's version differs from the designer's"). Never put words
+   in the author's mouth or supply an opinion they haven't held — a direction is a
+   prompt, and a skipped one is a valid answer. Leave a question bare when it
+   already reads as an easy invitation. These never substitute for author input:
+   the drafter must never treat a direction as if the author chose it.
+
 5. **Update the backlog item** status to `Interviewing since YYYY-MM-DD`.
 6. **Commit to `main`** (`interview: brief for <slug>`), then **notify the author** with
    the working title, the three-sentence idea, a link to the file, and one line:
-   "15–30 min, any language, fragments welcome. No answers by Thursday → this becomes a
-   short note or gets skipped, which is fine."
+   "15–30 min, any language, fragments welcome — answer some now and finish later,
+   then tap *Ready to draft* when you're happy. Mark it ready → Thursday writes the
+   full essay; leave it → a short note or a skip, which is fine."
 
 The notification must make answering feel small. Never imply the author owes a polished
 response.

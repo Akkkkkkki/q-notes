@@ -73,6 +73,7 @@ export async function getFlow(env: Env): Promise<Response> {
           date: brief.date,
           answered: brief.questions.filter((q) => q.answer).length,
           total: brief.questions.length,
+          ready: brief.ready,
         }
       : null;
 
@@ -105,7 +106,7 @@ export async function getFlow(env: Env): Promise<Response> {
  */
 function attention(
   desk: DeskSummary[],
-  interview: { title: string; answered: number; total: number } | null,
+  interview: { title: string; answered: number; total: number; ready: boolean } | null,
   live: BacklogItem[],
   sparks: Spark[],
   weekday: number
@@ -140,11 +141,19 @@ function attention(
     }
   }
 
-  if (interview && interview.answered < interview.total) {
+  // The brief needs the author until they've marked it ready to draft — that
+  // green light is the pending action, so keep prompting even once every
+  // question is answered (the "finished answers, forgot the green light"
+  // state). Only a ready (or closed) brief drops off the list.
+  if (interview && !interview.ready) {
     const days = (4 - weekday + 7) % 7; // days until Thursday's drafter
+    const by = days === 0 ? 'today' : `by Thursday (in ${days}d)`;
+    const allAnswered = interview.answered >= interview.total;
     out.push({
       urgency: days <= 1 ? 'now' : 'soon',
-      text: `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. The drafter takes whatever exists ${days === 0 ? 'today' : `in ${days}d (Thursday)`}; answers are what turn it into an Essay instead of a Note.`,
+      text: allAnswered
+        ? `Interview “${interview.title}” — all ${interview.total} answered. Tap “Ready to draft” so the drafter builds the full Essay ${by}; until you do, it stays a note at most.`
+        : `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then tap “Ready to draft” when you're happy; that green light is what turns it into a full Essay ${by}.`,
       href: '/interview/',
     });
   }

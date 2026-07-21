@@ -143,6 +143,14 @@ drafts — while URLs, file formats, and the API keep the pipeline's original na
   dictation mic. Dictate or type; each answer commits immediately into the brief's
   `## Author answers` section, attributed per question — resumable across days,
   exactly as the drafter expects.
+- **Answer directions**: where the interviewer offered them, a question shows a few
+  tap-to-start chips (angles to take, not answers) that seed the box with an opening
+  you then edit or talk over — a prompt for when a cold question is the hard part.
+- **Ready to draft**: answering is never automatically consumed. Answer some now,
+  finish later, and tap **Ready to draft** when *you* decide — that green light is
+  what turns the brief into a full Essay on Thursday (`POST /api/brief/ready`). Leave
+  it un-marked and the drafter won't build an Essay on answers you didn't sign off;
+  reopen a ready brief any time to keep editing.
 - Skipping a question is just not answering it; **Not this topic** closes the whole
   brief in one tap, freeing Thursday's drafter to use the fallback ladder.
 - **Tuesday push** (optional): a cron checks every Tuesday 08:30 whether the fresh
@@ -202,7 +210,8 @@ The API surface stays small, and every writable path is hard-coded in the Worker
 `GET /api/health` (unauthenticated presence booleans, for diagnosing lost secrets);
 `POST /api/spark` → `research/inbox.md`; `GET /api/sparks`; `GET /api/flow`
 (read-only aggregation); `GET /api/brief`,
-`POST /api/answer`, `POST /api/brief/close` → `research/interviews/*.md`;
+`POST /api/answer`, `POST /api/brief/close`, `POST /api/brief/ready` →
+`research/interviews/*.md`;
 `GET /api/desk`; `POST /api/desk/{ship,comment,kill}` → content PRs only;
 `POST /api/desk/slots` → `src/content/**` / `drafts/**` on PR branches only;
 `GET /api/push/key`, `POST /api/push/{subscribe,unsubscribe}` →

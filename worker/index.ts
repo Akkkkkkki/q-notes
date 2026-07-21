@@ -20,7 +20,7 @@
 
 import type { Env } from './types';
 import { getFile, putFile, todayIn, collapse, json } from './github';
-import { getBrief, saveAnswer, closeBrief } from './interview';
+import { getBrief, saveAnswer, closeBrief, setBriefReady } from './interview';
 import { passBacklogItem } from './backlog';
 import { listDesk, shipPr, commentPr, killPr, applySlots, getDraft } from './desk';
 import { getFlow } from './flow';
@@ -87,6 +87,8 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await saveAnswer(request, env);
       case 'POST /api/brief/close':
         return await closeBrief(request, env);
+      case 'POST /api/brief/ready':
+        return await setBriefReady(request, env);
       case 'GET /api/desk':
         return await listDesk(env);
       case 'GET /api/desk/draft':

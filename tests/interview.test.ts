@@ -20,6 +20,8 @@ Everyone else gets a worse deal.
 ## Questions
 
 1. What changed your mind here?
+   → a specific project where you flipped
+   → or: you didn't flip, you just found better words
 2. Give one concrete example from consulting
    where this already happened.
 3. What's the strongest counterargument?
@@ -48,6 +50,24 @@ describe('parseBrief', () => {
       'Give one concrete example from consulting where this already happened.'
     );
     expect(brief.questions.every((q) => q.answer === null)).toBe(true);
+  });
+
+  it('parses optional answer directions (→ lines) without polluting question text', () => {
+    const brief = parseBrief(BRIEF_PATH, BRIEF);
+    expect(brief.questions[0].hints).toEqual([
+      'a specific project where you flipped',
+      "or: you didn't flip, you just found better words",
+    ]);
+    expect(brief.questions[0].text).toBe('What changed your mind here?');
+    expect(brief.questions[1].hints).toEqual([]);
+  });
+
+  it('marks a brief ready when the author has signed off', () => {
+    expect(parseBrief(BRIEF_PATH, BRIEF).ready).toBe(false);
+    const ready = BRIEF.replace('Awaiting answers', 'Ready to draft (2026-06-11)');
+    const brief = parseBrief(BRIEF_PATH, ready);
+    expect(brief.ready).toBe(true);
+    expect(brief.closed).toBe(false);
   });
 
   it('attributes existing answers to their questions', () => {
@@ -137,5 +157,39 @@ describe('POST /api/brief/close', () => {
     expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Closed \(not this topic, \d{4}-\d{2}-\d{2}\)/);
     const { data } = await call(worker, makeEnv(), 'GET', '/api/brief');
     expect(data.brief.closed).toBe(true);
+  });
+});
+
+describe('POST /api/brief/ready', () => {
+  it('marks the brief ready to draft — the author-controlled green light', async () => {
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: true });
+    expect(status).toBe(200);
+    expect(data.ready).toBe(true);
+    expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Ready to draft \(\d{4}-\d{2}-\d{2}\)/);
+    const brief = (await call(worker, makeEnv(), 'GET', '/api/brief')).data.brief;
+    expect(brief.ready).toBe(true);
+  });
+
+  it('defaults to marking ready when ready is omitted', async () => {
+    await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH });
+    expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Ready to draft/);
+  });
+
+  it('reopens a ready brief back to answers in progress', async () => {
+    await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: true });
+    const { data } = await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: false });
+    expect(data.ready).toBe(false);
+    expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Answers in progress \(\d{4}-\d{2}-\d{2}\)/);
+  });
+
+  it('does not touch the author answers when flipping ready', async () => {
+    await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 1, text: 'my take' });
+    await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: true });
+    expect(gh.files.get(BRIEF_PATH)).toContain('my take');
+  });
+
+  it('rejects paths outside research/interviews', async () => {
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: 'research/inbox.md', ready: true });
+    expect(status).toBe(400);
   });
 });

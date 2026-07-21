@@ -31,17 +31,48 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     .q-card .row { display: flex; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
     .q-card .row .state { flex: 1; }
     .q-card.answered { border-color: #2e4633; }
-    footer { margin-top: 1.5rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    /* optional answer directions the interviewer offered — tap to seed the box */
+    .hints { margin: 0.1rem 0 0.6rem; }
+    .hints .try { font-size: 0.74rem; color: var(--dim); margin-bottom: 0.35rem; }
+    .hints .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .hint-chip {
+      font-size: 0.78rem;
+      color: var(--body);
+      text-align: left;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.3rem 0.65rem;
+      line-height: 1.35;
+    }
+    .hint-chip:active { border-color: #555; }
+    #ready-banner {
+      font-size: 0.86rem;
+      color: var(--green);
+      background: #12200f;
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius);
+      padding: 0.7rem 0.85rem;
+      margin-bottom: 0.8rem;
+    }
+    .ready-caption { font-size: 0.76rem; color: var(--dim); margin: 0 0 0.5rem; }
+    footer { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
+    footer .footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
   </style>
 
   <main id="main" hidden>
     <h1 id="title"></h1>
     <div id="idea"></div>
+    <div id="ready-banner" hidden></div>
     <p id="progress"></p>
     <div id="cards"></div>
     <footer>
-      <button id="notify" class="btn-ghost" hidden data-i18n="answer.notify">Notify me when questions arrive</button>
-      <button id="decline" class="btn-ghost btn-danger" data-i18n="answer.decline">Not this topic — skip this week</button>
+      <p class="ready-caption" id="ready-caption" data-i18n="answer.readyCaption"></p>
+      <button id="ready" class="btn-primary btn-block" data-i18n="answer.markReady">Ready to draft →</button>
+      <div class="footer-actions">
+        <button id="notify" class="btn-ghost" hidden data-i18n="answer.notify">Notify me when questions arrive</button>
+        <button id="decline" class="btn-ghost btn-danger" data-i18n="answer.decline">Not this topic — skip this week</button>
+      </div>
     </footer>
   </main>
 
@@ -63,10 +94,24 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     function renderProgress() {
       const done = brief.questions.filter((q) => q.answer).length;
       const total = brief.questions.length;
-      $('progress').textContent = t('answer.progress', {
-        done, total,
-        tail: t(done === total ? 'answer.progressAllSet' : 'answer.progressSome'),
-      });
+      const tail = brief.ready
+        ? 'answer.progressReady'
+        : done === total ? 'answer.progressAllSet' : 'answer.progressSome';
+      $('progress').textContent = t('answer.progress', { done, total, tail: t(tail) });
+    }
+
+    // Reflect the ready state across the footer: the banner, the button label,
+    // and whether tapping it marks ready or reopens for more editing.
+    function renderReady() {
+      const done = brief.questions.filter((q) => q.answer).length;
+      $('ready-banner').hidden = !brief.ready;
+      if (brief.ready) $('ready-banner').textContent = t('answer.readyBanner');
+      $('ready-caption').hidden = brief.ready;
+      const btn = $('ready');
+      btn.textContent = t(brief.ready ? 'answer.reopen' : 'answer.markReady');
+      btn.className = brief.ready ? 'btn-ghost btn-block' : 'btn-primary btn-block';
+      // Nothing to green-light until at least one answer exists.
+      btn.disabled = !brief.ready && done === 0;
     }
 
     function render() {
@@ -83,6 +128,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('title').textContent = brief.title;
       $('idea').textContent = brief.idea;
       renderProgress();
+      renderReady();
 
       const cards = $('cards');
       cards.replaceChildren();
@@ -95,6 +141,27 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         ta.placeholder = t('answer.cardPlaceholder');
         ta.value = q.answer || '';
         ta.enterKeyHint = 'done';
+        // Optional answer directions: tap one to seed the box with a starting
+        // point (appended on its own line, so a tap never clobbers work in
+        // progress). A prompt for when you're stuck, not a template — edit or
+        // talk over it, then Save like any other answer.
+        let hints = null;
+        if (q.hints && q.hints.length) {
+          hints = el('div', 'hints');
+          hints.appendChild(el('p', 'try', t('answer.tryLabel')));
+          const chips = el('div', 'chips');
+          for (const text of q.hints) {
+            const chip = el('button', 'hint-chip', text);
+            chip.type = 'button';
+            chip.addEventListener('click', () => {
+              const cur = ta.value.trim();
+              ta.value = cur ? cur + '\n' + text : text;
+              ta.focus();
+            });
+            chips.appendChild(chip);
+          }
+          hints.appendChild(chips);
+        }
         const row = el('div', 'row');
         const save = el('button', 'btn-primary', q.answer ? t('answer.update') : t('answer.save'));
         const state = el('span', 'state');
@@ -111,6 +178,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
             save.textContent = t('answer.update');
             state.textContent = t('answer.savedTick');
             renderProgress();
+            renderReady();
             refreshBadges(true);
           } catch (e) {
             state.textContent = e.unauthorized ? t('answer.connectFirst') : t('answer.didntSave');
@@ -122,10 +190,32 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         const dict = attachDictation(ta, (on) => { state.textContent = on ? t('answer.listening') : state.textContent === t('answer.listening') ? '' : state.textContent; });
         if (dict) row.append(dict.lang, dict.mic);
         row.appendChild(state);
-        card.append(h, ta, row);
+        card.append(h);
+        if (hints) card.append(hints);
+        card.append(ta, row);
         cards.appendChild(card);
       }
     }
+
+    $('ready').addEventListener('click', async () => {
+      if (!brief) return;
+      const next = !brief.ready;
+      const btn = $('ready');
+      btn.disabled = true;
+      setStatus(t(next ? 'answer.marking' : 'answer.reopening'));
+      try {
+        await api('/api/brief/ready', { path: brief.path, ready: next });
+        brief.ready = next;
+        setStatus('');
+        renderProgress();
+        renderReady();
+        refreshBadges(true);
+      } catch (e) {
+        setStatus('');
+        if (e.unauthorized) { needToken(); }
+        else { btn.disabled = false; alert(t('answer.readyFailed')); }
+      }
+    });
 
     $('decline').addEventListener('click', async () => {
       if (!brief) return;
