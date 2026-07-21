@@ -838,10 +838,12 @@ const tabs = [
             b.hidden = !n;
           };
           set('today', flow.needsYou.filter((i) => i.urgency === 'now').length);
-          // Once the brief is marked ready to draft, the author has signed
-          // off — no outstanding count, even with blank questions.
+          // The Answer tab stays flagged until the brief is marked ready to
+          // draft: show the count of unanswered questions, or a single badge
+          // for the pending green light once they're all answered. Only a
+          // ready (or closed) brief clears it.
           set('answer', flow.interview && !flow.interview.ready
-            ? Math.max(flow.interview.total - flow.interview.answered, 0) : 0);
+            ? Math.max(flow.interview.total - flow.interview.answered, 1) : 0);
           set('publish', flow.desk.length);
         }
 

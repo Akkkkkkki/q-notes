@@ -121,26 +121,40 @@ interview brief to `research/interviews/`, containing:
 - **five sharp questions** designed to extract what only the author can add — experience,
   disagreement, predictions, stakes ("Where have you seen this firsthand?", "What part of
   this thesis is wrong?", "What would change your mind?");
-- a blank `## Author answers` section.
+- a blank `## Author answers` section;
+- optionally, up to three **answer directions** (`→ ` lines) under a question — angles
+  the author could take, rendered as tap-to-start prompts on the phone, never answers
+  put in the author's mouth.
 
 The author answers in 15–30 minutes, in either language, at voice-dump quality —
-fragments, mixed English/中文, typos all fine. **The answers are the raw material; the
-brief without answers produces a Note at most, never a ghost-written Essay.**
+fragments, mixed English/中文, typos all fine. Answering some now and finishing later is
+expected; **the author owns the green light** and marks the brief `Ready to draft` from
+the phone when they're happy. **The answers are the raw material; a brief that has not
+been marked ready produces a Note at most, never a ghost-written Essay.**
 
 ### 4.3 Thursday — Drafter (`automations/03-drafter.md`)
 
 The skip-by-default rule is replaced by a **fallback ladder**. The drafter always
 produces the highest rung available:
 
-1. **Interview answers exist** → draft an Essay whose spine is the author's own answers
-   (their claims, their examples, their phrasing where usable), with scout research as
-   supporting evidence. Re-validate sources before drafting.
-2. **No answers, but inbox has a meaty spark** → draft a Note developing that spark.
-3. **Neither** → draft a Tracker update or a Note that connects a published post to
+1. **A brief is marked `Status: Ready to draft`** (the author's explicit green light) →
+   draft an Essay whose spine is the author's own answers (their claims, their examples,
+   their phrasing where usable), with scout research as supporting evidence. Re-validate
+   sources before drafting. Only a ready brief earns the full-Essay treatment.
+2. **A brief has answers but is not marked ready** → the author is still working on it;
+   do not build an Essay on answers they haven't signed off, and leave its `Status`
+   untouched. Use it only as Note material when nothing better is available or it is near
+   expiry (soft gate). Prefer to let the author finish and mark it ready.
+3. **No usable answers, but inbox has a meaty spark** → draft a Note developing that spark.
+4. **Neither** → draft a Tracker update or a Note that connects a published post to
    something that happened since.
-4. **Genuinely nothing** → commit a one-paragraph run report to the interview file
+5. **Genuinely nothing** → commit a one-paragraph run report to the interview file
    explaining what was considered and why nothing cleared the bar. Silence is forbidden;
    a visible "why not" is itself a signal the loop is alive.
+
+Answer directions (`→ ` lines) are the interviewer's prompts, not the author's words:
+treat a question as unanswered unless the author actually wrote under it in
+`## Author answers`.
 
 The drafter writes **both language versions in the same PR** (see §6), runs
 `npm run build`, marks the backlog item `Drafted`, and opens a ready (non-draft) PR whose

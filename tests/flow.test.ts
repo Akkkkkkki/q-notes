@@ -240,6 +240,25 @@ describe('GET /api/flow', () => {
     expect(ranks).toEqual([...ranks].sort((a: number, b: number) => a - b));
   });
 
+  it('keeps prompting for the green light when every question is answered but the brief is not ready', async () => {
+    gh.seedFile(
+      BRIEF_PATH,
+      BRIEF.replace('## Author answers\n', '## Author answers\n\n### Q1\n\na\n\n### Q2\n\nb\n')
+    );
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    expect(data.interview).toMatchObject({ answered: 2, total: 2, ready: false });
+    const item = data.needsYou.find((n: any) => n.href === '/interview/');
+    expect(item).toBeDefined();
+    expect(item.text).toMatch(/Ready to draft/);
+  });
+
+  it('drops the interview from needsYou once the brief is marked ready to draft', async () => {
+    gh.seedFile(BRIEF_PATH, BRIEF.replace('Awaiting answers', 'Ready to draft (2026-06-11)'));
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    expect(data.interview.ready).toBe(true);
+    expect(data.needsYou.some((n: any) => n.href === '/interview/')).toBe(false);
+  });
+
   it('shows the author’s takes back on their topic card', async () => {
     gh.files.set(
       'research/inbox.md',

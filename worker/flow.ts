@@ -141,13 +141,19 @@ function attention(
     }
   }
 
-  // Once the author has marked the brief ready to draft, they've signed off —
-  // stop nagging even if some questions are still blank.
-  if (interview && !interview.ready && interview.answered < interview.total) {
+  // The brief needs the author until they've marked it ready to draft — that
+  // green light is the pending action, so keep prompting even once every
+  // question is answered (the "finished answers, forgot the green light"
+  // state). Only a ready (or closed) brief drops off the list.
+  if (interview && !interview.ready) {
     const days = (4 - weekday + 7) % 7; // days until Thursday's drafter
+    const by = days === 0 ? 'today' : `by Thursday (in ${days}d)`;
+    const allAnswered = interview.answered >= interview.total;
     out.push({
       urgency: days <= 1 ? 'now' : 'soon',
-      text: `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then mark it ready to draft when you're happy; marking it ready is what turns it into a full Essay ${days === 0 ? 'today' : `by Thursday (in ${days}d)`}.`,
+      text: allAnswered
+        ? `Interview “${interview.title}” — all ${interview.total} answered. Tap “Ready to draft” so the drafter builds the full Essay ${by}; until you do, it stays a note at most.`
+        : `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then tap “Ready to draft” when you're happy; that green light is what turns it into a full Essay ${by}.`,
       href: '/interview/',
     });
   }
