@@ -1,5 +1,5 @@
 import type { Env } from './types';
-import { getFile, gh, json } from './github';
+import { getFile, gh, json, listDir } from './github';
 import { latestBrief } from './interview';
 import { deskSummaries, type DeskSummary } from './desk';
 
@@ -16,6 +16,7 @@ import { deskSummaries, type DeskSummary } from './desk';
 
 const INBOX_PATH = 'research/inbox.md';
 const BACKLOG_PATH = 'research/backlog.md';
+const POSTS_DIR = 'src/content/posts';
 const BACKLOG_EXPIRY_DAYS = 21;
 const PR_DOWNGRADE_DAYS = 7;
 const PR_KILL_DAYS = 14;
@@ -52,12 +53,13 @@ export interface Attention {
 }
 
 export async function getFlow(env: Env): Promise<Response> {
-  const [inbox, backlogFile, brief, desk, published] = await Promise.all([
+  const [inbox, backlogFile, brief, desk, published, publishedTotal] = await Promise.all([
     getFile(env, INBOX_PATH),
     getFile(env, BACKLOG_PATH),
     latestBrief(env),
     deskSummaries(env),
     recentPublishes(env),
+    publishedCount(env),
   ]);
 
   const sparks = parseSparks(inbox?.content ?? '');
@@ -94,6 +96,8 @@ export async function getFlow(env: Env): Promise<Response> {
     interview,
     desk,
     published,
+    /** Lifetime count of published pieces (one per translationKey), for the belt. */
+    publishedTotal,
     needsYou: attention(desk, interview, live, sparks, weekday),
   });
 }
@@ -286,6 +290,20 @@ function deriveStatus(raw: string, ageDays: number): BacklogItem['status'] {
     return 'expired';
   }
   return status;
+}
+
+/**
+ * Lifetime published count — one per bilingual pair, so the belt's last node
+ * reads as the archive size, not the file count. Posts are `<slug>.en.md` /
+ * `<slug>.zh.md`; counting the English half gives the piece count. Never a
+ * blocker: a listing failure just reports zero.
+ */
+async function publishedCount(env: Env): Promise<number> {
+  try {
+    return (await listDir(env, POSTS_DIR)).filter((n) => n.endsWith('.en.md')).length;
+  } catch {
+    return 0;
+  }
 }
 
 /** The last few commits touching the posts collection — the "shipped" rail. */

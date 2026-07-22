@@ -22,6 +22,8 @@ Everyone else gets a worse deal.
 1. What changed your mind here?
    → a specific project where you flipped
    → or: you didn't flip, you just found better words
+   → push: steelman the view that nothing actually changed
+   → read: Simon Willison — CLIs for agents — https://simonwillison.net/agents
 2. Give one concrete example from consulting
    where this already happened.
 3. What's the strongest counterargument?
@@ -52,14 +54,32 @@ describe('parseBrief', () => {
     expect(brief.questions.every((q) => q.answer === null)).toBe(true);
   });
 
-  it('parses optional answer directions (→ lines) without polluting question text', () => {
+  it('sorts → directions into choices / pushback / reading without polluting question text', () => {
     const brief = parseBrief(BRIEF_PATH, BRIEF);
-    expect(brief.questions[0].hints).toEqual([
+    const q1 = brief.questions[0];
+    expect(q1.choices).toEqual([
       'a specific project where you flipped',
       "or: you didn't flip, you just found better words",
     ]);
-    expect(brief.questions[0].text).toBe('What changed your mind here?');
-    expect(brief.questions[1].hints).toEqual([]);
+    expect(q1.pushback).toEqual(['steelman the view that nothing actually changed']);
+    expect(q1.reading).toEqual([
+      { title: 'Simon Willison — CLIs for agents', url: 'https://simonwillison.net/agents' },
+    ]);
+    expect(q1.text).toBe('What changed your mind here?');
+    const q2 = brief.questions[1];
+    expect(q2.choices).toEqual([]);
+    expect(q2.pushback).toEqual([]);
+    expect(q2.reading).toEqual([]);
+  });
+
+  it('reads a reading direction with no link as a bare title', () => {
+    const withReading = parseBrief(
+      'research/interviews/2026-06-09-x.md',
+      `# Interview: X\n\n**Status:** Awaiting answers\n\n## Questions\n\n1. A question?\n   → read: Paul Graham — "Taste for Makers"\n\n## Author answers\n`
+    );
+    expect(withReading.questions[0].reading).toEqual([
+      { title: 'Paul Graham — "Taste for Makers"', url: '' },
+    ]);
   });
 
   it('marks a brief ready when the author has signed off', () => {

@@ -4,6 +4,10 @@ Raw sparks from the author. One line per thought, prefixed with a date. No forma
 requirements beyond that — fragments, questions, half-disagreements, English or 中文,
 all welcome. Lower the bar until capturing takes under 30 seconds.
 
+The Capture app may lightly tag a line by kind — a question keeps a `Q:` lead, a quote
+its curly quotes, a link its `← <url>` provenance — but these are optional hints, not a
+required format; a bare line is a perfectly good spark.
+
 The pipeline treats entries here as **first-class material that outranks scouted
 topics**: the scout must anchor candidates to these when possible, the interviewer may
 pick a spark over the whole backlog, and the drafter's fallback ladder draws on them.

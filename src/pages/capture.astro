@@ -1,7 +1,10 @@
 ---
 // Capture — "thought to repo in under 15 seconds" (vision §3.1).
-// Opens straight into the text box with the keyboard up; everything else
-// (tabs, connect card, error banner) comes from the shared shell.
+// Opens straight into the text box with the keyboard up. A voice dump can be
+// tidied into numbered lines — your words kept, just segmented — with each line
+// landing as its own inbox spark. A kind (spark / question / quote / link) tags
+// the capture. Everything else (tabs, connect card, error banner) comes from
+// the shared shell.
 import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
@@ -9,56 +12,130 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   title="Capture"
   titleKey="capture.title"
   tab="capture"
-  lede="Catch a thought — type or talk, hit save. Half-formed is fine."
+  lede="Type or talk. Half-formed is fine — it stays listening."
   ledeKey="capture.lede"
 >
   <style is:global>
-    #composer { position: relative; }
+    .composer-card {
+      background: var(--card2); border: 1px solid var(--line);
+      border-radius: 0.9rem; padding: 0.9rem; margin-bottom: 0.9rem;
+    }
+    .composer-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .kept-label {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
+    }
+    .seg {
+      display: inline-flex; border: 1px solid var(--line); border-radius: 0.5rem;
+      overflow: hidden; font-family: var(--mono); font-size: 0.66rem; font-weight: 600;
+    }
+    .seg button { background: transparent; border: none; color: var(--muted); padding: 0.32rem 0.65rem; min-height: 1.85rem; }
+    .seg button + button { border-left: 1px solid var(--line); }
+    .seg button[aria-pressed='true'] { background: var(--accent); color: var(--paper); }
+
     #spark {
-      min-height: 7.5rem;
-      font-size: 1.05rem;
-      line-height: 1.5;
-      border-radius: var(--radius);
-      padding: 0.85rem 0.85rem 3.6rem 0.85rem;
-      resize: none;
+      min-height: 7rem; font-size: 1.05rem; line-height: 1.55;
+      border: none; background: transparent; padding: 0; border-radius: 0; resize: none;
     }
-    #composer .mic-btn { position: absolute; bottom: 0.6rem; right: 0.6rem; }
-    #composer .lang-btn { position: absolute; bottom: 0.6rem; right: 3.55rem; }
-    #send { margin-top: 0.75rem; }
-    #source {
-      margin-top: 0.5rem;
-      font-size: 0.78rem;
-      color: var(--muted);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    #spark:focus { border: none; }
+
+    .tidied { display: flex; flex-direction: column; }
+    .tidied .tline { display: flex; gap: 0.65rem; align-items: flex-start; padding: 0.5rem 0; }
+    .tidied .tline + .tline { border-top: 1px solid var(--soft); }
+    .tidied .tnum {
+      flex: 0 0 auto; font-family: var(--mono); font-size: 0.78rem; color: var(--accent);
+      line-height: 1.5; padding-top: 0.12rem; cursor: pointer; -webkit-user-select: none; user-select: none;
+      min-width: 1rem;
     }
-    #recent { margin-top: 1.75rem; }
+    .tidied .ttext { font-family: var(--serif); font-size: 1.02rem; line-height: 1.45; color: var(--ink); flex: 1; min-width: 0; }
+    .tidied .ttext:focus { outline: none; }
+    .tidied .empty { font-family: var(--serif); font-style: italic; color: var(--faint); padding: 0.5rem 0; }
+    .tidy-hint { font-family: var(--mono); font-size: 0.66rem; color: var(--faint); margin-top: 0.65rem; }
+
+    /* recording widget — only where Web Speech dictation exists */
+    #rec { display: flex; align-items: center; gap: 0.9rem; margin: 0.85rem 0.15rem 0.95rem; }
+    .mic-btn.rec-mic { width: 3.35rem; height: 3.35rem; font-size: 1.4rem; }
+    #rec .rec-body { flex: 1; min-width: 0; }
+    .eq { display: flex; align-items: flex-end; gap: 0.18rem; height: 1.5rem; }
+    .eq span {
+      width: 0.25rem; background: var(--accent); border-radius: 0.12rem; height: 100%;
+      transform-origin: bottom; animation: eq 0.9s ease-in-out infinite;
+    }
+    .eq span:nth-child(2) { animation-delay: 0.15s; }
+    .eq span:nth-child(3) { animation-delay: 0.3s; }
+    .eq span:nth-child(4) { animation-delay: 0.45s; }
+    .eq span:nth-child(5) { animation-delay: 0.6s; opacity: 0.5; }
+    .eq span:nth-child(6) { animation-delay: 0.75s; opacity: 0.5; }
+    @keyframes eq { 0%, 100% { transform: scaleY(0.28); } 50% { transform: scaleY(1); } }
+    #rec.idle .eq { visibility: hidden; }
+    #rec .lang-btn { flex: 0 0 auto; }
+    .rec-status { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-top: 0.45rem; }
+
+    .kinds { display: flex; gap: 0.45rem; flex-wrap: wrap; margin-bottom: 0.85rem; }
+    .kind {
+      font-size: 0.8rem; color: var(--body); background: transparent;
+      border: 1px solid var(--line); border-radius: 999px; padding: 0.42rem 0.85rem; min-height: 2.1rem;
+    }
+    .kind[aria-pressed='true'] { color: var(--paper); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+
+    #source { margin-top: 0.5rem; font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #dest {
+      margin-top: 0.7rem; font-family: var(--mono); font-size: 0.66rem; color: var(--faint);
+      text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #dest .dpath { color: var(--accent); }
+
+    #recent { margin-top: 1.9rem; }
     #recent ul { list-style: none; padding: 0; }
     #recent li {
-      font-size: 0.88rem;
-      line-height: 1.45;
-      color: var(--body);
-      padding: 0.5rem 0;
-      border-top: 1px solid var(--border-soft);
-      overflow-wrap: anywhere;
+      font-family: var(--serif); font-size: 0.98rem; line-height: 1.45; color: var(--body);
+      padding: 0.6rem 0; border-top: 1px solid var(--soft); overflow-wrap: anywhere;
     }
-    #recent li.empty { color: var(--muted); border-top: none; }
-    #recent li.eg { color: var(--dim); font-style: italic; border-top: none; padding-top: 0; }
+    #recent li.empty { color: var(--muted); border-top: none; font-family: var(--sans); font-size: 0.88rem; }
+    #recent li.eg { color: var(--faint); font-style: italic; border-top: none; padding-top: 0; font-family: var(--sans); font-size: 0.85rem; }
     #recent li.pending { color: var(--muted); }
   </style>
 
-  <div id="composer">
+  <div class="composer-card">
+    <div class="composer-head">
+      <span class="kept-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+        <span data-i18n="capture.keptLabel">your words, kept</span>
+      </span>
+      <div class="seg" id="mode-seg" role="group">
+        <button id="mode-raw" type="button" aria-pressed="true" data-i18n="capture.raw">Raw</button>
+        <button id="mode-tidy" type="button" aria-pressed="false" data-i18n="capture.tidy">Tidy</button>
+      </div>
+    </div>
     <textarea
       id="spark"
       autofocus
       maxlength="2000"
-      enterkeyhint="send"
+      enterkeyhint="enter"
       placeholder="e.g. “consulting outcomes are unfalsifiable” — one thought, one line."
       data-i18n-ph="capture.placeholder"></textarea>
+    <div id="tidied" class="tidied" hidden></div>
+    <div id="tidy-hint" class="tidy-hint" hidden data-i18n="capture.tidyHint">tap a line to split · hold to merge · tap text to edit</div>
   </div>
+
+  <div id="rec" class="idle" hidden>
+    <div class="rec-body">
+      <div class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="rec-status" id="rec-status" data-i18n="capture.tapToTalk">Tap to talk — half-formed is fine</div>
+    </div>
+  </div>
+
+  <div class="kinds" id="kinds" role="group">
+    <button class="kind" type="button" data-kind="spark" aria-pressed="true" data-i18n="capture.kindSpark">Spark</button>
+    <button class="kind" type="button" data-kind="question" aria-pressed="false" data-i18n="capture.kindQuestion">Question</button>
+    <button class="kind" type="button" data-kind="quote" aria-pressed="false" data-i18n="capture.kindQuote">Quote</button>
+    <button class="kind" type="button" data-kind="link" aria-pressed="false" data-i18n="capture.kindLink">Link</button>
+  </div>
+
   <div id="source" hidden></div>
-  <button id="send" type="button" class="btn-primary btn-block" data-i18n="capture.save">Save thought</button>
+  <button id="send" type="button" class="btn-ink btn-block" data-i18n="capture.save">Save thought</button>
+  <div id="dest"></div>
 
   <section id="recent" class="stage" hidden>
     <h2 data-i18n="capture.recentTitle">Recent thoughts</h2>
@@ -68,12 +145,19 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint" data-i18n="capture.hint">One line each · works offline · nothing is lost</p>
 
   <script is:inline>
-    const { $, api, getToken, setStatus, needToken, localDate, attachDictation, refreshBadges, t } = QN;
+    const { $, api, getToken, setStatus, setMeta, needToken, localDate, attachDictation, refreshBadges, t } = QN;
     const sparkEl = $('spark');
+    const tidiedEl = $('tidied');
+    const tidyHintEl = $('tidy-hint');
     const sendEl = $('send');
     const sourceEl = $('source');
+    const destEl = $('dest');
     const recentEl = $('recent');
     const QUEUE_KEY = 'qn-spark-queue';
+
+    let mode = 'raw'; // 'raw' | 'tidy'
+    let lines = []; // the tidied thoughts, when in tidy mode
+    let kind = 'spark';
 
     // Share-target prefill (?text=&url=&title= via the manifest GET target).
     const params = new URLSearchParams(location.search);
@@ -92,11 +176,120 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     if (sharedUrl) {
       sourceEl.textContent = '← ' + sharedUrl;
       sourceEl.hidden = false;
+      setKind('link'); // a shared link is a link capture
     }
 
     function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
-    // One clear confirmation right on the button the thumb just pressed —
-    // grey text in the header corner reads as "did anything happen?".
+
+    // --- tidy: segment into lines, your words untouched -----------------------
+    function sentencesOf(text) {
+      return (text.match(/[^。！？.!?]+[。！？.!?]*["”』」)]*/g) || [text]).map((s) => s.trim()).filter(Boolean);
+    }
+    function tidyText(text) {
+      const out = [];
+      for (const chunk of text.split(/\n+/)) {
+        const c = chunk.trim();
+        if (c) for (const s of sentencesOf(c)) out.push(s);
+      }
+      return out;
+    }
+    // The thoughts to save: the tidied lines, or the raw box as one thought.
+    function currentLines() {
+      if (mode === 'tidy') return lines.map((l) => l.trim()).filter(Boolean);
+      const v = sparkEl.value.trim();
+      return v ? [v] : [];
+    }
+
+    function renderTidied() {
+      tidiedEl.replaceChildren();
+      if (!lines.length) {
+        tidiedEl.appendChild(QN.el('div', 'empty', t('capture.tidyEmpty')));
+        updateDest();
+        return;
+      }
+      lines.forEach((text, i) => {
+        const line = QN.el('div', 'tline');
+        const num = QN.el('span', 'tnum', String(i + 1));
+        const body = QN.el('div', 'ttext');
+        body.textContent = text;
+        body.contentEditable = 'true';
+        body.spellcheck = false;
+        body.addEventListener('blur', () => {
+          const v = body.textContent.trim();
+          if (v === lines[i]) return;
+          lines[i] = v;
+          if (!v) { lines.splice(i, 1); renderTidied(); }
+          updateDest();
+        });
+        // Tap the number to split this line into sentences; hold to merge up.
+        let hold;
+        const startHold = () => { hold = setTimeout(() => { hold = null; mergeUp(i); }, 500); };
+        const endHold = (split) => {
+          if (!hold) return; // a merge already fired (null) or the press was cancelled
+          clearTimeout(hold); hold = undefined;
+          if (split) splitLine(i);
+        };
+        num.addEventListener('pointerdown', (e) => { e.preventDefault(); startHold(); });
+        num.addEventListener('pointerup', () => endHold(true));
+        num.addEventListener('pointerleave', () => { clearTimeout(hold); hold = undefined; });
+        line.append(num, body);
+        tidiedEl.appendChild(line);
+      });
+      updateDest();
+    }
+    function splitLine(i) {
+      const parts = sentencesOf(lines[i]);
+      if (parts.length > 1) { lines.splice(i, 1, ...parts); renderTidied(); }
+    }
+    function mergeUp(i) {
+      if (i <= 0) return;
+      lines[i - 1] = (lines[i - 1] + ' ' + lines[i]).trim();
+      lines.splice(i, 1);
+      renderTidied();
+    }
+
+    function setMode(next) {
+      if (next === mode) return;
+      if (next === 'tidy') {
+        lines = tidyText(sparkEl.value);
+        sparkEl.hidden = true;
+        tidiedEl.hidden = false;
+        tidyHintEl.hidden = false;
+        renderTidied();
+      } else {
+        sparkEl.value = lines.join('\n');
+        sparkEl.hidden = false;
+        tidiedEl.hidden = true;
+        tidyHintEl.hidden = true;
+      }
+      mode = next;
+      $('mode-raw').setAttribute('aria-pressed', String(mode === 'raw'));
+      $('mode-tidy').setAttribute('aria-pressed', String(mode === 'tidy'));
+      updateDest();
+    }
+    $('mode-raw').addEventListener('click', () => setMode('raw'));
+    $('mode-tidy').addEventListener('click', () => setMode('tidy'));
+
+    // --- kind chips -----------------------------------------------------------
+    function setKind(next) {
+      kind = next;
+      for (const b of $('kinds').children) b.setAttribute('aria-pressed', String(b.dataset.kind === kind));
+      updateDest();
+    }
+    for (const b of $('kinds').children) b.addEventListener('click', () => setKind(b.dataset.kind));
+
+    // The destination line — where it lands and the commit it will make.
+    function updateDest() {
+      const texts = currentLines();
+      const first = texts[0] || '';
+      const words = first.length > 32 ? first.slice(0, 31) + '…' : first;
+      const extra = texts.length > 1 ? ' (+' + (texts.length - 1) + ')' : '';
+      destEl.innerHTML = '→ <span class="dpath">research/inbox.md</span> · '
+        + esc(kind) + ': ' + (words ? esc(words) + extra : '…');
+    }
+    sparkEl.addEventListener('input', updateDest);
+
+    // --- offline queue --------------------------------------------------------
     let savedTimer;
     function flashSaved(label) {
       sendEl.textContent = label || t('capture.saved');
@@ -109,15 +302,21 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
     function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
     function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
-    // Stash the thought locally and clear the box, so a failed send never loses it.
+    // Stash the capture locally and clear the composer, so a failed send never loses it.
     function queueSpark(spark) {
       const q = getQueue();
       q.push(spark);
       setQueue(q);
+      clearComposer();
+      loadRecent();
+    }
+    function clearComposer() {
       sparkEl.value = '';
+      lines = [];
+      if (mode === 'tidy') renderTidied();
       sharedUrl = '';
       sourceEl.hidden = true;
-      loadRecent();
+      updateDest();
     }
 
     async function flushQueue() {
@@ -127,6 +326,28 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           await api('/api/spark', queue[0]);
         } catch (e) {
           if (e.unauthorized) needToken();
+          // A 4xx means the Worker rejected this item (e.g. a tidied capture
+          // over its line limit); retrying can't fix it, and leaving it at the
+          // head would block every later capture behind a permanently
+          // unsyncable entry. Quarantine it: halve a multi-line item into
+          // chunks that can pass — lossless for the too-many-lines case — or
+          // drop a single unsyncable line, then keep draining.
+          if (e.serverError && e.status >= 400 && e.status < 500) {
+            const bad = queue[0];
+            if (Array.isArray(bad.lines) && bad.lines.length > 1) {
+              const mid = Math.ceil(bad.lines.length / 2);
+              queue = [
+                { ...bad, lines: bad.lines.slice(0, mid) },
+                { ...bad, url: '', lines: bad.lines.slice(mid) },
+                ...queue.slice(1),
+              ];
+            } else {
+              console.warn('capture: dropping an unsyncable queued thought', bad);
+              queue = queue.slice(1);
+            }
+            setQueue(queue);
+            continue;
+          }
           setQueue(queue);
           if (e.serverError) throw e;
           setStatus(t('capture.waitingToSync', { n: queue.length }));
@@ -139,9 +360,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
 
     async function send() {
-      const text = sparkEl.value.trim();
-      if (!text) return;
-      const spark = { text, url: sharedUrl, date: localDate() };
+      const texts = currentLines();
+      if (!texts.length) return;
+      const spark = { lines: texts, kind, url: sharedUrl, date: localDate() };
 
       sendEl.disabled = true;
       setStatus(t('capture.saving'));
@@ -149,31 +370,22 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         const flushed = await flushQueue();
         if (!flushed) throw new Error('offline');
         await api('/api/spark', spark);
-        sparkEl.value = '';
-        sharedUrl = '';
-        sourceEl.hidden = true;
+        clearComposer();
         flashSaved(t('capture.saved'));
         setStatus(t('capture.inInbox'));
         loadRecent();
       } catch (e) {
         if (e.unauthorized) {
-          // Don't lose the thought: keep it on this phone until the key exists.
           queueSpark(spark);
           flashSaved(t('capture.savedHere'));
           setStatus(t('capture.connectToSync'));
         } else if (e.config) {
-          // Queue it like an offline send. To the author it's simply "saved" —
-          // the server-side fix is the banner's job.
           queueSpark(spark);
           flashSaved(t('capture.savedHere'));
           setStatus(t('capture.willSyncServer', { n: getQueue().length }));
         } else if (e.serverError && e.status >= 400 && e.status < 500) {
-          // A validation failure (e.g. too long): retrying can't help, so show the
-          // server's own actionable message and keep the thought in the box to edit.
           setStatus(e.message);
         } else if (e.serverError) {
-          // Network / 5xx: retrying may help. Keep the thought in the box; don't
-          // surface the opaque server/proxy text.
           console.error('spark send failed:', e.message);
           setStatus(t('capture.cantReach'));
         } else {
@@ -183,18 +395,16 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         }
       } finally {
         sendEl.disabled = false;
-        sparkEl.focus();
+        if (mode === 'raw') sparkEl.focus();
       }
     }
 
     async function loadRecent() {
       const ul = recentEl.querySelector('ul');
       recentEl.hidden = false;
-      // Locally-queued thoughts (not yet synced) sit on top as proof the box works,
-      // even before a key exists.
-      const pending = getQueue().map(
-        (s) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + s.text) + ' · ' + t('capture.syncing') + '</li>'
-      );
+      const pending = getQueue().flatMap((s) => (s.lines || [s.text || '']).map(
+        (line) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + line) + ' · ' + t('capture.syncing') + '</li>'
+      ));
       let synced = [];
       if (getToken()) {
         try {
@@ -208,13 +418,34 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           + '<li class="eg">' + esc(t('capture.recentEg')) + '</li>';
     }
 
-    // Voice-first (vision §3.1, §6): dictation buttons appear only where the
-    // Web Speech API exists; OS-keyboard dictation is the fallback elsewhere.
+    // --- dictation → the recording widget (only where Web Speech exists) ------
+    const rec = $('rec');
+    const recStatus = $('rec-status');
+    let timerInt;
+    let secs = 0;
+    const fmt = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    function tickStatus() { recStatus.textContent = t('capture.stillListening', { time: fmt(secs) }); }
+
     const dict = attachDictation(sparkEl, (on) => {
-      if (on) setStatus(t('capture.listening'));
-      else if ($('qn-status').textContent === t('capture.listening')) setStatus('');
+      rec.classList.toggle('idle', !on);
+      if (on) {
+        setMode('raw'); // watch the words stream in
+        secs = 0; tickStatus();
+        clearInterval(timerInt);
+        timerInt = setInterval(() => { secs++; tickStatus(); }, 1000);
+        setStatus(t('capture.listening'));
+      } else {
+        clearInterval(timerInt);
+        recStatus.textContent = t('capture.tapToTalk');
+        if ($('qn-status').textContent === t('capture.listening')) setStatus('');
+      }
     });
-    if (dict) $('composer').append(dict.lang, dict.mic);
+    if (dict) {
+      dict.mic.classList.add('rec-mic');
+      rec.prepend(dict.mic);
+      rec.append(dict.lang);
+      rec.hidden = false;
+    }
 
     sendEl.addEventListener('click', send);
     sparkEl.addEventListener('keydown', (e) => {
@@ -225,6 +456,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         .catch(() => loadRecent());
     });
 
+    updateDest();
     if (!getToken()) needToken();
     const pendingCount = getQueue().length;
     if (pendingCount) setStatus(t('capture.waitingToSync', { n: pendingCount }));

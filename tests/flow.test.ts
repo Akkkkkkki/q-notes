@@ -179,6 +179,11 @@ describe('GET /api/flow', () => {
       files: ['src/content/posts/agents.en.md', 'src/content/posts/agents.zh.md'],
       comments: ['Ready to ship — checklist passes.'],
     });
+    // Two published pairs on disk → the belt's last node reads 2, not 4.
+    for (const slug of ['taste-is-judgment', 'consulting-barbell']) {
+      gh.seedFile(`src/content/posts/${slug}.en.md`, '# en\n');
+      gh.seedFile(`src/content/posts/${slug}.zh.md`, '# zh\n');
+    }
 
     const { status, data } = await call(worker, makeEnv(), 'GET', '/api/flow');
     expect(status).toBe(200);
@@ -199,6 +204,7 @@ describe('GET /api/flow', () => {
 
     expect(data.published).toHaveLength(2);
     expect(data.published[0].date).toBe(daysAgo(4));
+    expect(data.publishedTotal).toBe(2); // one per en/zh pair
 
     expect(data.schedule.map((s: any) => s.routine)).toEqual([
       'Scout',

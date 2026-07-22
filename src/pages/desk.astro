@@ -1,10 +1,10 @@
 ---
 // Publish — "ship from the couch" (vision §3.3).
-// One card per draft waiting as an open content PR: a plain-language status,
-// a big "read it" preview button, the voice panel (your words kept +
-// keep/cut flags), and Publish / Ask for one change / Make it a note /
-// Discard. Publishing offers the two author-owned slots — title and last
-// line — both skippable in one tap.
+// One card per draft waiting as an open content PR: a plain-language status
+// badge, a big "read it" preview button, your words kept + keep/cut flags,
+// then Publish (the two author-owned touches — title and last line) / Ask for
+// one change / Read & mark / Make it a note / Discard. A/B calibration folds
+// away. Publishing rides the two optional slots, both skippable in one tap.
 import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
@@ -12,143 +12,75 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   title="Publish"
   titleKey="publish.title"
   tab="publish"
-  lede="Drafts waiting for your OK — read, then publish or let it go."
+  lede="Read it as a page, not a diff. Then ship, or let it go."
   ledeKey="publish.lede"
 >
   <style is:global>
-    .draft h2 { font-size: 1.02rem; font-weight: 650; letter-spacing: -0.01em; color: var(--text); }
-    .meta { font-size: 0.75rem; color: var(--muted); margin: 0.3rem 0 0.6rem; }
-    .status-line {
-      display: flex;
-      gap: 0.5rem;
-      align-items: baseline;
-      font-size: 0.88rem;
-      font-weight: 600;
-      margin-bottom: 0.55rem;
-    }
-    .status-line .dot { flex: 0 0 auto; width: 0.55rem; height: 0.55rem; border-radius: 999px; position: relative; top: -0.05rem; }
-    .status-line.ready { color: var(--green); }
-    .status-line.ready .dot { background: var(--green); }
-    .status-line.attention { color: var(--amber); }
-    .status-line.attention .dot { background: var(--amber); }
-    .status-line.none { color: var(--muted); font-weight: 500; }
-    .status-line.none .dot { background: var(--dim); }
-    .verdict-details { margin-bottom: 0.7rem; }
-    .verdict-details summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); }
-    .verdict {
-      font-size: 0.85rem;
-      color: var(--body);
-      background: #131313;
-      border: 1px solid #242424;
-      border-radius: 0.5rem;
-      padding: 0.6rem 0.7rem;
-      margin-top: 0.45rem;
-      white-space: pre-wrap;
-      max-height: 14rem;
-      overflow-y: auto;
-    }
-    .preview { margin-bottom: 0.7rem; text-align: center; text-decoration: none; }
-    .voice { margin-bottom: 0.7rem; }
-    .voice h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.3rem; }
-    .voice .spine li { font-size: 0.85rem; color: var(--body); }
-    .voice ul { padding-left: 1.1rem; margin-bottom: 0.4rem; }
-    .flag {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      font-size: 0.85rem;
-      background: #1a1612;
-      border: 1px solid #3a3226;
-      border-radius: 0.5rem;
-      padding: 0.45rem 0.6rem;
-      margin-bottom: 0.4rem;
-    }
-    .flag span { flex: 1; }
-    .flag button {
-      font-size: 0.78rem;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      border-radius: 0.4rem;
-      background: transparent;
-      color: var(--body);
-      padding: 0.35rem 0.7rem;
-      min-height: 2.1rem;
-    }
-    .ab { margin-bottom: 0.7rem; }
-    .ab h3 { font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.3rem; }
-    .ab .q { margin-bottom: 0.6rem; }
-    .ab .q-label { font-size: 0.82rem; color: var(--body); margin-bottom: 0.3rem; }
-    .ab .why-row { display: flex; gap: 0.5rem; margin-top: 0.35rem; }
-    .ab .why-row input { flex: 1; min-width: 0; }
-    .readmark { margin-bottom: 0.7rem; }
-    .readmark .file-label { font-size: 0.75rem; color: var(--muted); margin: 0.7rem 0 0.35rem; font-family: ui-monospace, monospace; }
-    .readmark p.para { font-size: 0.92rem; line-height: 1.65; color: var(--body); margin-bottom: 0.7rem; }
-    .readmark p.para.heading { font-weight: 650; color: var(--text); }
-    .readmark .sentence { cursor: pointer; border-radius: 0.25rem; padding: 0.08rem 0; }
-    .readmark .sentence.marked {
-      background: rgba(229, 72, 77, 0.18);
-      color: #f0b0b3;
-      text-decoration: line-through;
-      text-decoration-color: rgba(229, 72, 77, 0.6);
-    }
-    .readmark .send-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
-    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
-    .panel { border-top: 1px solid #242424; margin-top: 0.7rem; padding-top: 0.7rem; }
-    .panel .panel-lede { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.3rem; }
-    .panel label { font-size: 0.78rem; color: var(--muted); display: block; margin: 0.5rem 0 0.25rem; }
-    .panel textarea { min-height: 4rem; }
-    .options button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      font-size: 0.85rem;
-      color: var(--body);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      padding: 0.55rem 0.7rem;
-      margin-bottom: 0.35rem;
-    }
-    .options button.picked { border-color: var(--text); color: var(--text); }
+    .card.draft { background: var(--card2); box-shadow: var(--sh); }
+    .draft h2 { font-family: var(--serif); font-size: 1.4rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.15; color: var(--ink); margin: 0.7rem 0 0.4rem; }
+    .meta { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin: 0 0 0.85rem; }
 
-    /* Voice & calibration fold — collapsed by default, opens to the panels. */
-    .vc-fold { border-top: 1px solid #242424; margin-bottom: 0.7rem; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-family: var(--mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+      border-radius: 0.5rem; padding: 0.4rem 0.65rem;
+    }
+    .status-badge .dot { width: 0.4rem; height: 0.4rem; border-radius: 999px; }
+    .status-badge.ready { color: var(--accent); background: var(--accent-08); }
+    .status-badge.ready .dot { background: var(--accent); }
+    .status-badge.attention { color: var(--amber); background: var(--amber-14); }
+    .status-badge.attention .dot { background: var(--amber); }
+    .status-badge.none { color: var(--muted); background: var(--soft); }
+    .status-badge.none .dot { background: var(--faint); }
+
+    .verdict-details { margin-bottom: 0.75rem; }
+    .verdict-details summary { cursor: pointer; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+    .verdict { font-size: 0.85rem; color: var(--body); background: var(--card); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.6rem 0.7rem; margin-top: 0.45rem; white-space: pre-wrap; max-height: 14rem; overflow-y: auto; }
+
+    .preview { margin-bottom: 0.9rem; text-align: center; text-decoration: none; }
+
+    .voice { border-top: 1px solid var(--line); margin-top: 0.3rem; padding-top: 0.9rem; margin-bottom: 0.6rem; }
+    .voice h3 { font-family: var(--mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+    .voice .spine { list-style: none; padding: 0; margin-bottom: 0.6rem; }
+    .voice .spine li { font-family: var(--serif); font-style: italic; font-size: 0.95rem; line-height: 1.5; color: var(--body); border-left: 2px solid var(--accent); padding-left: 0.7rem; margin-bottom: 0.5rem; }
+    .flag { background: var(--card); border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; }
+    .flag .flag-q { font-size: 0.85rem; color: var(--body); margin-bottom: 0.6rem; line-height: 1.4; }
+    .flag .flag-btns { display: flex; gap: 0.5rem; }
+    .flag .flag-btns button { flex: 1; font-size: 0.8rem; font-weight: 600; border-radius: 0.5rem; padding: 0.5rem; min-height: 2.2rem; border: 1px solid var(--line); background: transparent; color: var(--body); }
+    .flag .flag-btns .keep { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+    .flag .resolved { font-size: 0.85rem; color: var(--muted); }
+
+    .ab .q { margin-bottom: 0.75rem; }
+    .ab .q-label { font-size: 0.82rem; color: var(--body); margin-bottom: 0.4rem; }
+    .ab .why-row { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
+    .ab .why-row input { flex: 1; min-width: 0; }
+    .options button { display: block; width: 100%; text-align: left; font-size: 0.85rem; color: var(--body); background: var(--card); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.55rem 0.7rem; margin-bottom: 0.4rem; }
+    .options button.picked { border-color: var(--accent); color: var(--accent); }
+
+    .readmark .file-label { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin: 0.7rem 0 0.35rem; overflow-wrap: anywhere; }
+    .readmark p.para { font-family: var(--serif); font-size: 1rem; line-height: 1.6; color: var(--body); margin-bottom: 0.6rem; }
+    .readmark p.para.heading { font-weight: 600; color: var(--ink); }
+    .readmark .sentence { cursor: pointer; border-radius: 0.2rem; padding: 0.05rem 0; }
+    .readmark .sentence.marked { background: var(--red-08); color: var(--red); text-decoration: line-through; text-decoration-color: var(--red); }
+    .readmark .send-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+
+    .ship-btn { margin-bottom: 0.6rem; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .actions .btn-ghost { flex: 1; min-width: 6rem; font-size: 0.82rem; padding: 0.6rem 0.5rem; }
+    .panel { border-top: 1px solid var(--line); margin-top: 0.8rem; padding-top: 0.8rem; }
+    .panel .panel-lede { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem; line-height: 1.45; }
+    .panel label { display: block; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin: 0.6rem 0 0.3rem; overflow-wrap: anywhere; }
+    .panel textarea { min-height: 4rem; }
+
+    /* A/B calibration — folded away so the card stays a decision surface. */
+    .vc-fold { border-top: 1px solid var(--line); margin-bottom: 0.7rem; }
     .vc-fold > summary {
-      list-style: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      min-height: 2.6rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--muted);
+      list-style: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; min-height: 2.6rem;
+      font-family: var(--mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
     }
     .vc-fold > summary::-webkit-details-marker { display: none; }
-    .vc-fold > summary .vc-count {
-      min-width: 1.15rem;
-      height: 1.15rem;
-      padding: 0 0.3rem;
-      border-radius: 999px;
-      background: var(--amber);
-      color: #0a0a0a;
-      font-size: 0.68rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .vc-fold > summary::after {
-      content: '';
-      flex: 0 0 auto;
-      width: 0.5rem;
-      height: 0.5rem;
-      margin-left: auto;
-      border-right: 1.5px solid var(--dim);
-      border-bottom: 1.5px solid var(--dim);
-      transform: rotate(45deg);
-      transition: transform 0.15s ease;
-    }
+    .vc-fold > summary .vc-count { min-width: 1.15rem; height: 1.15rem; padding: 0 0.3rem; border-radius: 999px; background: var(--amber); color: var(--paper); font-size: 0.62rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+    .vc-fold > summary::after { content: ''; flex: 0 0 auto; width: 0.5rem; height: 0.5rem; margin-left: auto; border-right: 1.5px solid var(--faint); border-bottom: 1.5px solid var(--faint); transform: rotate(45deg); transition: transform 0.15s ease; }
     .vc-fold[open] > summary::after { transform: rotate(-135deg); }
     .vc-fold .fold-body { padding-top: 0.5rem; }
   </style>
@@ -159,7 +91,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint" data-i18n="publish.hint">Goes live minutes after you publish · letting one go is valid</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, refreshBadges, t } = QN;
+    const { $, api, el, getToken, setStatus, setMeta, needToken, refreshBadges, t } = QN;
 
     function showEmpty(msg) {
       $('empty').textContent = msg;
@@ -194,19 +126,21 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
     function renderCard(pr) {
       const card = el('section', 'card draft');
+
+      // Plain-language status badge derived from the ship gate's verdict.
+      const st = statusFor(pr.verdict);
+      const badge = el('div', 'status-badge ' + st.cls);
+      badge.appendChild(el('span', 'dot'));
+      badge.appendChild(el('span', '', st.label));
+      card.appendChild(badge);
+
       card.appendChild(el('h2', '', pr.title));
 
-      const meta = el('p', 'meta');
-      meta.appendChild(el('span', 'chip', '#' + pr.number));
-      if (pr.tier) meta.appendChild(el('span', 'chip', pr.tier));
-      meta.appendChild(el('span', 'chip', t('publish.waitingNd', { n: pr.ageDays })));
-      card.appendChild(meta);
-
-      const st = statusFor(pr.verdict);
-      const statusLine = el('div', 'status-line ' + st.cls);
-      statusLine.appendChild(el('span', 'dot'));
-      statusLine.appendChild(el('span', '', st.label));
-      card.appendChild(statusLine);
+      const metaParts = [];
+      if (pr.tier) metaParts.push(pr.tier);
+      metaParts.push('#' + pr.number);
+      metaParts.push(t('publish.waitingNd', { n: pr.ageDays }));
+      card.appendChild(el('p', 'meta', metaParts.join(' · ')));
 
       if (pr.verdict) {
         const details = el('details', 'verdict-details');
@@ -215,7 +149,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         card.appendChild(details);
       }
 
-      const preview = el('a', 'btn-ghost btn-block preview',
+      const preview = el('a', 'btn-ink btn-block preview',
         pr.previewUrl ? t('publish.readIt') : t('publish.openGithub'));
       preview.href = pr.previewUrl || pr.url;
       preview.target = '_blank';
@@ -223,96 +157,92 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       preview.title = pr.previewUrl ? t('publish.previewTitleReal') : t('publish.previewTitleGithub');
       card.appendChild(preview);
 
-      // Voice & calibration — folded away so the card stays a decision
-      // surface. Opens to the kept-words list, the keep/cut flags, and the
-      // A/B questions; the summary badge counts only what still needs a tap.
+      // Your words, kept — the verbatim spine + one keep/cut per untraceable
+      // opinion, inline so the voice call is part of the decision.
+      if (pr.voice.spine.length || pr.voice.flags.length) {
+        const voice = el('div', 'voice');
+        if (pr.voice.spine.length) {
+          voice.appendChild(el('h3', '', t('publish.wordsKept')));
+          const ul = el('ul', 'spine');
+          for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
+          voice.appendChild(ul);
+        }
+        for (const flag of pr.voice.flags) {
+          const row = el('div', 'flag');
+          row.appendChild(el('div', 'flag-q', t('publish.draftSaysFlag', { flag })));
+          const btns = el('div', 'flag-btns');
+          for (const [decision, label] of [['keep', t('publish.keep')], ['cut', t('publish.cut')]]) {
+            const b = el('button', decision, label);
+            b.addEventListener('click', async () => {
+              b.disabled = true;
+              try {
+                await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
+                row.replaceChildren(el('div', 'resolved', t('publish.flagResolved', { flag, decision: label })));
+              } catch (e) { b.disabled = false; setStatus(t('publish.didntSend')); }
+            });
+            btns.appendChild(b);
+          }
+          row.appendChild(btns);
+          voice.appendChild(row);
+        }
+        card.appendChild(voice);
+      }
+
+      // A/B calibration (issue #44): the drafter's 2–3 ten-second questions,
+      // already-answered ones hidden, folded so the card stays a decision
+      // surface. Tap an option, optionally say why, send. Skipping is valid.
       const abPending = pr.ab.questions.filter((q) => !pr.ab.answered.includes(q.n));
-      if (pr.voice.spine.length || pr.voice.flags.length || abPending.length) {
+      if (abPending.length) {
         const fold = el('details', 'vc-fold');
         const summary = el('summary');
-        summary.appendChild(el('span', '', t('publish.voiceCalib')));
-        const pending = pr.voice.flags.length + abPending.length;
-        if (pending) summary.appendChild(el('span', 'vc-count', String(pending)));
+        summary.appendChild(el('span', '', t('publish.abHeading')));
+        summary.appendChild(el('span', 'vc-count', String(abPending.length)));
         fold.appendChild(summary);
         const foldBody = el('div', 'fold-body');
         fold.appendChild(foldBody);
 
-        if (pr.voice.spine.length || pr.voice.flags.length) {
-          const voice = el('div', 'voice');
-          if (pr.voice.spine.length) {
-            voice.appendChild(el('h3', '', t('publish.wordsKept')));
-            const ul = el('ul', 'spine');
-            for (const phrase of pr.voice.spine) ul.appendChild(el('li', '', '“' + phrase + '”'));
-            voice.appendChild(ul);
-          }
-          for (const flag of pr.voice.flags) {
-            const row = el('div', 'flag');
-            row.appendChild(el('span', '', t('publish.draftSaysFlag', { flag })));
-            for (const [decision, label] of [['keep', t('publish.keep')], ['cut', t('publish.cut')]]) {
-              const b = el('button', '', label);
-              b.addEventListener('click', async () => {
-                b.disabled = true;
-                try {
-                  await api('/api/desk/comment', { number: pr.number, kind: 'voice', decision, text: flag });
-                  row.replaceChildren(el('span', '', t('publish.flagResolved', { flag, decision: label })));
-                } catch (e) { b.disabled = false; setStatus(t('publish.didntSend')); }
+        const ab = el('div', 'ab');
+        for (const q of abPending) {
+          const wrap = el('div', 'q');
+          wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
+          const opts = el('div', 'options');
+          let picked = null;
+          const whyRow = el('div', 'why-row');
+          whyRow.hidden = true;
+          const why = el('input');
+          why.placeholder = t('publish.abWhyPlaceholder');
+          const send = el('button', 'btn-primary', t('publish.send'));
+          send.addEventListener('click', async () => {
+            if (!picked) return;
+            send.disabled = true;
+            try {
+              await api('/api/desk/comment', {
+                number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
               });
-              row.appendChild(b);
-            }
-            voice.appendChild(row);
-          }
-          foldBody.appendChild(voice);
-        }
-
-        // A/B calibration (issue #44): the drafter's 2–3 ten-second questions,
-        // already-answered ones hidden. Tap an option, optionally say why, send.
-        // Skipping is a valid answer — it just dismisses the question here.
-        if (abPending.length) {
-          const ab = el('div', 'ab');
-          ab.appendChild(el('h3', '', t('publish.abHeading')));
-          for (const q of abPending) {
-            const wrap = el('div', 'q');
-            wrap.appendChild(el('p', 'q-label', 'Q' + q.n + ' · ' + q.label));
-            const opts = el('div', 'options');
-            let picked = null;
-            const whyRow = el('div', 'why-row');
-            whyRow.hidden = true;
-            const why = el('input');
-            why.placeholder = t('publish.abWhyPlaceholder');
-            const send = el('button', 'btn-primary', t('publish.send'));
-            send.addEventListener('click', async () => {
-              if (!picked) return;
-              send.disabled = true;
-              try {
-                await api('/api/desk/comment', {
-                  number: pr.number, kind: 'ab', question: q.n, choice: picked, why: why.value.trim(),
-                });
-                wrap.replaceChildren(el('p', 'q-label', t('publish.abRecorded', { n: q.n, picked })));
-              } catch (e) { send.disabled = false; setStatus(t('publish.didntSend')); }
+              wrap.replaceChildren(el('p', 'q-label', t('publish.abRecorded', { n: q.n, picked })));
+            } catch (e) { send.disabled = false; setStatus(t('publish.didntSend')); }
+          });
+          why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
+          whyRow.append(why, send);
+          for (const option of q.options) {
+            const b = el('button', '', option.letter + ' · ' + option.text);
+            b.addEventListener('click', () => {
+              picked = option.letter;
+              whyRow.hidden = false;
+              for (const sib of opts.children) sib.classList.toggle('picked', sib === b);
             });
-            why.addEventListener('keydown', (e) => { if (e.key === 'Enter') send.click(); });
-            whyRow.append(why, send);
-            for (const option of q.options) {
-              const b = el('button', '', option.letter + ' · ' + option.text);
-              b.addEventListener('click', () => {
-                picked = option.letter;
-                whyRow.hidden = false;
-                for (const sib of opts.children) sib.classList.toggle('picked', sib === b);
-              });
-              opts.appendChild(b);
-            }
-            const skip = el('button', 'btn-ghost', t('publish.skip'));
-            skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
-            skip.addEventListener('click', () => wrap.remove());
-            wrap.append(opts, whyRow, skip);
-            ab.appendChild(wrap);
+            opts.appendChild(b);
           }
-          foldBody.appendChild(ab);
+          const skip = el('button', 'btn-ghost', t('publish.skip'));
+          skip.style.cssText = 'min-height:2.1rem;padding:0.3rem 0.7rem;font-size:0.78rem;';
+          skip.addEventListener('click', () => wrap.remove());
+          wrap.append(opts, whyRow, skip);
+          ab.appendChild(wrap);
         }
+        foldBody.appendChild(ab);
         card.appendChild(fold);
       }
 
-      const actions = el('div', 'actions');
       const panel = el('div', 'panel');
       panel.hidden = true;
       let openPanel = null;
@@ -325,8 +255,13 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         build(panel);
       }
 
-      const ship = el('button', 'btn-primary', t('publish.publish'));
+      // Publish leads (the two optional touches live in its panel); the rest
+      // are lower-commitment ghost actions.
+      const ship = el('button', 'btn-primary btn-block ship-btn', t('publish.publish'));
       ship.addEventListener('click', () => togglePanel('ship', buildShipPanel));
+      card.appendChild(ship);
+
+      const actions = el('div', 'actions');
       const oneChange = el('button', 'btn-ghost', t('publish.askChange'));
       oneChange.addEventListener('click', () => togglePanel('change', buildChangePanel));
       const readMark = el('button', 'btn-ghost', t('publish.readMark'));
@@ -350,7 +285,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           refreshBadges(true);
         } catch (e) { kill.disabled = false; setStatus(t('publish.didntWork')); }
       });
-      actions.append(ship, oneChange, readMark, downgrade, kill);
+      actions.append(oneChange, readMark, downgrade, kill);
       card.appendChild(actions);
       card.appendChild(panel);
 
@@ -387,8 +322,8 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           slots.push({ path: entry.path, titleInput, lineInput });
         }
 
-        const go = el('button', 'btn-primary', t('publish.publishNow'));
-        go.style.marginTop = '0.6rem';
+        const go = el('button', 'btn-primary btn-block', t('publish.publishNow'));
+        go.style.marginTop = '0.7rem';
         const state = el('span', 'state');
         state.style.marginLeft = '0.5rem';
         go.addEventListener('click', async () => {
@@ -477,7 +412,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         const ta = el('textarea');
         ta.placeholder = t('publish.changePlaceholder');
         panel.appendChild(ta);
-        const send = el('button', 'btn-primary', t('publish.send'));
+        const send = el('button', 'btn-primary btn-block', t('publish.send'));
         send.style.marginTop = '0.6rem';
         send.addEventListener('click', async () => {
           const text = ta.value.trim();
@@ -504,6 +439,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       try {
         const { prs } = await api('/api/desk');
         setStatus('');
+        setMeta(t('publish.waitingMeta', { n: prs.length }));
         const cards = $('cards');
         cards.replaceChildren();
         if (!prs.length) {

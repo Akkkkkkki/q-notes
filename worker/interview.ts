@@ -12,6 +12,25 @@ const INTERVIEWS_DIR = 'research/interviews';
 const BRIEF_FILE = /^(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.md$/;
 const MAX_ANSWER_LENGTH = 10000;
 
+/** A "worth a look" reading direction: a title and (optionally) its link. */
+export interface Reading {
+  title: string;
+  url: string;
+}
+
+/**
+ * Optional answer directions the interviewer offered under a question, split by
+ * intent (all still just prompts — a skipped direction is a valid answer):
+ *   `→ <text>`               a stance/angle to take          → choices
+ *   `→ push: <text>`         a steelman to argue against     → pushback
+ *   `→ read: <title> — <url>` something worth a look          → reading
+ */
+export interface Directions {
+  choices: string[];
+  pushback: string[];
+  reading: Reading[];
+}
+
 export interface Brief {
   path: string;
   date: string;
@@ -21,7 +40,7 @@ export interface Brief {
   /** The author explicitly green-lit this brief (`Status: Ready to draft`). */
   ready: boolean;
   idea: string;
-  questions: Array<{ n: number; text: string; answer: string | null; hints: string[] }>;
+  questions: Array<{ n: number; text: string; answer: string | null } & Directions>;
 }
 
 export async function latestBrief(env: Env): Promise<Brief | null> {
@@ -167,18 +186,20 @@ export function parseBrief(path: string, content: string): Brief {
   const answers = parseAnswers(section(content, /author answers/i));
 
   const questions: Brief['questions'] = [];
-  let current: { n: number; lines: string[]; hints: string[] } | null = null;
+  let current: ({ n: number; lines: string[] } & Directions) | null = null;
   for (const line of section(content, /questions/i).split('\n')) {
     const start = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
     if (start) {
       if (current) pushQuestion(questions, current, answers);
-      current = { n: Number(start[1]), lines: [start[2]], hints: [] };
+      current = { n: Number(start[1]), lines: [start[2]], choices: [], pushback: [], reading: [] };
     } else if (current) {
       // A `→ …` (or `-> …`, optionally after a list bullet) line under a
-      // question is an optional answer direction the interviewer offered;
-      // any other non-empty line continues the question text.
+      // question is an optional answer direction the interviewer offered. A
+      // leading `push:`/`read:` keyword sorts it into a steelman to argue
+      // against or a reading suggestion; a bare direction is a stance to take.
+      // Any other non-empty line continues the question text.
       const hint = line.match(/^\s*(?:[-*]\s*)?(?:→|->)\s*(.+?)\s*$/);
-      if (hint) current.hints.push(hint[1]);
+      if (hint) addDirection(current, hint[1]);
       else if (line.trim()) current.lines.push(line.trim());
     }
   }
@@ -194,15 +215,33 @@ export function parseBrief(path: string, content: string): Brief {
 
 function pushQuestion(
   questions: Brief['questions'],
-  q: { n: number; lines: string[]; hints: string[] },
+  q: { n: number; lines: string[] } & Directions,
   answers: Map<number, string>
 ) {
   questions.push({
     n: q.n,
     text: q.lines.join(' ').trim(),
     answer: answers.get(q.n) ?? null,
-    hints: q.hints,
+    choices: q.choices,
+    pushback: q.pushback,
+    reading: q.reading,
   });
+}
+
+/** Sort one `→ …` direction into choices / pushback / reading by keyword. */
+function addDirection(dir: Directions, payload: string) {
+  const push = payload.match(/^push(?:back)?\s*[:：]\s*(.+)$/i);
+  const read = payload.match(/^read(?:ing)?\s*[:：]\s*(.+)$/i);
+  if (push) dir.pushback.push(push[1].trim());
+  else if (read) dir.reading.push(parseReading(read[1]));
+  else dir.choices.push(payload);
+}
+
+/** Pull a URL (if any) out of a reading direction; the rest is the title. */
+function parseReading(raw: string): Reading {
+  const url = raw.match(/https?:\/\/\S+/)?.[0] ?? '';
+  const title = (url ? raw.replace(url, '') : raw).replace(/[\s—–\-|:：]+$/, '').trim();
+  return { title: title || url, url };
 }
 
 /** Body of the `## <heading>` section matching `pattern` (up to the next `## `). */

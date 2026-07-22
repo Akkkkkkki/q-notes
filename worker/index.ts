@@ -29,6 +29,11 @@ import { getPublicKey, subscribe, notifyIfBriefOpen, notifyIfDeskOpen } from './
 const INBOX_PATH = 'research/inbox.md';
 const MAX_SPARK_LENGTH = 2000;
 const MAX_URL_LENGTH = 500;
+// A tidied capture can split into several thoughts; cap it so one request
+// can't append an unbounded block to the inbox.
+const MAX_SPARK_LINES = 20;
+const SPARK_KINDS = ['spark', 'question', 'quote', 'link'] as const;
+type SparkKind = (typeof SPARK_KINDS)[number];
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -133,20 +138,31 @@ async function isAuthorized(request: Request, env: Env): Promise<boolean> {
 }
 
 async function appendSpark(request: Request, env: Env): Promise<Response> {
-  let body: { text?: string; url?: string; date?: string };
+  let body: { text?: string; lines?: string[]; kind?: string; url?: string; date?: string };
   try {
     body = await request.json();
   } catch {
     return json({ error: 'Body must be JSON' }, 400);
   }
 
-  // One line per thought: collapse whatever arrives into a single line —
-  // the provenance URL included, so no client can inject extra inbox lines.
-  const text = collapse(body.text ?? '');
-  if (!text) return json({ error: 'text is required' }, 400);
-  if (text.length > MAX_SPARK_LENGTH) {
-    return json({ error: `text exceeds ${MAX_SPARK_LENGTH} characters` }, 400);
+  // A capture is one thought (`text`) or several (`lines`, the tidied split).
+  // Each line is collapsed to a single line — the inbox invariant — so no
+  // client can inject extra entries; the whole capture lands in one commit.
+  const raw = Array.isArray(body.lines) && body.lines.length ? body.lines : [body.text ?? ''];
+  const texts = raw.map((t) => collapse(typeof t === 'string' ? t : '')).filter(Boolean);
+  if (!texts.length) return json({ error: 'text is required' }, 400);
+  if (texts.length > MAX_SPARK_LINES) {
+    return json({ error: `too many lines (max ${MAX_SPARK_LINES})` }, 400);
   }
+  for (const t of texts) {
+    if (t.length > MAX_SPARK_LENGTH) {
+      return json({ error: `text exceeds ${MAX_SPARK_LENGTH} characters` }, 400);
+    }
+  }
+
+  const kind: SparkKind = (SPARK_KINDS as readonly string[]).includes(body.kind ?? '')
+    ? (body.kind as SparkKind)
+    : 'spark';
 
   const source = collapse(body.url ?? '');
   if (source.length > MAX_URL_LENGTH) {
@@ -154,23 +170,40 @@ async function appendSpark(request: Request, env: Env): Promise<Response> {
   }
 
   const date = /^\d{4}-\d{2}-\d{2}$/.test(body.date ?? '') ? body.date! : todayIn(env.SPARK_TIMEZONE);
-  const line = source ? `${date} — ${text} ← ${source}` : `${date} — ${text}`;
-  const message = `spark: ${text.length > 60 ? text.slice(0, 57) + '...' : text}`;
+  // Provenance rides the first line only — the source belongs to the lead thought.
+  const lines = texts.map((t, i) => `${date} — ${decorateSpark(t, kind, i === 0 ? source : '')}`);
+  const lead = texts[0];
+  const message = `spark: ${lead.length > 57 ? lead.slice(0, 54) + '...' : lead}${
+    texts.length > 1 ? ` (+${texts.length - 1})` : ''
+  }`;
 
   // Retry once on a write conflict (a concurrent automation commit).
   for (let attempt = 0; attempt < 2; attempt++) {
     const file = await getFile(env, INBOX_PATH);
     if (!file) return json({ error: 'Inbox not found' }, 502);
     const content = file.content.endsWith('\n') ? file.content : file.content + '\n';
-    const result = await putFile(env, INBOX_PATH, content + line + '\n', message, file.sha);
+    const result = await putFile(env, INBOX_PATH, content + lines.join('\n') + '\n', message, file.sha);
     if (result.ok) {
-      return json({ ok: true, line, commit: result.commitUrl });
+      return json({ ok: true, line: lines[0], lines, commit: result.commitUrl });
     }
     if (result.status !== 409) {
       return json({ error: `GitHub API error (${result.status})` }, 502);
     }
   }
   return json({ error: 'Write conflict, please retry' }, 409);
+}
+
+/**
+ * Render one thought for the inbox, tagged by capture kind and carrying its
+ * source. The inbox is format-free by design, so the tags stay light and
+ * human-readable: a question keeps a `Q:` lead, a quote gets curly quotes, and
+ * a link (like any capture) records provenance with `← <url>`.
+ */
+function decorateSpark(text: string, kind: SparkKind, source: string): string {
+  let out = text;
+  if (kind === 'question') out = /^q:\s/i.test(out) ? out : `Q: ${out}`;
+  else if (kind === 'quote') out = /^[“"].*[”"]$/.test(out) ? out : `“${out}”`;
+  return source ? `${out} ← ${source}` : out;
 }
 
 async function recentSparks(env: Env): Promise<Response> {

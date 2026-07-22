@@ -141,9 +141,10 @@ interview brief to `research/interviews/`, containing:
   disagreement, predictions, stakes ("Where have you seen this firsthand?", "What part of
   this thesis is wrong?", "What would change your mind?");
 - a blank `## Author answers` section;
-- optionally, up to three **answer directions** (`→ ` lines) under a question — angles
-  the author could take, rendered as tap-to-start prompts on the phone, never answers
-  put in the author's mouth.
+- optionally, **answer directions** (`→ ` lines) under a question — angles the author
+  could take, rendered as prompts on the phone, never answers put in the author's mouth.
+  A leading keyword types each one: `→ text` is a stance (a choice chip), `→ push: text`
+  a steelman to argue against, and `→ read: title — url` a reading worth a look.
 
 The author answers in 15–30 minutes, in either language, at voice-dump quality —
 fragments, mixed English/中文, typos all fine. Answering some now and finishing later is

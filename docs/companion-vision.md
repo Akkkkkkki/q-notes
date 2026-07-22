@@ -78,9 +78,21 @@ The app opens directly into a single text box with the keyboard up and the mic b
 prominent. Type or dictate; hit send; done. The entry lands as a dated line in
 `research/inbox.md` (committed via API with message `spark: <first words>`).
 
-- **Voice-first**: OS dictation by default (free, offline, instant). A long-press
-  "ramble mode" records audio and transcribes via the API proxy (Whisper or equivalent)
-  for thoughts too messy to dictate linearly — the transcript lands as the spark, raw.
+- **Tidy into lines**: a voice dump is one long run; a **Tidy** toggle segments it into
+  numbered lines — *your words kept, only split* — each landing as its own dated inbox
+  spark in a single commit. Tap a line's number to split it into sentences, hold to
+  merge it up, tap the text to fix a word. **Raw** keeps it as one thought. The split is
+  deterministic (sentence boundaries), never a paraphrase, so "your words, kept" is
+  literally true.
+- **Kind**: a chip row tags the capture — **Spark** (default), **Question**, **Quote**,
+  **Link** — so the inbox carries the author's framing (a question keeps a `Q:` lead, a
+  quote its curly quotes, a link its `← <url>` provenance). The inbox stays format-free;
+  the tags are light and optional.
+- **Voice-first**: OS dictation by default (free, offline, instant). While Web Speech is
+  listening, a recording widget shows a live equalizer and a timer — tap to stop. A
+  long-press "ramble mode" records audio and transcribes via the API proxy (Whisper or
+  equivalent) for thoughts too messy to dictate linearly — the transcript lands as the
+  spark, raw.
 - **Share-sheet target**: share a URL, quote, or screenshot caption from any app →
   becomes a spark with the source attached (`2026-06-14 — <comment> ← <url>`). Half of
   good sparks are reactions to something just read; this captures the reaction *and* the
@@ -122,9 +134,13 @@ an answer, move on. Partial answers save immediately (each answer commits into t
   sentences back at them (§4.4), it renders as a distinct quote card — visually, the
   author being interviewed by their own archive.
 - **Answer directions**: where the interviewer offered them (optional `→ ` lines under
-  a question), the card shows a few tap-to-start chips — angles the author could take,
-  never answers put in their mouth. Tapping one seeds the box with an opening to edit or
-  talk over; a chip is a prompt for the cold-start moment, and ignoring it is fine.
+  a question), the card surfaces them by type — never answers put in the author's mouth,
+  always a prompt for the cold-start moment that's fine to ignore. **Choices** (`→ text`)
+  are stances to take, as chips; a **push-back** (`→ push: text`) is a steelman to argue
+  against, in an amber callout; a **reading** (`→ read: title — url`) is one thing worth a
+  look, as a link. Tapping a choice or push-back seeds the box with an opening to edit or
+  talk over. One question is expanded at a time; answered ones collapse with a check and
+  the rest peek below, so the screen stays a single decision.
 - **Resumable, and the author owns the green light**: answer two questions Tuesday,
   three Thursday morning — nothing is drafted automatically. A **Ready to draft** button
   marks the brief `Status: Ready to draft` when the author decides; only then does the
