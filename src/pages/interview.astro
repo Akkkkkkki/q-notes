@@ -1,8 +1,10 @@
 ---
 // Answer — "answer five questions on a commute" (vision §3.2).
-// The week's brief from research/interviews/ rendered as a conversation:
-// the idea on top, one question per card, dictation on every card. Each
-// answer commits immediately into the file's ## Author answers section.
+// The week's brief from research/interviews/ as a focused conversation: the
+// idea and a progress bar on top, then one question at a time — choices to
+// react to, a push-back to argue against, and a reading worth a look (the
+// interviewer's optional directions), a mic, and Save. Each answer commits
+// immediately into the file's ## Author answers section.
 import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
@@ -10,65 +12,75 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   title="Answer"
   titleKey="answer.title"
   tab="answer"
-  lede="This week's questions — talk or type in your own words. Fragments are fine."
+  lede="Talk or tap in your own words. This is where a thought gets stress-tested."
   ledeKey="answer.lede"
 >
   <style is:global>
-    #idea {
-      font-size: 0.92rem;
-      color: var(--body);
-      background: #131313;
-      border: 1px solid #242424;
-      border-radius: var(--radius);
-      padding: 0.8rem 0.9rem;
-      margin-bottom: 0.6rem;
+    .topic-card { background: var(--card); border: 1px solid var(--line); border-radius: 0.85rem; padding: 0.95rem; margin-bottom: 1.1rem; }
+    .topic-label { font-family: var(--mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.55rem; }
+    .topic-idea { font-family: var(--serif); font-size: 1.02rem; line-height: 1.5; color: var(--ink); margin-bottom: 0.85rem; }
+    .progress-bar { height: 5px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+    .progress-bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.3s ease; }
+
+    .q-card { border: 1px solid var(--line); border-radius: 0.85rem; padding: 0.95rem; margin-bottom: 0.75rem; }
+    .q-card.expanded { background: var(--card2); box-shadow: var(--sh); }
+    .q-card.collapsed { background: var(--card); cursor: pointer; opacity: 0.72; }
+    .q-card.collapsed:hover { opacity: 1; }
+    .q-card.answered { border-color: var(--accent-14); }
+    .q-head { display: flex; gap: 0.6rem; align-items: baseline; }
+    .q-head .qn { flex: 0 0 auto; font-family: var(--mono); font-size: 0.7rem; font-weight: 600; color: var(--faint); }
+    .q-card.collapsed .q-text { font-family: var(--serif); font-size: 0.95rem; line-height: 1.35; color: var(--muted); }
+    .q-card.expanded .q-text { font-family: var(--serif); font-size: 1.25rem; font-weight: 500; line-height: 1.32; color: var(--ink); }
+    .q-head .done { margin-left: auto; align-self: center; }
+    .q-body { margin-top: 0.9rem; }
+
+    .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .choice {
+      font-size: 0.82rem; color: var(--body); background: transparent; text-align: left;
+      border: 1px solid var(--line); border-radius: 999px; padding: 0.5rem 0.85rem; line-height: 1.3;
     }
-    #progress { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.1rem; }
-    #title { font-size: 1.05rem; font-weight: 650; letter-spacing: -0.01em; margin: 0.25rem 0 0.5rem; }
-    .q-card h2 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.6rem; }
-    .q-card h2 .qn { color: var(--muted); font-weight: 500; margin-right: 0.4rem; }
-    .q-card textarea { min-height: 5.5rem; background: var(--surface-2); }
-    .q-card .row { display: flex; gap: 0.5rem; margin-top: 0.6rem; align-items: center; }
-    .q-card .row .state { flex: 1; }
-    .q-card.answered { border-color: #2e4633; }
-    /* optional answer directions the interviewer offered — tap to seed the box */
-    .hints { margin: 0.1rem 0 0.6rem; }
-    .hints .try { font-size: 0.74rem; color: var(--dim); margin-bottom: 0.35rem; }
-    .hints .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-    .hint-chip {
-      font-size: 0.78rem;
-      color: var(--body);
-      text-align: left;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.3rem 0.65rem;
-      line-height: 1.35;
-    }
-    .hint-chip:active { border-color: #555; }
+    .choice:hover, .choice.used { border-color: var(--accent); color: var(--accent); }
+
+    .pushback { border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 0.6rem; padding: 0.7rem 0.8rem; margin-bottom: 0.85rem; background: var(--card); }
+    .pushback-label { font-family: var(--mono); font-size: 0.56rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 0.55rem; }
+    .p-item { display: block; width: 100%; text-align: left; font-size: 0.82rem; color: var(--body); background: var(--card2); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.55rem 0.65rem; line-height: 1.35; }
+    .p-item + .p-item { margin-top: 0.5rem; }
+    .p-item:hover { border-color: var(--amber); }
+
+    .reading { display: flex; gap: 0.65rem; align-items: flex-start; border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.7rem 0.8rem; margin-bottom: 0.85rem; text-decoration: none; }
+    .reading:hover { border-color: var(--accent); text-decoration: none; }
+    .reading .r-ico { flex: 0 0 auto; margin-top: 0.15rem; color: var(--accent); display: inline-flex; }
+    .reading .r-label { font-family: var(--mono); font-size: 0.56rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.3rem; }
+    .reading .r-title { font-size: 0.85rem; line-height: 1.4; color: var(--ink); font-weight: 600; }
+    .reading .r-host { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); margin-top: 0.15rem; }
+
+    .q-card textarea { min-height: 5rem; }
+    .q-mic { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.55rem; }
+    .q-mic .state { flex: 1; }
+    .q-actions { display: flex; gap: 0.6rem; margin-top: 0.7rem; }
+    .q-actions .skip { flex: 1; }
+    .q-actions .save { flex: 2; }
+
     #ready-banner {
-      font-size: 0.86rem;
-      color: var(--green);
-      background: #12200f;
-      border: 1px solid var(--green-border);
-      border-radius: var(--radius);
-      padding: 0.7rem 0.85rem;
-      margin-bottom: 0.8rem;
+      font-size: 0.86rem; color: var(--accent); background: var(--accent-08);
+      border: 1px solid var(--accent-14); border-radius: 0.7rem; padding: 0.75rem 0.85rem; margin-bottom: 0.85rem;
     }
-    .ready-caption { font-size: 0.76rem; color: var(--dim); margin: 0 0 0.5rem; }
-    footer { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
-    footer .footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    footer { margin-top: 1.6rem; border-top: 1px solid var(--line); padding-top: 1.1rem; display: flex; flex-direction: column; gap: 0.7rem; text-align: center; }
+    .ready-caption { font-size: 0.78rem; color: var(--faint); margin: 0; line-height: 1.5; }
+    footer .footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
   </style>
 
   <main id="main" hidden>
-    <h1 id="title"></h1>
-    <div id="idea"></div>
+    <div class="topic-card">
+      <div class="topic-label" data-i18n="answer.topicLabel">This week's topic</div>
+      <div class="topic-idea" id="idea"></div>
+      <div class="progress-bar"><span id="progress-fill"></span></div>
+    </div>
     <div id="ready-banner" hidden></div>
-    <p id="progress"></p>
     <div id="cards"></div>
     <footer>
       <p class="ready-caption" id="ready-caption" data-i18n="answer.readyCaption"></p>
-      <button id="ready" class="btn-primary btn-block" data-i18n="answer.markReady">Ready to draft →</button>
+      <button id="ready" class="btn-soft btn-block" data-i18n="answer.markReady">Ready to draft →</button>
       <div class="footer-actions">
         <button id="notify" class="btn-ghost" hidden data-i18n="answer.notify">Notify me when questions arrive</button>
         <button id="decline" class="btn-ghost btn-danger" data-i18n="answer.decline">Not this topic — skip this week</button>
@@ -81,9 +93,12 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint" data-i18n="answer.hint">Skip any question · Thursday's draft uses whatever exists</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, attachDictation, refreshBadges, t } = QN;
+    const { $, api, el, getToken, setStatus, setMeta, needToken, attachDictation, refreshBadges, t } = QN;
+
+    const LINK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>';
 
     let brief = null;
+    let controllers = [];
 
     function showEmpty(msg) {
       $('empty').textContent = msg;
@@ -91,13 +106,22 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('main').hidden = true;
     }
 
-    function renderProgress() {
+    function host(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+    }
+
+    function seed(ta, text) {
+      const cur = ta.value.trim();
+      ta.value = cur ? cur + '\n' + text : text;
+      ta.focus();
+    }
+
+    function updateProgress() {
       const done = brief.questions.filter((q) => q.answer).length;
       const total = brief.questions.length;
-      const tail = brief.ready
-        ? 'answer.progressReady'
-        : done === total ? 'answer.progressAllSet' : 'answer.progressSome';
-      $('progress').textContent = t('answer.progress', { done, total, tail: t(tail) });
+      setMeta(done + ' / ' + total + ' ' + t('today.answered'));
+      $('progress-fill').style.width = (total ? (done / total) * 100 : 0) + '%';
+      renderReady();
     }
 
     // Reflect the ready state across the footer: the banner, the button label,
@@ -109,92 +133,153 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('ready-caption').hidden = brief.ready;
       const btn = $('ready');
       btn.textContent = t(brief.ready ? 'answer.reopen' : 'answer.markReady');
-      btn.className = brief.ready ? 'btn-ghost btn-block' : 'btn-primary btn-block';
-      // Nothing to green-light until at least one answer exists.
+      btn.className = (brief.ready ? 'btn-ghost' : 'btn-soft') + ' btn-block';
       btn.disabled = !brief.ready && done === 0;
     }
 
+    function setExpanded(ctrl, on) {
+      ctrl.card.classList.toggle('expanded', on);
+      ctrl.card.classList.toggle('collapsed', !on);
+      ctrl.body.hidden = !on;
+    }
+    function expand(idx, focus) {
+      controllers.forEach((c, i) => setExpanded(c, i === idx));
+      const ctrl = controllers[idx];
+      if (ctrl) {
+        ctrl.card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (focus) ctrl.ta.focus();
+      }
+    }
+    // After Save / Skip, move to the next unanswered question; if none remain,
+    // collapse everything so the Ready-to-draft footer is the clear next step.
+    function goNext(idx) {
+      let next = controllers.findIndex((c, i) => i > idx && !c.q.answer);
+      if (next === -1) next = controllers.findIndex((c) => !c.q.answer);
+      if (next === -1) setExpanded(controllers[idx], false);
+      else expand(next);
+    }
+
+    function buildCard(q, idx) {
+      const card = el('section', 'q-card' + (q.answer ? ' answered' : ''));
+      const head = el('div', 'q-head');
+      head.appendChild(el('span', 'qn', 'Q' + q.n));
+      head.appendChild(el('div', 'q-text', q.text));
+      const done = el('span', 'chip ok done', t('today.answered'));
+      done.hidden = !q.answer;
+      head.appendChild(done);
+      card.appendChild(head);
+
+      const body = el('div', 'q-body');
+
+      // The answer box first, so the direction taps have something to seed.
+      const ta = el('textarea');
+      ta.placeholder = t('answer.cardPlaceholder');
+      ta.value = q.answer || '';
+      ta.enterKeyHint = 'done';
+
+      // Choices — stances to react to; a tap seeds the box, then you edit or talk over it.
+      if (q.choices && q.choices.length) {
+        const wrap = el('div', 'choices');
+        for (const text of q.choices) {
+          const chip = el('button', 'choice', text);
+          chip.type = 'button';
+          chip.addEventListener('click', () => { seed(ta, text); chip.classList.add('used'); });
+          wrap.appendChild(chip);
+        }
+        body.appendChild(wrap);
+      }
+
+      // Push back — a steelman to argue against.
+      if (q.pushback && q.pushback.length) {
+        const box = el('div', 'pushback');
+        box.appendChild(el('div', 'pushback-label', t('answer.pushLabel')));
+        for (const text of q.pushback) {
+          const b = el('button', 'p-item', '“' + text + '”');
+          b.type = 'button';
+          b.addEventListener('click', () => seed(ta, text));
+          box.appendChild(b);
+        }
+        body.appendChild(box);
+      }
+
+      // Worth a look — the reading direction.
+      for (const r of q.reading || []) {
+        const a = el(r.url ? 'a' : 'div', 'reading');
+        if (r.url) { a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; }
+        const ico = el('span', 'r-ico');
+        ico.innerHTML = LINK_ICON;
+        const rb = el('div');
+        rb.appendChild(el('div', 'r-label', t('answer.readLabel')));
+        rb.appendChild(el('div', 'r-title', r.title));
+        if (r.url) rb.appendChild(el('div', 'r-host', host(r.url)));
+        a.append(ico, rb);
+        body.appendChild(a);
+      }
+
+      body.appendChild(ta);
+
+      const micRow = el('div', 'q-mic');
+      const state = el('span', 'state');
+      if (q.answer) state.textContent = t('answer.savedTick');
+      const dict = attachDictation(ta, (on) => {
+        state.textContent = on ? t('answer.listening') : state.textContent === t('answer.listening') ? '' : state.textContent;
+      });
+      if (dict) micRow.append(dict.mic, dict.lang);
+      micRow.appendChild(state);
+      body.appendChild(micRow);
+
+      const actions = el('div', 'q-actions');
+      const skip = el('button', 'btn-ghost skip', t('answer.skipQuestion'));
+      const save = el('button', 'btn-primary save', q.answer ? t('answer.update') : t('answer.saveAnswer'));
+      skip.addEventListener('click', () => goNext(idx));
+      save.addEventListener('click', async () => {
+        const text = ta.value.trim();
+        if (!text) return;
+        save.disabled = true;
+        state.textContent = t('answer.saving');
+        try {
+          await api('/api/answer', { path: brief.path, question: q.n, text });
+          q.answer = text;
+          card.classList.add('answered');
+          done.hidden = false;
+          save.textContent = t('answer.update');
+          state.textContent = t('answer.savedTick');
+          updateProgress();
+          refreshBadges(true);
+          goNext(idx);
+        } catch (e) {
+          state.textContent = e.unauthorized ? t('answer.connectFirst') : t('answer.didntSave');
+        } finally {
+          save.disabled = false;
+        }
+      });
+      actions.append(skip, save);
+      body.appendChild(actions);
+
+      card.appendChild(body);
+      const ctrl = { card, body, ta, q };
+      head.addEventListener('click', () => { if (card.classList.contains('collapsed')) expand(idx); });
+      return ctrl;
+    }
+
     function render() {
-      if (!brief) {
-        showEmpty(t('answer.emptyNone'));
-        return;
-      }
-      if (brief.closed) {
-        showEmpty(t('answer.emptyClosed', { status: brief.status }));
-        return;
-      }
+      if (!brief) { showEmpty(t('answer.emptyNone')); return; }
+      if (brief.closed) { showEmpty(t('answer.emptyClosed', { status: brief.status })); return; }
       $('main').hidden = false;
       $('empty').hidden = true;
-      $('title').textContent = brief.title;
       $('idea').textContent = brief.idea;
-      renderProgress();
-      renderReady();
 
       const cards = $('cards');
       cards.replaceChildren();
-      for (const q of brief.questions) {
-        const card = el('section', 'card q-card' + (q.answer ? ' answered' : ''));
-        const h = el('h2');
-        h.appendChild(el('span', 'qn', 'Q' + q.n));
-        h.appendChild(document.createTextNode(q.text));
-        const ta = el('textarea');
-        ta.placeholder = t('answer.cardPlaceholder');
-        ta.value = q.answer || '';
-        ta.enterKeyHint = 'done';
-        // Optional answer directions: tap one to seed the box with a starting
-        // point (appended on its own line, so a tap never clobbers work in
-        // progress). A prompt for when you're stuck, not a template — edit or
-        // talk over it, then Save like any other answer.
-        let hints = null;
-        if (q.hints && q.hints.length) {
-          hints = el('div', 'hints');
-          hints.appendChild(el('p', 'try', t('answer.tryLabel')));
-          const chips = el('div', 'chips');
-          for (const text of q.hints) {
-            const chip = el('button', 'hint-chip', text);
-            chip.type = 'button';
-            chip.addEventListener('click', () => {
-              const cur = ta.value.trim();
-              ta.value = cur ? cur + '\n' + text : text;
-              ta.focus();
-            });
-            chips.appendChild(chip);
-          }
-          hints.appendChild(chips);
-        }
-        const row = el('div', 'row');
-        const save = el('button', 'btn-primary', q.answer ? t('answer.update') : t('answer.save'));
-        const state = el('span', 'state');
-        if (q.answer) state.textContent = t('answer.savedTick');
-        save.addEventListener('click', async () => {
-          const text = ta.value.trim();
-          if (!text) return;
-          save.disabled = true;
-          state.textContent = t('answer.saving');
-          try {
-            await api('/api/answer', { path: brief.path, question: q.n, text });
-            q.answer = text;
-            card.classList.add('answered');
-            save.textContent = t('answer.update');
-            state.textContent = t('answer.savedTick');
-            renderProgress();
-            renderReady();
-            refreshBadges(true);
-          } catch (e) {
-            state.textContent = e.unauthorized ? t('answer.connectFirst') : t('answer.didntSave');
-          } finally {
-            save.disabled = false;
-          }
-        });
-        row.appendChild(save);
-        const dict = attachDictation(ta, (on) => { state.textContent = on ? t('answer.listening') : state.textContent === t('answer.listening') ? '' : state.textContent; });
-        if (dict) row.append(dict.lang, dict.mic);
-        row.appendChild(state);
-        card.append(h);
-        if (hints) card.append(hints);
-        card.append(ta, row);
-        cards.appendChild(card);
-      }
+      controllers = brief.questions.map((q, i) => buildCard(q, i));
+      for (const c of controllers) cards.appendChild(c.card);
+
+      // Open the first unanswered question; if all are answered, keep them
+      // collapsed so Ready-to-draft leads.
+      let active = controllers.findIndex((c) => !c.q.answer);
+      controllers.forEach((c, i) => setExpanded(c, i === active));
+
+      updateProgress();
     }
 
     $('ready').addEventListener('click', async () => {
@@ -207,8 +292,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         await api('/api/brief/ready', { path: brief.path, ready: next });
         brief.ready = next;
         setStatus('');
-        renderProgress();
-        renderReady();
+        updateProgress();
         refreshBadges(true);
       } catch (e) {
         setStatus('');

@@ -1,8 +1,9 @@
 ---
 // Today — the home screen. Answers one question first ("what needs me right
-// now?"), offers a quick capture box, then shows the whole pipeline in plain
-// words: thoughts → topic queue → this week's questions → waiting to publish
-// → published. Read-only except quick capture (rides POST /api/spark).
+// now?"), offers a quick capture box, shows the whole pipeline as a belt
+// (thoughts → topics → questions → draft → published) from real /api/flow
+// counts, then the same stages as tappable folds for the detail and actions.
+// Read-only except quick capture (rides POST /api/spark).
 import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
@@ -14,35 +15,52 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   ledeKey="today.lede"
 >
   <style is:global>
-    .attn { display: flex; gap: 0.55rem; align-items: baseline; }
-    .attn .dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 999px; position: relative; top: -0.05rem; }
+    /* Up to you — a colored urgency dot, a bold headline, a muted detail. */
+    .attn { display: flex; gap: 0.6rem; align-items: flex-start; }
+    .attn .dot { flex: 0 0 auto; width: 0.5rem; height: 0.5rem; border-radius: 999px; margin-top: 0.42rem; }
     .attn.now .dot { background: var(--red); }
     .attn.soon .dot { background: var(--amber); }
-    .attn.later .dot { background: var(--dim); }
+    .attn.later .dot { background: var(--faint); }
+    .attn .body { min-width: 0; }
+    .attn .a-title { color: var(--ink); font-weight: 600; font-size: 0.93rem; line-height: 1.35; }
+    .attn .a-detail { color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem; line-height: 1.42; }
     .card a { color: inherit; text-decoration: none; display: block; }
-    .card .title { color: var(--text); font-weight: 600; font-size: 0.93rem; }
-    #quick { display: flex; gap: 0.5rem; margin-bottom: 1.4rem; }
+    .card .title { color: var(--ink); font-weight: 600; font-size: 0.93rem; }
+    #quick { display: flex; gap: 0.5rem; margin-bottom: 1.7rem; }
     #quick input { flex: 1; min-width: 0; }
     #quick button { flex: 0 0 auto; }
-    #empty-now { color: var(--green); font-size: 0.9rem; margin-bottom: 0.55rem; }
-    .topic-actions { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
+    #empty-now { color: var(--accent); font-size: 0.9rem; margin-bottom: 0.55rem; }
+
+    /* The belt — the whole pipeline at a glance, active stages in accent. */
+    .belt-label { font-family: var(--mono); font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.6rem; }
+    .belt { display: flex; align-items: flex-start; justify-content: space-between; background: var(--card); border: 1px solid var(--line); border-radius: 0.85rem; padding: 1rem 0.6rem; margin-bottom: 0.85rem; }
+    .belt .node { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; flex: 1 1 0; text-decoration: none; }
+    .belt .num { font-family: var(--serif); font-size: 1.35rem; line-height: 1; color: var(--ink); }
+    .belt .lbl { font-family: var(--mono); font-size: 0.56rem; line-height: 1.2; letter-spacing: 0.02em; color: var(--muted); text-align: center; }
+    .belt .node.active .num, .belt .node.active .lbl { color: var(--accent); }
+    .belt .arrow { color: var(--faint); margin-top: 0.4rem; font-size: 0.85rem; flex: 0 0 auto; }
+    .schedule { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); text-align: center; margin-bottom: 1.7rem; line-height: 1.6; }
+
+    /* Topic cards keep their take / pass actions. */
+    .topic-actions { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
     .topic-actions button {
       font-size: 0.78rem; font-weight: 600; color: var(--body);
-      background: transparent; border: 1px solid var(--border);
-      border-radius: 0.4rem; padding: 0.35rem 0.7rem; min-height: 2.1rem;
+      background: transparent; border: 1px solid var(--line);
+      border-radius: 0.5rem; padding: 0.4rem 0.75rem; min-height: 2.1rem;
     }
-    .topic-actions .pass { color: #d99; border-color: #3a2626; }
+    .topic-actions .pass { color: var(--red); }
     .take {
-      font-size: 0.85rem; color: var(--body);
-      background: #131313; border: 1px solid #242424; border-left: 2px solid var(--green);
-      border-radius: 0.4rem; padding: 0.45rem 0.6rem; margin-top: 0.5rem; margin-bottom: 0.35rem;
+      font-family: var(--serif); font-style: italic; font-size: 0.9rem; color: var(--body);
+      background: var(--card2); border: 1px solid var(--line); border-left: 2px solid var(--accent);
+      border-radius: 0.5rem; padding: 0.5rem 0.65rem; margin-top: 0.5rem; margin-bottom: 0.35rem;
     }
+    .take .sub { font-family: var(--sans); font-style: normal; }
     .take-panel { margin-top: 0.55rem; }
     .take-panel textarea { min-height: 3.5rem; }
-    .take-panel .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.45rem; }
-    #how { border-top: 1px solid var(--border-soft); margin-top: 0.5rem; padding-top: 0.7rem; }
-    #how summary { cursor: pointer; font-size: 0.8rem; color: var(--dim); }
-    #how p { font-size: 0.82rem; color: var(--muted); padding-top: 0.5rem; }
+    .take-panel .row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+    #how { border-top: 1px solid var(--line); margin-top: 0.6rem; padding-top: 0.8rem; }
+    #how summary { cursor: pointer; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+    #how p { font-size: 0.85rem; color: var(--muted); padding-top: 0.6rem; line-height: 1.55; }
   </style>
 
   <main id="board" hidden>
@@ -55,6 +73,10 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       <input id="quick-text" enterkeyhint="send" placeholder="Save a quick thought…" data-i18n-ph="today.quickPlaceholder" />
       <button id="quick-send" class="btn-primary" data-i18n="today.quickSave">Save</button>
     </div>
+
+    <div class="belt-label" data-i18n="today.belt">The belt</div>
+    <div class="belt" id="belt"></div>
+    <p class="schedule" id="schedule" data-i18n="today.schedule"></p>
 
     <details class="stage-fold" id="fold-sparks">
       <summary><span data-i18n="today.foldSparks">Your thoughts</span> <span class="count" id="sparks-count"></span><span class="when" data-i18n="today.whenSparks">picked Mon</span></summary>
@@ -77,7 +99,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     </details>
 
     <details class="stage-fold" id="fold-published">
-      <summary><span data-i18n="today.foldPublished">Published</span> <span class="when"><a href="/" style="color:var(--dim)" data-i18n="today.siteLink">the site →</a></span></summary>
+      <summary><span data-i18n="today.foldPublished">Published</span> <span class="when"><a href="/" style="color:var(--faint)" data-i18n="today.siteLink">the site →</a></span></summary>
       <div class="fold-body"><div id="published-list"></div></div>
     </details>
 
@@ -92,7 +114,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint" data-i18n="today.hint">Thoughts → topics → questions → drafts → published · the pipeline runs the belt, you supply the point of view</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, needToken, localDate, flowData, applyBadges, refreshBadges, attachDictation, t } = QN;
+    const { $, api, el, getToken, setStatus, setMeta, needToken, localDate, flowData, applyBadges, refreshBadges, attachDictation, t } = QN;
 
     function card(className) { return el('div', 'card' + (className ? ' ' + className : '')); }
 
@@ -170,6 +192,40 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       return frag;
     }
 
+    // The belt — one node per pipeline stage, active stages (something waiting
+    // on you) drawn in accent. Nodes deep-link to their fold below.
+    function renderBelt(flow) {
+      const belt = $('belt');
+      belt.replaceChildren();
+      const interviewLeft = flow.interview
+        ? Math.max(flow.interview.total - flow.interview.answered, 0)
+        : 0;
+      const nodes = [
+        { n: flow.sparks.unconsumed, label: t('today.beltThoughts'), href: '#fold-sparks' },
+        { n: flow.backlog.live.length, label: t('today.beltTopics'), href: '#fold-backlog' },
+        {
+          n: flow.interview ? flow.interview.total : 0,
+          label: t('today.beltQuestions'),
+          href: '#fold-interview',
+          active: !!(flow.interview && !flow.interview.ready && interviewLeft > 0),
+        },
+        { n: flow.desk.length, label: t('today.beltDraft'), href: '#fold-desk', active: flow.desk.length > 0 },
+        {
+          n: flow.publishedTotal != null ? flow.publishedTotal : flow.published.length,
+          label: t('today.beltPublished'),
+          href: '#fold-published',
+        },
+      ];
+      nodes.forEach((node, i) => {
+        const a = el('a', 'node' + (node.active ? ' active' : ''));
+        a.href = node.href;
+        a.appendChild(el('span', 'num', String(node.n)));
+        a.appendChild(el('span', 'lbl', node.label));
+        belt.appendChild(a);
+        if (i < nodes.length - 1) belt.appendChild(el('span', 'arrow', '→'));
+      });
+    }
+
     function render(flow) {
       // Up to you
       const now = $('now-list');
@@ -179,14 +235,27 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       }
       for (const item of flow.needsYou) {
         const c = card();
+        const a = el('a', '');
+        a.href = item.href;
         const row = el('div', 'attn ' + item.urgency);
         row.appendChild(el('span', 'dot'));
-        const a = el('a', '', item.text);
-        a.href = item.href;
-        row.appendChild(a);
-        c.appendChild(row);
+        const bodyEl = el('div', 'body');
+        // The needs-you text reads "<headline> — <detail>"; split it so the
+        // card leads with the headline and softens the rest, per the design.
+        const dash = item.text.indexOf(' — ');
+        if (dash > 0) {
+          bodyEl.appendChild(el('div', 'a-title', item.text.slice(0, dash)));
+          bodyEl.appendChild(el('div', 'a-detail', item.text.slice(dash + 3)));
+        } else {
+          bodyEl.appendChild(el('div', 'a-title', item.text));
+        }
+        row.appendChild(bodyEl);
+        a.appendChild(row);
+        c.appendChild(a);
         now.appendChild(c);
       }
+
+      renderBelt(flow);
 
       // Your thoughts
       $('sparks-count').textContent = t('today.nWaiting', { n: flow.sparks.unconsumed });
@@ -290,6 +359,14 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       $('board').hidden = false;
     }
 
+    // A friendly "Tue · Jul 22" in the header corner, like the design.
+    function showDate() {
+      const d = new Date();
+      const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()];
+      const mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+      setMeta(wd + ' · ' + mo + ' ' + d.getDate());
+    }
+
     // "Up to you" cards deep-link to a fold (e.g. #fold-backlog from /api/flow).
     // A collapsed <details> swallows the jump, so open the target and scroll to it.
     function revealFromHash() {
@@ -302,6 +379,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     window.addEventListener('hashchange', revealFromHash);
 
     async function load() {
+      showDate();
       if (!getToken()) { needToken(); return; }
       setStatus(t('today.loading'));
       try {

@@ -137,6 +137,12 @@ drafts — while URLs, file formats, and the API keep the pipeline's original na
   available; OS keyboard dictation works everywhere). English, 中文, or mixed — one
   line per thought, landing as a dated line in `research/inbox.md` (commit message
   `spark: <first words>`).
+- **Tidy into lines**: a **Tidy** toggle segments a voice dump into numbered lines —
+  your words kept, only split at sentence boundaries — each landing as its own inbox
+  spark in one commit (tap a number to split, hold to merge, tap text to edit). **Raw**
+  keeps it as one thought.
+- **Kind**: a chip row (Spark / Question / Quote / Link) tags the capture so the inbox
+  carries the author's framing; the inbox stays format-free and the tags stay light.
 - **Offline queue**: sparks queue in the browser and send when back online.
 - **Share target**: on Android, share a URL or quote from any app into Capture; the
   source lands as provenance (`… ← <url>`). On iOS, an Apple Shortcut can POST to the
@@ -151,9 +157,12 @@ drafts — while URLs, file formats, and the API keep the pipeline's original na
   dictation mic. Dictate or type; each answer commits immediately into the brief's
   `## Author answers` section, attributed per question — resumable across days,
   exactly as the drafter expects.
-- **Answer directions**: where the interviewer offered them, a question shows a few
-  tap-to-start chips (angles to take, not answers) that seed the box with an opening
-  you then edit or talk over — a prompt for when a cold question is the hard part.
+- **Answer directions**: where the interviewer offered them, a question surfaces them by
+  type — **choices** (stances to take, as chips), a **push-back** (a steelman to argue
+  against, in an amber callout), and a **reading** (one link worth a look). Tapping a
+  choice or push-back seeds the box with an opening to edit or talk over — a prompt for
+  when a cold question is the hard part, never an answer put in your mouth. One question
+  is open at a time; answered ones collapse with a check.
 - **Ready to draft**: answering is never automatically consumed. Answer some now,
   finish later, and tap **Ready to draft** when *you* decide — that green light is
   what turns the brief into a full Essay on Thursday (`POST /api/brief/ready`). Leave

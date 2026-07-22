@@ -32,9 +32,12 @@ You do not write the article. You write the questions that make the article poss
    ## Questions
    1–5, each designed to surface what only the author can contribute, plus a final
    numbered retell question (see step 4). Numbered lines only — the phone client
-   renders exactly these as answer cards. Under a question you may add up to three
-   optional **answer directions**, each on its own line starting with `→ ` (see
-   step 4a); the phone renders them as tap-to-start chips and ignores anything else.
+   renders exactly these as answer cards. Under a question you may add optional
+   **answer directions**, each on its own `→ ` line (see step 4a); the phone sorts
+   them by an optional keyword and ignores anything else:
+   - `→ <angle>` — a stance or angle to take (rendered as a tap-to-start chip)
+   - `→ push: <claim>` — a steelman to argue against (rendered as a "push back" chip)
+   - `→ read: <title> — <url>` — something worth a look (rendered as a link)
 
    ## Author answers
    _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are
@@ -69,16 +72,23 @@ You do not write the article. You write the questions that make the article poss
    retell is signal.
 4a. **Offer answer directions, sparingly.** For questions where a cold start is
    the hard part — an abstract "what is taste?", a "where have you seen this?" that
-   needs a memory jog — add up to three `→ ` lines under the question naming
-   *angles the author could take*, not answers you'd write for them. Good
-   directions are concrete openings the author can accept, reject, or ignore: a
-   kind of example ("→ a staffing call where the room disagreed"), a stance to
-   react to ("→ or: taste is just confidence dressed up"), a contrast to draw
-   ("→ how the consultant's version differs from the designer's"). Never put words
-   in the author's mouth or supply an opinion they haven't held — a direction is a
-   prompt, and a skipped one is a valid answer. Leave a question bare when it
-   already reads as an easy invitation. These never substitute for author input:
-   the drafter must never treat a direction as if the author chose it.
+   needs a memory jog — add a few `→ ` lines under the question naming *angles the
+   author could take*, not answers you'd write for them. Good directions are
+   concrete openings the author can accept, reject, or ignore, in three flavors:
+   - **Stances / angles** — `→ a staffing call where the room disagreed`,
+     `→ or: taste is just confidence dressed up`. A kind of example or a stance to
+     react to. Keep to about three per question.
+   - **A push-back** — `→ push: taste is only aesthetics, it doesn't belong in a
+     boardroom`. One sharp counter the author can knock down; naming what would
+     change their mind is a good one. At most one or two per question.
+   - **A reading** — `→ read: Paul Graham — "Taste for Makers" — https://paulgraham.com/taste.html`.
+     One genuinely relevant piece, when it adds an angle the author's own frame
+     doesn't. Never padding; skip it if nothing fits.
+
+   Never put words in the author's mouth or supply an opinion they haven't held —
+   a direction is a prompt, and a skipped one is a valid answer. Leave a question
+   bare when it already reads as an easy invitation. These never substitute for
+   author input: the drafter must never treat a direction as if the author chose it.
 
 5. **Update the backlog item** status to `Interviewing since YYYY-MM-DD`.
 6. **Commit to `main`** (`interview: brief for <slug>`), then **notify the author** with

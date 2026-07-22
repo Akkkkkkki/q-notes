@@ -73,6 +73,47 @@ describe('POST /api/spark', () => {
     ).toBe(400);
   });
 
+  it('saves a tidied multi-line capture as one dated line each, in one commit', async () => {
+    const before = gh.commits.length;
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/spark', {
+      lines: ['taste is just judgment, renamed', '', 'a consultant calls it judgment — same skill'],
+    });
+    expect(status).toBe(200);
+    const today = todayIn('Asia/Shanghai');
+    expect(data.lines).toEqual([
+      `${today} — taste is just judgment, renamed`,
+      `${today} — a consultant calls it judgment — same skill`,
+    ]);
+    // Both thoughts, one commit (empty middle line dropped).
+    expect(gh.commits.length).toBe(before + 1);
+    const inbox = gh.files.get(INBOX)!;
+    expect(inbox).toContain('taste is just judgment, renamed');
+    expect(inbox).toContain('a consultant calls it judgment — same skill');
+    expect(gh.commits.at(-1)!.message).toBe('spark: taste is just judgment, renamed (+1)');
+  });
+
+  it('tags questions and quotes, and rides provenance on the first line only', async () => {
+    const q = await call(worker, makeEnv(), 'POST', '/api/spark', { text: 'is taste real', kind: 'question' });
+    expect(q.data.line).toMatch(/— Q: is taste real$/);
+
+    const quote = await call(worker, makeEnv(), 'POST', '/api/spark', { text: 'taste is the moat', kind: 'quote' });
+    expect(quote.data.line).toMatch(/— “taste is the moat”$/);
+
+    const link = await call(worker, makeEnv(), 'POST', '/api/spark', {
+      lines: ['first', 'second'],
+      kind: 'link',
+      url: 'https://example.com/a',
+    });
+    expect(link.data.lines[0]).toMatch(/first ← https:\/\/example\.com\/a$/);
+    expect(link.data.lines[1]).toMatch(/second$/); // no provenance on the tail
+  });
+
+  it('rejects a capture with too many lines', async () => {
+    const lines = Array.from({ length: 21 }, (_, i) => `thought ${i}`);
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/spark', { lines });
+    expect(status).toBe(400);
+  });
+
   it('retries once on a write conflict, then succeeds', async () => {
     gh.putConflicts = 1;
     const { status } = await call(worker, makeEnv(), 'POST', '/api/spark', { text: 'retry me' });

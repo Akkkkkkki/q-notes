@@ -10,10 +10,18 @@
 ## Questions
 
 1. Where have you seen taste — or its absence — actually decide an outcome firsthand? A client engagement, a design review, a staffing call: what did the person with taste see that the room missed, and could they explain it, or did they just "know"?
+   → a staffing call where the room disagreed on who to put in front of the client
+   → a design review where one person just knew the deck was wrong
 2. You called the "taste is what matters" framing a little bit cliché. Which specific part of it do you think is wrong or overstated — the claim that taste is scarce, or the claim that AI can't reproduce it?
 3. Is taste one thing, or does it mean something genuinely different for a consultant vs. a designer vs. an engineer? If you had to give the consultant's version of "taste" a plain-language definition, what is it — and how is it different from what a great designer has?
+   → It's just judgment
+   → No — taste is distinct
+   → Depends on the domain
+   → push: taste is only aesthetics — it doesn't belong in a boardroom
+   → read: Paul Graham — "Taste for Makers" — https://paulgraham.com/taste.html
 4. In "Cheap agents create coordination debt" you wrote: "Agent work makes judgment more important because it makes action less scarce." Is "taste" just a softer word for that same judgment, or is there something in taste — restraint, knowing what to leave out — that "judgment" misses?
 5. If you're staffing a team or hiring, how would you tell whether someone has this before they've produced anything? And what would change your mind — what evidence would show taste is more reproducible or automatable than you think?
+   → push: taste is more reproducible than you think — an agent trained on enough of your past calls clears the bar
 6. （可跳过，2 分钟）用你自己的话，把 *Cheap agents create coordination debt* 的核心论点讲给一个朋友听 — two or three sentences, any language, 微信语音的随意程度就行。
 
 ## Author answers
