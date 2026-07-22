@@ -326,6 +326,28 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           await api('/api/spark', queue[0]);
         } catch (e) {
           if (e.unauthorized) needToken();
+          // A 4xx means the Worker rejected this item (e.g. a tidied capture
+          // over its line limit); retrying can't fix it, and leaving it at the
+          // head would block every later capture behind a permanently
+          // unsyncable entry. Quarantine it: halve a multi-line item into
+          // chunks that can pass — lossless for the too-many-lines case — or
+          // drop a single unsyncable line, then keep draining.
+          if (e.serverError && e.status >= 400 && e.status < 500) {
+            const bad = queue[0];
+            if (Array.isArray(bad.lines) && bad.lines.length > 1) {
+              const mid = Math.ceil(bad.lines.length / 2);
+              queue = [
+                { ...bad, lines: bad.lines.slice(0, mid) },
+                { ...bad, url: '', lines: bad.lines.slice(mid) },
+                ...queue.slice(1),
+              ];
+            } else {
+              console.warn('capture: dropping an unsyncable queued thought', bad);
+              queue = queue.slice(1);
+            }
+            setQueue(queue);
+            continue;
+          }
           setQueue(queue);
           if (e.serverError) throw e;
           setStatus(t('capture.waitingToSync', { n: queue.length }));
