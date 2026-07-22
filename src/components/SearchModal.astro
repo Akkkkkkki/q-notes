@@ -87,13 +87,20 @@ const T =
       );
     };
 
+    // Read the live page language, not the persisted root's data-lang: the root
+    // uses transition:persist, so its data-lang can be stale after a ClientRouter
+    // language switch. document.documentElement.lang is swapped on navigation.
+    const curLang = () => {
+      const l = (document.documentElement.lang || root()?.dataset.lang || 'en').toLowerCase();
+      return l.startsWith('zh') ? 'zh' : 'en';
+    };
+
     async function ensureData() {
       if (data || loading) return;
       loading = true;
       try {
-        const lang = root()?.dataset.lang || 'en';
-        const all = await fetch('/search.json').then((r) => r.json());
-        data = all.filter((p: any) => p.lang === lang);
+        // Store the full, both-language index; filter by language at render time.
+        data = await fetch('/search.json').then((r) => r.json());
       } catch {
         data = [];
       } finally {
@@ -106,9 +113,11 @@ const T =
       if (!el || !data) return;
       const q = (document.getElementById('qn-search-input') as HTMLInputElement)?.value.trim() || '';
       const ql = q.toLowerCase();
+      const lang = curLang();
+      const pool = data.filter((p) => p.lang === lang);
       results = !ql
-        ? data.slice(0, 6)
-        : data
+        ? pool.slice(0, 6)
+        : pool
             .filter(
               (p) =>
                 p.title.toLowerCase().includes(ql) ||
@@ -120,7 +129,7 @@ const T =
 
       const box = document.getElementById('qn-search-results')!;
       if (results.length === 0) {
-        const empty = el.dataset.lang === 'zh' ? '没有匹配的笔记' : 'No notes match';
+        const empty = lang === 'zh' ? '没有匹配的笔记' : 'No notes match';
         box.innerHTML = `<div style="padding:14px 10px;font-family:var(--serif);font-size:15px;color:var(--muted)">${empty}</div>`;
       } else {
         box.innerHTML = results
