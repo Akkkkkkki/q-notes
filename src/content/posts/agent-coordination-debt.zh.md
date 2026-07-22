@@ -6,6 +6,28 @@ tags: ["ai", "software", "management", "business", "essay"]
 lang: zh
 translationKey: agent-coordination-debt
 maturity: growing
+definedTerm:
+  term: "协同债"
+  pos: "名词"
+  definition: "当行动变得比对齐更便宜时，未解决决策堆积出来的债。"
+prediction:
+  statement: "到 2027 年底，严肃的企业智能体项目会用<em>吸收指标</em>来判断——多少智能体工作经得起审核——而不是个人产出量。"
+  confidence: medium
+  status: open
+  falsifier: "如果到 2028 年，严肃项目里始终没有出现这些吸收指标。"
+sources:
+  - label: "openai.com"
+    title: "智能体如何改变工作"
+    url: "https://openai.com/index/how-agents-are-transforming-work/"
+  - label: "deepmind.google"
+    title: "为 AI 智能体的未来护航"
+    url: "https://deepmind.google/blog/securing-the-future-of-ai-agents/"
+  - label: "arXiv:2604.23897"
+    title: "MarketBench"
+    url: "https://arxiv.org/abs/2604.23897"
+connections:
+  citedBy: ["pull-requests-are-knowledge-imports"]
+  linksTo: ["codebase-maps-are-agent-interfaces"]
 ---
 
 企业采用AI智能体后的第一场危机，可能看起来并不像失败。它可能看起来像每个人都产出了比组织能吸收的更多工作。

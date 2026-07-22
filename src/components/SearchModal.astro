@@ -1,0 +1,241 @@
+---
+// ⌘K search palette. Rendered once per page by BaseLayout; opened by the header
+// Search button ([data-search-open]) or ⌘K/Ctrl-K. Fetches /search.json once,
+// filters client-side to the current page language, and keyboard-navigates.
+// The root uses transition:persist so listeners survive view transitions.
+interface Props {
+  lang?: 'en' | 'zh';
+}
+const { lang = 'en' } = Astro.props;
+
+const T =
+  lang === 'zh'
+    ? { notes: '笔记', threads: '话题', empty: '没有匹配的笔记', nav: '↑↓ 选择', open: '↵ 打开', anywhere: '⌘K 随处可用', esc: 'esc' }
+    : { notes: 'Notes', threads: 'Threads', empty: 'No notes match', nav: '↑↓ navigate', open: '↵ open', anywhere: '⌘K anywhere', esc: 'esc' };
+---
+
+<div
+  id="qn-search"
+  data-lang={lang}
+  hidden
+  transition:persist
+  style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);display:flex;justify-content:center;align-items:flex-start;padding:14vh 20px 20px"
+>
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-label="Search notes"
+    style="width:100%;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--sh);overflow:hidden"
+  >
+    <div style="display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--line)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <input
+        id="qn-search-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="Search notes"
+        style="flex:1;border:none;background:transparent;outline:none;font-family:var(--serif);font-size:19px;color:var(--ink)"
+      />
+      <span style="font:500 10px/1 var(--mono);color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:4px 6px">{T.esc}</span>
+    </div>
+    <div id="qn-search-body" style="padding:9px 9px 12px">
+      <div style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:8px 10px 6px">{T.notes}</div>
+      <div id="qn-search-results"></div>
+      <div id="qn-search-threads-label" style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:12px 10px 6px" hidden>{T.threads}</div>
+      <div id="qn-search-threads" style="display:flex;flex-wrap:wrap;gap:8px;padding:2px 10px 8px"></div>
+    </div>
+    <div style="display:flex;gap:16px;padding:10px 15px;border-top:1px solid var(--line);font:500 10.5px/1 var(--mono);color:var(--faint)">
+      <span>{T.nav}</span><span>{T.open}</span><span>{T.anywhere}</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  // One binding for the whole session; the root persists across navigations.
+  (() => {
+    if ((window as any).__qnSearchInit) return;
+    (window as any).__qnSearchInit = true;
+
+    const root = () => document.getElementById('qn-search');
+    let data: any[] | null = null;
+    let loading = false;
+    let results: any[] = [];
+    let sel = 0;
+
+    const dash = (m: string) => {
+      const color = m === 'seedling' ? 'var(--gold)' : 'var(--accent)';
+      const n = m === 'seedling' ? 1 : m === 'growing' ? 2 : 3;
+      let s = '<span style="display:flex;gap:2px;flex:none">';
+      for (let i = 0; i < 3; i++)
+        s += `<span style="width:10px;height:4px;border-radius:2px;background:${i < n ? color : 'var(--soft)'}"></span>`;
+      return s + '</span>';
+    };
+    const esc = (t: string) =>
+      t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+    const highlight = (title: string, q: string) => {
+      const safe = esc(title);
+      if (!q) return safe;
+      const i = title.toLowerCase().indexOf(q.toLowerCase());
+      if (i < 0) return safe;
+      return (
+        esc(title.slice(0, i)) +
+        '<mark style="background:var(--accent-14);color:inherit;border-radius:3px;padding:0 2px">' +
+        esc(title.slice(i, i + q.length)) +
+        '</mark>' +
+        esc(title.slice(i + q.length))
+      );
+    };
+
+    // Read the live page language, not the persisted root's data-lang: the root
+    // uses transition:persist, so its data-lang can be stale after a ClientRouter
+    // language switch. document.documentElement.lang is swapped on navigation.
+    const curLang = () => {
+      const l = (document.documentElement.lang || root()?.dataset.lang || 'en').toLowerCase();
+      return l.startsWith('zh') ? 'zh' : 'en';
+    };
+
+    async function ensureData() {
+      if (data || loading) return;
+      loading = true;
+      try {
+        // Store the full, both-language index; filter by language at render time.
+        data = await fetch('/search.json').then((r) => r.json());
+      } catch {
+        data = [];
+      } finally {
+        loading = false;
+      }
+    }
+
+    function render() {
+      const el = root();
+      if (!el || !data) return;
+      const q = (document.getElementById('qn-search-input') as HTMLInputElement)?.value.trim() || '';
+      const ql = q.toLowerCase();
+      const lang = curLang();
+      const pool = data.filter((p) => p.lang === lang);
+      results = !ql
+        ? pool.slice(0, 6)
+        : pool
+            .filter(
+              (p) =>
+                p.title.toLowerCase().includes(ql) ||
+                p.excerpt.toLowerCase().includes(ql) ||
+                p.tags.some((t: string) => t.includes(ql)),
+            )
+            .slice(0, 7);
+      if (sel >= results.length) sel = 0;
+
+      const box = document.getElementById('qn-search-results')!;
+      if (results.length === 0) {
+        const empty = lang === 'zh' ? '没有匹配的笔记' : 'No notes match';
+        box.innerHTML = `<div style="padding:14px 10px;font-family:var(--serif);font-size:15px;color:var(--muted)">${empty}</div>`;
+      } else {
+        box.innerHTML = results
+          .map((p, i) => {
+            const on = i === sel;
+            return `<a href="${p.url}" data-idx="${i}" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:9px;text-decoration:none;${
+              on ? 'background:var(--accent-08)' : ''
+            }">${dash(p.maturity)}<span style="flex:1;font-family:var(--serif);font-size:16px;color:var(--ink)">${highlight(
+              p.title,
+              q,
+            )}</span>${on ? '<span style="font:500 10px/1 var(--mono);color:var(--faint)">↵</span>' : ''}</a>`;
+          })
+          .join('');
+      }
+
+      // Threads: tags present in the current result set.
+      const tags = [...new Set(results.flatMap((p) => p.tags))].slice(0, 6);
+      const tl = document.getElementById('qn-search-threads-label')!;
+      const tw = document.getElementById('qn-search-threads')!;
+      tl.hidden = tags.length === 0;
+      tw.innerHTML = tags
+        .map(
+          (t) =>
+            `<span data-thread="${esc(t)}" style="font:500 11px/1 var(--mono);color:var(--accent);background:var(--accent-08);border-radius:5px;padding:5px 9px;cursor:pointer">${esc(t)}</span>`,
+        )
+        .join('');
+    }
+
+    async function open() {
+      const el = root();
+      if (!el) return;
+      el.hidden = false;
+      await ensureData();
+      sel = 0;
+      render();
+      const input = document.getElementById('qn-search-input') as HTMLInputElement;
+      input?.focus();
+      input?.select();
+    }
+    function close() {
+      const el = root();
+      if (el) el.hidden = true;
+    }
+    const isOpen = () => !!root() && !root()!.hidden;
+
+    // Open triggers (header button re-renders each nav → delegate on document).
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-search-open]')) {
+        e.preventDefault();
+        open();
+      }
+    });
+
+    // Global keys.
+    window.addEventListener('keydown', (e) => {
+      const k = (e.key || '').toLowerCase();
+      if ((e.metaKey || e.ctrlKey) && k === 'k') {
+        e.preventDefault();
+        isOpen() ? close() : open();
+        return;
+      }
+      if (!isOpen()) return;
+      if (e.key === 'Escape') {
+        close();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        sel = Math.min(sel + 1, results.length - 1);
+        render();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        sel = Math.max(sel - 1, 0);
+        render();
+      } else if (e.key === 'Enter') {
+        const chosen = results[sel];
+        if (chosen) location.href = chosen.url;
+      }
+    });
+
+    // Interactions inside the (persisted) root.
+    document.addEventListener('input', (e) => {
+      if ((e.target as HTMLElement).id === 'qn-search-input') {
+        sel = 0;
+        render();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const el = root();
+      if (!el || el.hidden) return;
+      const t = e.target as HTMLElement;
+      // Backdrop click (outside the dialog panel) closes.
+      if (t === el) {
+        close();
+        return;
+      }
+      const thread = t.closest('[data-thread]') as HTMLElement | null;
+      if (thread && el.contains(thread)) {
+        e.preventDefault();
+        const input = document.getElementById('qn-search-input') as HTMLInputElement;
+        input.value = thread.dataset.thread || '';
+        sel = 0;
+        render();
+        input.focus();
+      }
+      const hit = t.closest('a[data-idx]') as HTMLElement | null;
+      if (hit && el.contains(hit)) close(); // let the link navigate
+    });
+  })();
+</script>

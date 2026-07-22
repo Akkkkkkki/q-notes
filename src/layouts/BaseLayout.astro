@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import DarkModeToggle from '../components/ui/DarkModeToggle.astro';
+import SearchModal from '../components/SearchModal.astro';
 
 interface Props {
   title: string;
@@ -12,66 +12,76 @@ interface Props {
   modifiedDate?: Date;
   author?: string;
   lang?: 'en' | 'zh';
+  /** Sibling-language URL for this page. Defaults to the other language's home. */
+  langAlt?: string;
 }
 
 const {
   title,
-  description = "Small notes, reviews, and thoughts.",
-  image = "/og-image.png",
-  type = "website",
+  description = 'Small notes, essays, and opinions on AI, technology, and the work that survives them.',
+  image = '/og-image.png',
+  type = 'website',
   publishedDate,
   modifiedDate,
-  author = "Q",
-  lang = "en"
+  author = 'Q',
+  lang = 'en',
+  langAlt,
 } = Astro.props;
-
-const langSwitch = lang === 'zh'
-  ? { href: '/', label: 'EN' }
-  : { href: '/zh/', label: '中文' };
 
 const homeHref = lang === 'zh' ? '/zh/' : '/';
 const journalHref = lang === 'zh' ? '/zh/journal' : '/journal';
+const altHref = langAlt ?? (lang === 'zh' ? '/' : '/zh/');
+
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isHome = pathname === '/zh' || pathname === '/';
+const isJournal = pathname.endsWith('/journal');
+const isAbout = pathname === '/about';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImageURL = image.startsWith('/') ? new URL(image, Astro.site) : image;
 const siteName = "Q's Notes";
 
-// Strukturierte Daten (JSON-LD) für bessere SEO
+const nav =
+  lang === 'zh'
+    ? { home: '首页', journal: '文章', about: '关于', search: '搜索' }
+    : { home: 'Home', journal: 'Journal', about: 'About', search: 'Search' };
+
+const footerTagline =
+  lang === 'zh'
+    ? { a: 'Q 的笔记 —— 个人双语笔记本。', b: '在养，不在发。' }
+    : { a: "Q's Notes — a personal, bilingual notebook.", b: 'Tended, not published.' };
+
 const jsonLDWebsite = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": siteName,
-  "url": Astro.site?.toString(),
-  "description": description,
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: siteName,
+  url: Astro.site?.toString(),
+  description: description,
 };
 
-const jsonLDArticle = publishedDate ? {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": title,
-  "image": ogImageURL.toString(),
-  "author": {
-    "@type": "Person",
-    "name": author
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": siteName,
-    "logo": {
-      "@type": "ImageObject",
-      "url": new URL("/favicon.svg", Astro.site).toString()
+const jsonLDArticle = publishedDate
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: title,
+      image: ogImageURL.toString(),
+      author: { '@type': 'Person', name: author },
+      publisher: {
+        '@type': 'Organization',
+        name: siteName,
+        logo: { '@type': 'ImageObject', url: new URL('/favicon.svg', Astro.site).toString() },
+      },
+      datePublished: publishedDate.toISOString(),
+      dateModified: modifiedDate ? modifiedDate.toISOString() : publishedDate.toISOString(),
+      mainEntityOfPage: canonicalURL.toString(),
     }
-  },
-  "datePublished": publishedDate.toISOString(),
-  "dateModified": modifiedDate ? modifiedDate.toISOString() : publishedDate.toISOString(),
-  "mainEntityOfPage": canonicalURL.toString(),
-} : null;
+  : null;
 
 const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsite;
 ---
 
-<!DOCTYPE html>
-<html lang={lang} class="scroll-smooth">
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-CN' : 'en'}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -81,28 +91,27 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- Aktivieren der View Transitions -->
+    <link rel="preload" href="/fonts/Newsreader-Roman-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
+
     <ClientRouter />
 
-    <!-- Dark mode initialization script according to official Tailwind documentation -->
+    <!-- No-flash theme: apply the saved (or system) theme before first paint. -->
     <script is:inline>
-      // Function to apply theme
       function applyTheme() {
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
+        if (
+          localStorage.theme === 'dark' ||
+          (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
+          document.documentElement.classList.add('dark');
         } else {
-          document.documentElement.classList.remove('dark')
+          document.documentElement.classList.remove('dark');
         }
       }
-
-      // Apply on initial load
       applyTheme();
-
-      // Re-apply after view transitions
       document.addEventListener('astro:after-swap', applyTheme);
     </script>
-    
-    <!-- Open Graph / Facebook -->
+
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
@@ -112,161 +121,101 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
     {publishedDate && <meta property="article:published_time" content={publishedDate.toISOString()} />}
     {modifiedDate && <meta property="article:modified_time" content={modifiedDate.toISOString()} />}
 
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalURL} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
     <meta property="twitter:image" content={ogImageURL} />
-    
-    <!-- Strukturierte Daten für SEO -->
+
     <script type="application/ld+json" set:html={JSON.stringify(jsonLD)} />
-    
-    <style is:inline>
-      body {
-        font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Heiti SC", sans-serif;
-      }
-      code, pre, kbd, samp {
-        font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-      }
-    </style>
   </head>
-  <body class="text-gray-900 bg-white dark:text-gray-300 dark:bg-black transition-colors duration-300">
-    <div class="bg-white dark:bg-black transition-colors duration-300">
-      <header class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex items-center justify-between">
-          <a href={homeHref} class="text-2xl font-semibold" transition:animate="fade">Q's Notes</a>
-
-          <!-- Desktop Navigation -->
-          <div class="hidden md:flex items-center gap-6">
-            <nav class="flex items-center gap-6">
-              <a href={homeHref} class="nav-link">Home</a>
-              <a href={journalHref} class="nav-link">Journal</a>
-              <a href="/about" class="nav-link">About</a>
-              <a href={langSwitch.href} class="nav-link">{langSwitch.label}</a>
-            </nav>
-            <DarkModeToggle />
-          </div>
-
-          <!-- Mobile Navigation Controls -->
-          <div class="md:hidden flex items-center gap-2">
-            <DarkModeToggle />
-            <button
-              id="mobile-menu-button"
-              type="button"
-              class="inline-flex items-center justify-center p-2 bg-white dark:bg-black text-gray-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 focus:outline-none border-0"
-              aria-expanded="false"
-              aria-label="Toggle menu"
-            >
-            <svg id="menu-icon" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-            <svg id="close-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Mobile Navigation -->
-        <nav id="mobile-menu" class="hidden md:hidden mt-6 pt-4 border-t border-gray-200 dark:border-gray-800 space-y-1">
-          <a href={homeHref} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Home</a>
-          <a href={journalHref} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">Journal</a>
-          <a href="/about" class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">About</a>
-          <a href={langSwitch.href} class="block px-3 py-2 text-sm text-gray-900 dark:text-gray-300 hover:underline">{langSwitch.label}</a>
+  <body>
+    <header
+      style="border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:50"
+    >
+      <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px">
+        <a
+          href={homeHref}
+          style="font-family:var(--serif);font-weight:500;font-size:21px;color:var(--ink);text-decoration:none;flex:none"
+          transition:animate="fade">Q's Notes</a
+        >
+        <nav style="display:flex;align-items:center;gap:20px">
+          <a data-bnav aria-current={isHome ? 'page' : undefined} href={homeHref}
+            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.home}</a>
+          <a data-bnav aria-current={isJournal ? 'page' : undefined} href={journalHref}
+            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.journal}</a>
+          <a class="hide-narrow" data-bnav aria-current={isAbout ? 'page' : undefined} href="/about"
+            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.about}</a>
+          <button
+            type="button"
+            data-search-open
+            aria-label={nav.search}
+            style="display:inline-flex;align-items:center;gap:7px;font:500 11.5px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--card2);cursor:pointer"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <span class="hide-narrow">{nav.search}</span> <span style="opacity:.55">⌘K</span>
+          </button>
+          <span style="display:flex;font:600 11px/1 var(--mono)">
+            {lang === 'zh' ? (
+              <>
+                <a href={altHref} style="border:1px solid var(--line);border-right:none;color:var(--muted);padding:6px 8px;border-radius:6px 0 0 6px;text-decoration:none">EN</a>
+                <span style="background:var(--ink);color:var(--paper);padding:6px 8px;border-radius:0 6px 6px 0">中</span>
+              </>
+            ) : (
+              <>
+                <span style="background:var(--ink);color:var(--paper);padding:6px 8px;border-radius:6px 0 0 6px">EN</span>
+                <a href={altHref} style="border:1px solid var(--line);border-left:none;color:var(--muted);padding:6px 8px;border-radius:0 6px 6px 0;text-decoration:none">中</a>
+              </>
+            )}
+          </span>
+          <button
+            type="button"
+            class="theme-toggle"
+            aria-label="Toggle theme"
+            title="Toggle theme"
+            style="width:36px;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"></path></svg>
+          </button>
         </nav>
-      </header>
-      
-      <main class="py-10" transition:animate="fade">
-        <slot />
-      </main>
-      
-      <footer class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-gray-200 dark:border-gray-800 mt-12">
-          <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-sm text-gray-500 dark:text-gray-500">
-              Q's Notes
-            </div>
-            <nav class="flex items-center gap-4">
-              <a href={homeHref} class="nav-link-footer">Home</a>
-              <a href={journalHref} class="nav-link-footer">Journal</a>
-              <a href="/about" class="nav-link-footer">About</a>
-            </nav>
-          </div>
-      </footer>
-    </div>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <footer class="wrap" style="padding:44px 26px 70px;margin-top:24px">
+      <div style="border-top:1px solid var(--line);padding-top:26px;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+        <div style="font-family:var(--serif);font-size:16px;color:var(--muted)">
+          {footerTagline.a} <span style="color:var(--ink)">{footerTagline.b}</span>
+        </div>
+        <div style="display:flex;gap:16px;font:500 12px/1 var(--mono);color:var(--muted)">
+          <a href={lang === 'zh' ? '/zh/rss.xml' : '/rss.xml'} style="color:var(--muted)">RSS</a>
+          <a href={altHref} style="color:var(--muted)">{lang === 'zh' ? 'EN' : '中文'}</a>
+          <a href="https://github.com/Akkkkkkki/q-notes" target="_blank" rel="noopener" style="color:var(--muted)">GitHub</a>
+        </div>
+      </div>
+    </footer>
+
+    <SearchModal lang={lang} />
 
     <script>
-      // Mobile menu toggle functionality
-      function initMobileMenu() {
-        const menuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-        const closeIcon = document.getElementById('close-icon');
-
-        if (!menuButton || !mobileMenu || !menuIcon || !closeIcon) return;
-
-        menuButton.addEventListener('click', () => {
-          const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
-
-          // Toggle menu visibility
-          mobileMenu.classList.toggle('hidden');
-
-          // Toggle icons
-          menuIcon.classList.toggle('hidden');
-          closeIcon.classList.toggle('hidden');
-
-          // Update aria-expanded
-          menuButton.setAttribute('aria-expanded', String(!isExpanded));
-        });
-
-        // Close menu when clicking on a link
-        const mobileLinks = mobileMenu.querySelectorAll('a');
-        mobileLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-            menuIcon.classList.remove('hidden');
-            closeIcon.classList.add('hidden');
-            menuButton.setAttribute('aria-expanded', 'false');
-          });
-        });
-      }
-
-      // Dark mode toggle functionality
+      // Theme toggle — flips the `.dark` class and remembers the choice.
       function initThemeToggle() {
-        const buttons = document.querySelectorAll('.theme-toggle');
-
-        buttons.forEach(button => {
-          // Remove existing listener if any
-          const oldHandler = button.themeToggleHandler;
-          if (oldHandler) {
-            button.removeEventListener('click', oldHandler);
-          }
-
-          // Create handler function
-          const handler = function() {
-            if (document.documentElement.classList.contains('dark')) {
-              localStorage.theme = 'light';
-              document.documentElement.classList.remove('dark');
-            } else {
-              localStorage.theme = 'dark';
-              document.documentElement.classList.add('dark');
-            }
+        document.querySelectorAll('.theme-toggle').forEach((button) => {
+          const el = button as HTMLElement & { _themeHandler?: () => void };
+          if (el._themeHandler) el.removeEventListener('click', el._themeHandler);
+          const handler = () => {
+            const dark = document.documentElement.classList.toggle('dark');
+            localStorage.theme = dark ? 'dark' : 'light';
           };
-
-          button.themeToggleHandler = handler;
-          button.addEventListener('click', handler);
+          el._themeHandler = handler;
+          el.addEventListener('click', handler);
         });
       }
-
-      // Initialize on page load
-      initMobileMenu();
       initThemeToggle();
-
-      // Re-initialize after view transitions
-      document.addEventListener('astro:after-swap', () => {
-        initMobileMenu();
-        initThemeToggle();
-      });
+      document.addEventListener('astro:after-swap', initThemeToggle);
     </script>
   </body>
 </html>

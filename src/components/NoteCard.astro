@@ -1,0 +1,38 @@
+---
+// A "Currently tending" card on the home page — a growing/seedling note the
+// author is still working on. Maturity dashes, serif title, relative age.
+import Maturity from './Maturity.astro';
+import { relativeTime } from '../utils/relativeTime';
+
+interface Props {
+  post: {
+    url: string;
+    frontmatter: {
+      title: string;
+      date: Date | string;
+      maturity: 'seedling' | 'growing' | 'evergreen';
+      lang?: 'en' | 'zh';
+    };
+  };
+}
+const { post } = Astro.props;
+const { title, date, maturity, lang = 'en' } = post.frontmatter;
+const age = relativeTime(date, lang);
+const updated = lang === 'zh' ? `${age}更新` : `updated ${age}`;
+---
+
+<a
+  href={post.url}
+  style="display:block;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px;text-decoration:none"
+>
+  <div style="display:flex;align-items:center;gap:7px;margin-bottom:11px">
+    <Maturity maturity={maturity} lang={lang} size="md" />
+  </div>
+  <div
+    class="rt"
+    style="font-family:var(--serif);font-weight:500;font-size:19px;line-height:1.18;color:var(--ink)"
+  >
+    {title}
+  </div>
+  <div style="font:500 11px/1 var(--mono);color:var(--faint);margin-top:10px">{updated}</div>
+</a>

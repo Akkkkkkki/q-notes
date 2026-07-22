@@ -1,0 +1,49 @@
+---
+// "Threads" — the topic tags across a set of posts, with counts. Tier tags
+// (note/essay/tracker) are editorial metadata, not topics, so they're excluded.
+// Tags are normalised to lowercase so "AI" and "ai" count as one thread and
+// links resolve to the case-insensitive /tags/<slug> pages.
+interface Props {
+  posts: { frontmatter: { tags?: string[] } }[];
+  lang?: 'en' | 'zh';
+  limit?: number;
+  heading?: string;
+}
+const { posts, lang = 'en', limit = 8, heading } = Astro.props;
+
+const TIERS = new Set(['note', 'essay', 'tracker']);
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const raw of post.frontmatter.tags ?? []) {
+    const tag = raw.toLowerCase().trim();
+    if (!tag || TIERS.has(tag)) continue;
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+}
+const threads = [...counts.entries()]
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .slice(0, limit);
+
+const label = heading ?? (lang === 'zh' ? '话题' : 'Threads');
+// zh has no per-tag pages; point its chips at the journal instead.
+const href = (tag: string) => (lang === 'zh' ? '/zh/journal' : `/tags/${encodeURIComponent(tag)}`);
+---
+
+{threads.length > 0 && (
+  <div>
+    <div style="font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:14px">
+      {label}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:9px">
+      {threads.map(([tag, count]) => (
+        <a
+          href={href(tag)}
+          class="chip-tap"
+          style="display:inline-flex;gap:6px;font:500 12.5px/1 var(--mono);color:var(--body);border:1px solid var(--line);border-radius:999px;padding:7px 13px;text-decoration:none"
+        >
+          {tag} <span style="color:var(--faint)">{count}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+)}

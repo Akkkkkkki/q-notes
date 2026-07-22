@@ -6,6 +6,8 @@ tags: ["ai", "software", "engineering", "essay"]
 lang: zh
 translationKey: codebase-maps-are-agent-interfaces
 maturity: growing
+connections:
+  citedBy: ["agent-coordination-debt", "agent-prs-need-traffic-control"]
 ---
 
 编程智能体常常还没写出坏代码就先失败了：它不知道这个活该放在哪里。

@@ -6,6 +6,8 @@ tags: ["ai", "software", "engineering", "essay"]
 lang: en
 translationKey: codebase-maps-are-agent-interfaces
 maturity: growing
+connections:
+  citedBy: ["agent-coordination-debt", "agent-prs-need-traffic-control"]
 ---
 
 Coding agents often fail before they write bad code. They fail when they can't tell where the work belongs.

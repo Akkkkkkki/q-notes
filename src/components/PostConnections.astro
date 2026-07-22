@@ -1,0 +1,47 @@
+---
+// The note graph for a post, shown in the article aside. `citedBy` = pieces
+// that reference this one (↳); `linksTo` = pieces this one builds on (→).
+// Items are pre-resolved to { url, title } by the layout.
+interface Item {
+  url: string;
+  title: string;
+}
+interface Props {
+  citedBy?: Item[];
+  linksTo?: Item[];
+  lang?: 'en' | 'zh';
+}
+const { citedBy = [], linksTo = [], lang = 'en' } = Astro.props;
+
+const T = {
+  en: { heading: 'Connections', citedBy: 'cited by', linksTo: 'links to' },
+  zh: { heading: '关联', citedBy: '被引用', linksTo: '链接到' },
+}[lang];
+
+const rows = [
+  ...citedBy.map((i) => ({ ...i, kind: 'citedBy' as const, arrow: '↳', label: T.citedBy })),
+  ...linksTo.map((i) => ({ ...i, kind: 'linksTo' as const, arrow: '→', label: T.linksTo })),
+];
+---
+
+{rows.length > 0 && (
+  <div>
+    <div style="font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px">
+      {T.heading}
+    </div>
+    {rows.map((r, idx) => (
+      <a
+        href={r.url}
+        style={`display:flex;gap:8px;text-decoration:none;${idx < rows.length - 1 ? 'margin-bottom:11px' : ''}`}
+      >
+        <span style="color:var(--accent);font:400 13px/1.25 var(--mono);flex:none">{r.arrow}</span>
+        <span>
+          <span style="font:500 9.5px/1 var(--mono);color:var(--faint);display:block;margin-bottom:3px">{r.label}</span>
+          <span class="rt" style="font-family:var(--serif);font-size:14.5px;font-weight:500;line-height:1.24;color:var(--ink)">
+            {r.title}
+          </span>
+        </span>
+      </a>
+    ))}
+  </div>
+)}

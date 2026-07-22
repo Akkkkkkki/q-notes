@@ -1,26 +1,124 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import PostNavigation from '../components/PostNavigation.astro';
-import LanguageToggle from '../components/LanguageToggle.astro';
-import { formatDate } from '../utils/date';
+import { getCollection } from 'astro:content';
+import Maturity from '../components/Maturity.astro';
+import DefinedTerm from '../components/DefinedTerm.astro';
+import PredictionTracker from '../components/PredictionTracker.astro';
+import Sources from '../components/Sources.astro';
+import PostConnections from '../components/PostConnections.astro';
 import { optimizeImagePath } from '../utils/optimizeImagePath';
+import { relativeTime } from '../utils/relativeTime';
 
-const { frontmatter, headings, prevPost, nextPost } = Astro.props;
-const { title, date, tags, image, excerpt, lang, translationKey } = frontmatter;
-const slug = Astro.url.pathname.split('/').filter(Boolean).pop();
+const { frontmatter } = Astro.props;
+const {
+  title,
+  date,
+  tags = [],
+  image,
+  excerpt,
+  lang = 'en',
+  translationKey,
+  maturity,
+  connections,
+  prediction,
+  definedTerm,
+  sources = [],
+} = frontmatter;
 
-// Ensure image path is optimized
 const optimizedImagePath = image ? optimizeImagePath(image) : null;
+const iso = new Date(date).toISOString().slice(0, 10);
 
-// Estimated reading time
-const WORDS_PER_MINUTE = 225;
-const content = await Astro.slots.render('default');
-const contentText = content.replace(/<\/?[^>]+(>|$)/g, ' ');
-const wordCount = contentText.split(/\s+/).length;
-const readingTime = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
+// --- Reading time (word-based for en, Han-char-based for zh) ----------------
+const rendered = await Astro.slots.render('default');
+const text = rendered.replace(/<[^>]+>/g, ' ');
+let words: number;
+let reading: number;
+if (lang === 'zh') {
+  words = (text.match(/[一-鿿]/g) || []).length;
+  reading = Math.max(1, Math.ceil(words / 400));
+} else {
+  words = text.trim().split(/\s+/).filter(Boolean).length;
+  reading = Math.max(1, Math.ceil(words / 225));
+}
 
-// Structured data for SEO
+// --- Kicker: two topic tags + the tier, title-cased ------------------------
+const TIERS = new Set(['note', 'essay', 'tracker']);
+const titleCase = (s: string) =>
+  s === 'ai' ? 'AI' : s.replace(/(^|[\s-])\w/g, (c) => c.toUpperCase());
+const lower = tags.map((t: string) => t.toLowerCase());
+const tierTag = lower.find((t: string) => TIERS.has(t));
+const topicTags = lower.filter((t: string) => !TIERS.has(t));
+const kicker = [...topicTags.slice(0, 2), ...(tierTag ? [tierTag] : [])]
+  .map(titleCase)
+  .join(' · ');
+
+// --- Note graph + read-next, resolved against the collection ----------------
+const all = await getCollection('posts');
+const sameLang = all.filter((p) => p.data.lang === lang);
+const otherLang = all.filter((p) => p.data.lang !== lang);
+const urlFor = (key: string) => (lang === 'zh' ? `/zh/posts/${key}` : `/posts/${key}`);
+const byKey = new Map(sameLang.map((p) => [p.data.translationKey, p]));
+
+const resolve = (keys: string[] = []) =>
+  keys
+    .map((k) => byKey.get(k))
+    .filter(Boolean)
+    .map((p) => ({ url: urlFor(p!.data.translationKey), title: p!.data.title }));
+const citedBy = resolve(connections?.citedBy);
+const linksTo = resolve(connections?.linksTo);
+
+// Read next: closest by shared topic tags, then most recent.
+const connectedKeys = new Set([...(connections?.citedBy ?? []), ...(connections?.linksTo ?? [])]);
+const readNext = sameLang
+  .filter((p) => p.data.translationKey !== translationKey)
+  .map((p) => {
+    const otherTopics = new Set(
+      p.data.tags.map((t: string) => t.toLowerCase()).filter((t: string) => !TIERS.has(t)),
+    );
+    const shared = topicTags.filter((t) => otherTopics.has(t)).length;
+    return { p, shared, connected: connectedKeys.has(p.data.translationKey) };
+  })
+  .sort(
+    (a, b) =>
+      Number(b.connected) - Number(a.connected) ||
+      b.shared - a.shared ||
+      new Date(b.p.data.date).valueOf() - new Date(a.p.data.date).valueOf(),
+  )
+  .slice(0, 2)
+  .map((x) => ({
+    url: urlFor(x.p.data.translationKey),
+    title: x.p.data.title,
+    maturity: x.p.data.maturity as 'seedling' | 'growing' | 'evergreen',
+  }));
+
+const hasSibling = otherLang.some((p) => p.data.translationKey === translationKey);
+const langAlt = hasSibling
+  ? lang === 'zh'
+    ? `/posts/${translationKey}`
+    : `/zh/posts/${translationKey}`
+  : undefined;
+
+// --- Localised chrome -------------------------------------------------------
+const L =
+  lang === 'zh'
+    ? {
+        min: '分钟',
+        words: '字',
+        readNext: '接着读',
+        fmReading: (r: number) => `${r} 分钟`,
+        fmLang: hasSibling ? 'zh · en' : 'zh',
+        keys: { maturity: 'maturity:', date: 'date:', reading: 'reading:', tags: 'tags:', lang: 'lang:' },
+      }
+    : {
+        min: 'min',
+        words: 'words',
+        readNext: 'Read next',
+        fmReading: (r: number) => `${r} min`,
+        fmLang: hasSibling ? 'en · 中' : 'en',
+        keys: { maturity: 'maturity:', date: 'date:', reading: 'reading:', tags: 'tags:', lang: 'lang:' },
+      };
 const publishDate = new Date(date);
+const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing: lang === 'zh' ? '成长' : 'Growing', evergreen: lang === 'zh' ? '常青' : 'Evergreen' };
 ---
 
 <BaseLayout
@@ -30,57 +128,141 @@ const publishDate = new Date(date);
   type="article"
   publishedDate={publishDate}
   lang={lang}
+  langAlt={langAlt}
 >
-  <article id="main-content">
-    <header class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
-      <div class="text-gray-500 text-sm mb-2">
-        <time datetime={publishDate.toISOString()}>{formatDate(date, lang)}</time> • <span aria-label={`${readingTime} minute read`}>{readingTime} min read</span>
-      </div>
-      <h1 class="text-3xl sm:text-4xl md:text-5xl mb-6" transition:name={`title-${slug}`}>{title}</h1>
-      {excerpt && <p class="text-xl text-gray-500">{excerpt}</p>}
-
-      {(tags && tags.length > 0) || translationKey ? (
-        <div class="mt-4 mb-4 flex flex-wrap gap-2" aria-label="Tags">
-          {tags && tags.map((tag) => (
-            lang === 'en' ? (
-              <a
-                href={`/tags/${tag}`}
-                class="tag"
-                aria-label={`View all posts tagged ${tag}`}
-              >
-                {tag}
-              </a>
-            ) : (
-              <span class="tag">{tag}</span>
-            )
-          ))}
-          {translationKey && <LanguageToggle translationKey={translationKey} currentLang={lang} />}
-        </div>
-      ) : null}
-    </header>
-
-    {optimizedImagePath && (
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 mb-10">
-        <div class="feature-image" transition:name={`image-${slug}`}>
-          <img
-            src={optimizedImagePath}
-            alt={`Featured image for "${title}"`}
-            class="w-full h-full object-cover"
-            loading="eager"
-            decoding="async"
-            width="1200"
-            height="675"
-          />
-        </div>
-      </div>
-    )}
-
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 prose prose-lg md:prose-xl">
-      <slot />
+  <div class="dots">
+    <!-- reading progress -->
+    <div style="height:3px;background:var(--soft);position:sticky;top:66px;z-index:40">
+      <div id="qn-progress-bar" style="width:0%;height:100%;background:var(--accent)"></div>
     </div>
 
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      <PostNavigation prevPost={prevPost} nextPost={nextPost} />
+    <div class="wrap" style="padding:40px 26px 72px">
+      <div class="post-grid">
+        <article id="main-content" style="min-width:0">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+            {kicker && (
+              <span style="font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)">{kicker}</span>
+            )}
+            <Maturity maturity={maturity} lang={lang} size="lg" />
+          </div>
+
+          <h1
+            style="font-family:var(--serif);font-weight:500;font-size:43px;line-height:1.06;letter-spacing:-.017em;color:var(--ink);margin:0 0 18px"
+            transition:name={`title-${translationKey}`}
+          >
+            {title}
+          </h1>
+          {excerpt && (
+            <p style="font-family:var(--serif);font-style:italic;font-size:21px;line-height:1.44;color:var(--muted);margin:0 0 20px">{excerpt}</p>
+          )}
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:9px 12px">
+            <time datetime={publishDate.toISOString()} style="font:500 12px/1 var(--mono);color:var(--faint)">{iso}</time>
+            <span style="width:3px;height:3px;border-radius:99px;background:var(--faint)"></span>
+            <span style="font:500 12px/1 var(--mono);color:var(--faint)">{L.fmReading(reading)}</span>
+            <span style="width:3px;height:3px;border-radius:99px;background:var(--faint)"></span>
+            <span style="font:500 12px/1 var(--mono);color:var(--faint)">{words.toLocaleString()} {L.words}</span>
+          </div>
+
+          {topicTags.length > 0 && (
+            <div style="display:flex;flex-wrap:wrap;gap:7px;padding:14px 0 22px;margin-bottom:28px;border-bottom:1px solid var(--line)">
+              {topicTags.map((tag) =>
+                lang === 'en' ? (
+                  <a href={`/tags/${encodeURIComponent(tag)}`} style="font:500 11px/1 var(--mono);color:var(--accent);background:var(--accent-08);border-radius:5px;padding:5px 8px;text-decoration:none">{tag}</a>
+                ) : (
+                  <span style="font:500 11px/1 var(--mono);color:var(--accent);background:var(--accent-08);border-radius:5px;padding:5px 8px">{tag}</span>
+                ),
+              )}
+            </div>
+          )}
+
+          {definedTerm && (
+            <DefinedTerm term={definedTerm.term} pos={definedTerm.pos} definition={definedTerm.definition} lang={lang} />
+          )}
+
+          {optimizedImagePath && (
+            <div style="margin:0 0 26px" transition:name={`image-${translationKey}`}>
+              <img src={optimizedImagePath} alt={`Featured image for "${title}"`} width="1200" height="675" loading="eager" decoding="async" style="width:100%;border-radius:12px;border:1px solid var(--line)" />
+            </div>
+          )}
+
+          <div class="prose-body" lang={lang === 'zh' ? 'zh' : 'en'}>
+            <slot />
+          </div>
+
+          {prediction && (
+            <div style="margin-top:34px">
+              <PredictionTracker
+                statement={prediction.statement}
+                confidence={prediction.confidence}
+                falsifier={prediction.falsifier}
+                status={prediction.status}
+                lang={lang}
+              />
+            </div>
+          )}
+
+          {sources && sources.length > 0 && <Sources sources={sources} lang={lang} />}
+        </article>
+
+        <aside class="hide-narrow" style="display:flex;flex-direction:column;gap:24px;position:sticky;top:90px">
+          <div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card2)">
+            <div style="display:flex;align-items:center;gap:6px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--card)">
+              <span style="width:7px;height:7px;border-radius:99px;background:#e5695f"></span>
+              <span style="width:7px;height:7px;border-radius:99px;background:#e7b34f"></span>
+              <span style="width:7px;height:7px;border-radius:99px;background:#7fc06a"></span>
+              <span style="font:500 10px/1 var(--mono);color:var(--muted);margin-left:5px">note.frontmatter</span>
+            </div>
+            <div style="padding:12px 13px;display:flex;flex-direction:column;gap:7px;font:500 11px/1.35 var(--mono)">
+              <div style="display:flex;gap:8px"><span style="color:var(--accent);flex:none;width:60px">{L.keys.maturity}</span><span style="color:var(--body)">{maturity}</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--accent);flex:none;width:60px">{L.keys.date}</span><span style="color:var(--body)">{iso}</span></div>
+              <div style="display:flex;gap:8px"><span style="color:var(--accent);flex:none;width:60px">{L.keys.reading}</span><span style="color:var(--body)">{L.fmReading(reading)}</span></div>
+              {topicTags.length > 0 && (
+                <div style="display:flex;gap:8px"><span style="color:var(--accent);flex:none;width:60px">{L.keys.tags}</span><span style="color:var(--body)">{topicTags.slice(0, 3).join(' · ')}</span></div>
+              )}
+              <div style="display:flex;gap:8px"><span style="color:var(--accent);flex:none;width:60px">{L.keys.lang}</span><span style="color:var(--body)">{L.fmLang}</span></div>
+            </div>
+          </div>
+
+          {(citedBy.length > 0 || linksTo.length > 0) && <PostConnections citedBy={citedBy} linksTo={linksTo} lang={lang} />}
+
+          {readNext.length > 0 && (
+            <>
+              <div style="height:1px;background:var(--line)"></div>
+              <div>
+                <div style="font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px">{L.readNext}</div>
+                {readNext.map((r, i) => (
+                  <a href={r.url} style={`display:block;text-decoration:none;${i < readNext.length - 1 ? 'margin-bottom:13px' : ''}`}>
+                    <span style={`font:600 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:${r.maturity === 'seedling' ? 'var(--gold)' : 'var(--accent)'};display:block;margin-bottom:5px`}>{readNextLabel[r.maturity]}</span>
+                    <span class="rt" style="font-family:var(--serif);font-size:14.5px;font-weight:500;line-height:1.24;color:var(--ink)">{r.title}</span>
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
+        </aside>
+      </div>
     </div>
-  </article>
+  </div>
+
+  <script>
+    // Reading progress bar tied to article scroll.
+    function initProgress() {
+      const bar = document.getElementById('qn-progress-bar');
+      const article = document.getElementById('main-content');
+      if (!bar || !article) return;
+      const update = () => {
+        const rect = article.getBoundingClientRect();
+        const total = rect.height - window.innerHeight;
+        const scrolled = Math.min(Math.max(-rect.top, 0), Math.max(total, 0));
+        const pct = total > 0 ? (scrolled / total) * 100 : 0;
+        bar.style.width = pct.toFixed(1) + '%';
+      };
+      update();
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+    }
+    initProgress();
+    document.addEventListener('astro:page-load', initProgress);
+  </script>
 </BaseLayout>

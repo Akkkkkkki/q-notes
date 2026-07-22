@@ -1,0 +1,66 @@
+---
+// The tracked, falsifiable prediction that pays off an essay. Backed by the
+// optional `prediction` frontmatter object. Confidence renders as 5 bars;
+// status renders as a coloured badge.
+interface Props {
+  statement: string;
+  confidence: 'low' | 'medium' | 'high';
+  falsifier?: string;
+  status?: 'open' | 'right' | 'wrong' | 'partial';
+  lang?: 'en' | 'zh';
+}
+const { statement, confidence, falsifier, status = 'open', lang = 'en' } = Astro.props;
+
+const filled = confidence === 'low' ? 2 : confidence === 'medium' ? 3 : 4;
+const barColor = confidence === 'high' ? 'var(--accent)' : 'var(--amber)';
+
+const T = {
+  en: {
+    header: 'Prediction · tracked',
+    confidence: 'CONFIDENCE',
+    conf: { low: 'Low', medium: 'Medium', high: 'High' },
+    status: { open: 'OPEN', right: 'RIGHT', wrong: 'WRONG', partial: 'PARTIAL' },
+    falsifier: 'falsifier:',
+  },
+  zh: {
+    header: '预测 · 追踪中',
+    confidence: '置信度',
+    conf: { low: '低', medium: '中', high: '高' },
+    status: { open: '进行中', right: '已验证', wrong: '已证伪', partial: '部分成立' },
+    falsifier: '证伪条件：',
+  },
+}[lang];
+
+const statusColor =
+  status === 'right' ? 'var(--accent)' : status === 'wrong' ? 'var(--red)' : 'var(--amber)';
+const statusBg =
+  status === 'right' ? 'var(--accent-14)' : status === 'wrong' ? 'var(--soft)' : 'var(--amber-14)';
+---
+
+<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 26px;background:var(--card)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--accent-08)">
+    <span style="display:inline-flex;align-items:center;gap:8px;font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)">
+      <span style="width:7px;height:7px;border-radius:99px;background:var(--accent)"></span>{T.header}
+    </span>
+    <span style={`font:600 9.5px/1 var(--mono);letter-spacing:.08em;color:${statusColor};background:${statusBg};border-radius:5px;padding:4px 8px`}>
+      {T.status[status]}
+    </span>
+  </div>
+  <div style="padding:15px 17px">
+    <p style="font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--body);margin:0 0 13px" set:html={statement}></p>
+    <span style="display:inline-flex;align-items:center;gap:8px">
+      <span style="font:600 9.5px/1 var(--mono);letter-spacing:.06em;color:var(--muted)">{T.confidence}</span>
+      <span style="display:flex;gap:3px">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <span style={`width:16px;height:6px;border-radius:2px;background:${i < filled ? barColor : 'var(--soft)'}`}></span>
+        ))}
+      </span>
+      <span style={`font:600 11px/1 var(--mono);color:${barColor}`}>{T.conf[confidence]}</span>
+    </span>
+    {falsifier && (
+      <div style="font:500 11.5px/1.5 var(--mono);color:var(--muted);margin-top:12px">
+        <span style="color:var(--accent)">{T.falsifier}</span> {falsifier}
+      </div>
+    )}
+  </div>
+</div>

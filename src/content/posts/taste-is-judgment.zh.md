@@ -6,6 +6,8 @@ tags: ["ai", "business", "consulting", "note"]
 lang: zh
 translationKey: taste-is-judgment
 maturity: seedling
+connections:
+  linksTo: ["consulting-barbell"]
 ---
 
 一个咨询顾问现在可以在午饭前让智能体生成三版 deck。三版都不难看，数据也都对。难的是知道：这个董事会真正在意哪一块分析，哪条建议他们会接受、哪条技术上正确却一进门就死了，还有哪一页该删掉。
