@@ -75,6 +75,25 @@ Publishing a `seedling` is explicitly a success, not a compromise. The maturity 
 *is* the perfectionism release valve: it tells readers what they're getting, which makes
 "good enough for now" an honest contract rather than a lowered standard.
 
+### Optional reading-layout frontmatter
+
+Beyond the required fields, a post may carry structured blocks the reading layout
+surfaces automatically. All are optional and mirror the editorial moves the tiers already
+ask for, so add them where they exist rather than inventing them:
+
+- `definedTerm: { term, pos, definition }` — a coined term the piece defines on first use
+  (the glossary discipline in `AGENTS.md`). Renders as a "Defined term" callout.
+- `prediction: { statement, confidence, falsifier, status }` — the essay/tracker's
+  falsifiable prediction. `confidence` is `low|medium|high`, `status` is
+  `open|right|wrong|partial`; `statement` may contain a light `<em>` for emphasis.
+- `sources: [{ label, title, url }]` — the collected, numbered bibliography (the prose
+  keeps its own inline links).
+- `connections: { linksTo: [translationKey], citedBy: [translationKey] }` — the note graph,
+  by translationKey so it resolves per language. Shown as "Connections" in the aside.
+
+Keep these identical across the en/zh pair (translate the prose fields; the keys stay the
+same). "Read next" is computed from shared threads, so it needs no frontmatter.
+
 ## 4. The weekly loop
 
 Total author time: **~45–75 minutes per week**, split into two natural sessions.

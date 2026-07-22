@@ -1,37 +1,62 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostList from '../../components/PostList.astro';
+import NoteCard from '../../components/NoteCard.astro';
+import NoteRow from '../../components/NoteRow.astro';
+import Threads from '../../components/Threads.astro';
 import { getCollection } from 'astro:content';
 
-const allPosts = await getCollection('posts', ({ data }) => data.lang === 'zh');
-const sortedPosts = allPosts.sort((a, b) => {
-  return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
-});
+const allPosts = (await getCollection('posts', ({ data }) => data.lang === 'zh')).sort(
+  (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf(),
+);
+const withUrl = allPosts.map((post) => ({ ...post, url: `/zh/posts/${post.data.translationKey}`, frontmatter: post.data }));
 
-const posts = sortedPosts.slice(0, 5).map(post => ({
-  ...post,
-  url: `/zh/posts/${post.data.translationKey}`,
-  frontmatter: post.data
-}));
+const tending = withUrl.filter((p) => p.frontmatter.maturity !== 'evergreen').slice(0, 3);
+const latest = withUrl.slice(0, 5);
+const total = withUrl.length;
+const tendingCount = withUrl.filter((p) => p.frontmatter.maturity !== 'evergreen').length;
+const stat =
+  tendingCount === total
+    ? `${total} 篇笔记，都还在养 · 每月更新几次`
+    : `${total} 篇笔记 · ${tendingCount} 篇在养 · 每月更新几次`;
 ---
 
 <BaseLayout title="首页" lang="zh">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <section class="text-center py-[8vh]" transition:animate="fade">
-      <h1 class="text-5xl sm:text-6xl md:text-7xl mb-8 font-bold">Q的笔记</h1>
-      <p class="text-2xl text-muted-foreground max-w-3xl mx-auto mb-14">
-        一个记录个人想法的博客——有时关于 AI 或工作，有时关于游戏、书籍、电影、旅行，或其他任何想写下来的东西。
-      </p>
-    </section>
-
-    <section class="mx-auto" transition:animate="fade">
-      <PostList posts={posts} showImages={false} showExcerpt={false} showSeparators={true} showTags={false}/>
-
-      <div class="text-center mt-24">
-        <a href="/zh/journal" class="text-lg font-medium text-black dark:text-white py-2 px-4 rounded-md inline-block focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:underline">
-          查看全部文章 <span aria-hidden="true">→</span>
-        </a>
+  <section class="dots" style="border-bottom:1px solid var(--line)">
+    <div class="wrap" style="padding:76px 26px 60px">
+      <div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">笔记 · 随笔 · EN / 中文</div>
+      <h1 style="font-family:var(--serif);font-weight:500;font-size:42px;line-height:1.2;letter-spacing:0;color:var(--ink);margin:0 0 22px;max-width:22ch">
+        关于 AI、智能体，以及那些经得起它们的工作——半成形的想法，先留着，等它们站得住。
+      </h1>
+      <p style="font:500 12.5px/1 var(--mono);color:var(--muted);margin:0 0 30px">{stat}</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <a href="/zh/journal" style="font:600 13px/1 var(--sans);color:var(--paper);background:var(--accent);border-radius:9px;padding:11px 18px;text-decoration:none">浏览全部</a>
+        <a href="/zh/rss.xml" style="font:500 13px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:11px 15px;text-decoration:none">RSS</a>
       </div>
-    </section>
+    </div>
+  </section>
+
+  {tending.length > 0 && (
+    <div class="wrap" style="padding:44px 26px 20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 12c0-3.3 2.4-5.5 6.5-5.5C18.5 10 16 12 12 12z"></path><path d="M12 13.5C12 10.8 10 8.8 6.2 8.8 6.2 12 8.4 13.5 12 13.5z"></path></svg>
+        <span style="font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">正在打理</span>
+        <span style="flex:1;height:1px;background:var(--line)"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+        {tending.map((post) => <NoteCard post={post} />)}
+      </div>
+    </div>
+  )}
+
+  <div class="wrap" style="padding:26px 26px 10px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">最新笔记</span>
+      <span style="flex:1;height:1px;background:var(--line)"></span>
+    </div>
+    {latest.map((post) => <NoteRow post={post} />)}
+  </div>
+
+  <div class="wrap" style="padding:34px 26px 16px">
+    <Threads posts={withUrl} lang="zh" />
   </div>
 </BaseLayout>

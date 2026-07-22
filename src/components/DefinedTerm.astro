@@ -1,0 +1,25 @@
+---
+// "Defined term" callout — a coined term the piece defines on first use.
+// Backed by the optional `definedTerm` frontmatter object.
+interface Props {
+  term: string;
+  pos?: string;
+  definition: string;
+  lang?: 'en' | 'zh';
+}
+const { term, pos, definition, lang = 'en' } = Astro.props;
+const label = lang === 'zh' ? '定义术语' : 'Defined term';
+---
+
+<div style="border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:14px 17px;margin:0 0 24px;background:var(--card)">
+  <div style="font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:9px">
+    {label}
+  </div>
+  <div style="margin-bottom:5px">
+    <span style="font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink)">{term}</span>
+    {pos && <span style="font:400 12px/1 var(--mono);color:var(--faint)"> / {pos}</span>}
+  </div>
+  <div style="font-family:var(--serif);font-size:16.5px;line-height:1.5;color:var(--muted)">
+    {definition}
+  </div>
+</div>

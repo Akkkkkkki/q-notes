@@ -74,9 +74,17 @@ title: Post title
 date: 2026-06-01
 excerpt: One- or two-sentence summary used in lists, RSS, and OG tags.
 image: /images/my-image.jpg   # optional
-tags: ["English", "AI", "Notes"]
+tags: ["ai", "software", "essay"]   # include a tier tag: note / essay / tracker
+lang: en                            # en | zh
+translationKey: post-slug           # shared by the en/zh pair; also the URL slug
+maturity: growing                   # seedling | growing | evergreen
 ---
 ```
+
+The reading layout also surfaces four **optional** structured blocks when present —
+`definedTerm`, `prediction`, `sources`, and `connections` (the note graph, by
+`translationKey`). See the frontmatter contract in
+[`docs/pipeline.md`](./docs/pipeline.md#optional-reading-layout-frontmatter).
 
 Images referenced from frontmatter or post content go in `public/images/`.
 

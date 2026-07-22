@@ -6,6 +6,28 @@ tags: ["ai", "software", "management", "business", "essay"]
 lang: en
 translationKey: agent-coordination-debt
 maturity: growing
+definedTerm:
+  term: "coordination debt"
+  pos: "n."
+  definition: "the backlog of unresolved decisions created when action becomes cheaper than alignment."
+prediction:
+  statement: "By the end of 2027, serious enterprise agent programs are judged by <em>absorption</em> metrics — how much agent work survives review — not individual output."
+  confidence: medium
+  status: open
+  falsifier: "if those absorption metrics never appear in serious programs by 2028."
+sources:
+  - label: "openai.com"
+    title: "How agents are transforming work"
+    url: "https://openai.com/index/how-agents-are-transforming-work/"
+  - label: "deepmind.google"
+    title: "Securing the future of AI agents"
+    url: "https://deepmind.google/blog/securing-the-future-of-ai-agents/"
+  - label: "arXiv:2604.23897"
+    title: "MarketBench"
+    url: "https://arxiv.org/abs/2604.23897"
+connections:
+  citedBy: ["pull-requests-are-knowledge-imports"]
+  linksTo: ["codebase-maps-are-agent-interfaces"]
 ---
 
 The first enterprise crisis of AI agents may not look like failure. It may look like everyone producing more work than the organization can absorb.

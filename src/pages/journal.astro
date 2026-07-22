@@ -1,33 +1,93 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import PostListWithThumbnails from '../components/PostListWithThumbnails.astro';
+import NoteRow from '../components/NoteRow.astro';
 import { getCollection } from 'astro:content';
 
-// Get all blog posts and sort them by date
-const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
-const sortedPosts = allPosts.sort((a, b) => {
-  return new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf();
-});
+const allPosts = (await getCollection('posts', ({ data }) => data.lang === 'en')).sort(
+  (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf(),
+);
+const posts = allPosts.map((post) => ({ ...post, url: `/posts/${post.data.translationKey}`, frontmatter: post.data }));
 
-// Format posts for the PostList component
-const posts = sortedPosts.map(post => ({
-  ...post,
-  url: `/posts/${post.data.translationKey}`,
-  frontmatter: post.data
-}));
+const stages = [
+  { id: 'all', label: 'All', color: 'var(--body)' },
+  { id: 'seedling', label: 'Seedling', color: 'var(--gold)' },
+  { id: 'growing', label: 'Growing', color: 'var(--accent)' },
+  { id: 'evergreen', label: 'Evergreen', color: 'var(--accent)' },
+];
 ---
 
 <BaseLayout title="Journal">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-12 text-center" transition:animate="fade">
-      <h1 class="text-3xl sm:text-4xl md:text-5xl mb-4">Journal</h1>
-      <p class="text-xl text-muted-foreground">
-        Notes, reviews, and other things
-      </p>
-    </header>
+  <div class="wrap" style="padding:48px 26px 70px">
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:38px;letter-spacing:-.015em;color:var(--ink);margin:0 0 8px">Journal</h1>
+    <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--muted);margin:0 0 28px">Every note, filterable — by growth stage or language.</p>
 
-    <div transition:animate="fade">
-      <PostListWithThumbnails posts={posts} showTags={true} title="All Posts" />
+    <div style="display:flex;flex-wrap:wrap;gap:16px 26px;padding-bottom:20px;margin-bottom:8px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Stage</span>
+        <div id="stage-filter" style="display:flex;gap:7px">
+          {stages.map((s) => (
+            <button
+              class="stage-chip"
+              data-stage={s.id}
+              data-active={s.id === 'all' ? 'true' : undefined}
+              style={`font:600 11px/1 var(--mono);color:${s.color};background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer`}
+            >{s.label}</button>
+          ))}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Language</span>
+        <div style="display:flex;gap:7px">
+          <span style="font:600 11px/1 var(--mono);color:var(--paper);background:var(--ink);border-radius:6px;padding:6px 10px">EN</span>
+          <a href="/zh/journal" style="font:500 11px/1 var(--mono);color:var(--body);border:1px solid var(--line);border-radius:6px;padding:6px 10px;text-decoration:none">中文</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="note-list">
+      {posts.map((post) => (
+        <div data-maturity={post.frontmatter.maturity}>
+          <NoteRow post={post} titleSize={23} excerptSize={16} />
+        </div>
+      ))}
+      <p id="empty-stage" hidden style="padding:28px 0;font-family:var(--serif);font-size:16px;color:var(--muted)">No notes at this stage yet.</p>
     </div>
   </div>
+
+  <style>
+    .stage-chip[data-active] {
+      background: var(--ink) !important;
+      color: var(--paper) !important;
+      border-color: var(--ink) !important;
+    }
+  </style>
+
+  <script>
+    function initStageFilter() {
+      const bar = document.getElementById('stage-filter');
+      const list = document.getElementById('note-list');
+      const empty = document.getElementById('empty-stage');
+      if (!bar || !list) return;
+      const chips = Array.from(bar.querySelectorAll<HTMLButtonElement>('.stage-chip'));
+      const rows = Array.from(list.querySelectorAll<HTMLElement>('[data-maturity]'));
+      const apply = (stage: string) => {
+        let shown = 0;
+        rows.forEach((r) => {
+          const on = stage === 'all' || r.dataset.maturity === stage;
+          r.hidden = !on;
+          if (on) shown++;
+        });
+        if (empty) empty.hidden = shown !== 0;
+      };
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          chips.forEach((c) => c.removeAttribute('data-active'));
+          chip.setAttribute('data-active', 'true');
+          apply(chip.dataset.stage || 'all');
+        });
+      });
+    }
+    initStageFilter();
+    document.addEventListener('astro:page-load', initStageFilter);
+  </script>
 </BaseLayout>

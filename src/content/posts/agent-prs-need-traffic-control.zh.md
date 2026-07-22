@@ -6,6 +6,8 @@ tags: ["ai", "software", "engineering", "management", "essay"]
 lang: zh
 translationKey: agent-prs-need-traffic-control
 maturity: growing
+connections:
+  linksTo: ["codebase-maps-are-agent-interfaces"]
 ---
 
 编程 agent 可能每个都写得不错，事情最后还是砸了。

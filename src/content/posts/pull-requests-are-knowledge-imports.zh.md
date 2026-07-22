@@ -6,6 +6,8 @@ tags: ["ai", "software", "open-source", "governance", "essay"]
 lang: zh
 translationKey: pull-requests-are-knowledge-imports
 maturity: growing
+connections:
+  linksTo: ["agent-coordination-debt"]
 ---
 
 Pull request 原本是一种很紧凑的交易：我已经把活做了，这是 diff，请你判断它该不该进来。

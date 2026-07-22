@@ -1,0 +1,45 @@
+---
+// Maturity indicator — three dashes + a label showing a note's growth stage.
+// seedling → 1 gold dash, growing → 2 accent dashes, evergreen → 3 accent dashes.
+// The stage vocabulary is the editorial contract (docs/pipeline.md §maturity).
+interface Props {
+  maturity: 'seedling' | 'growing' | 'evergreen';
+  lang?: 'en' | 'zh';
+  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
+}
+const { maturity, lang = 'en', size = 'sm', showLabel = true } = Astro.props;
+
+const LABELS = {
+  en: { seedling: 'SEEDLING', growing: 'GROWING', evergreen: 'EVERGREEN' },
+  zh: { seedling: '萌芽', growing: '成长', evergreen: '常青' },
+} as const;
+
+const filled = maturity === 'seedling' ? 1 : maturity === 'growing' ? 2 : 3;
+const dotColor = maturity === 'seedling' ? 'var(--gold)' : 'var(--accent)';
+
+const SIZES = {
+  sm: { w: 11, gap: 2, label: 8.5, ls: '0' },
+  md: { w: 12, gap: 3, label: 9, ls: '0.08em' },
+  lg: { w: 13, gap: 3, label: 9.5, ls: '0.08em' },
+} as const;
+const s = SIZES[size];
+const label = LABELS[lang][maturity];
+---
+
+<span style="display:inline-flex;align-items:center;gap:6px" aria-label={`Maturity: ${maturity}`}>
+  <span style={`display:flex;gap:${s.gap}px`} aria-hidden="true">
+    {[0, 1, 2].map((i) => (
+      <span
+        style={`width:${s.w}px;height:4px;border-radius:2px;background:${
+          i < filled ? dotColor : 'var(--soft)'
+        }`}
+      ></span>
+    ))}
+  </span>
+  {showLabel && (
+    <span style={`font:600 ${s.label}px/1 var(--mono);letter-spacing:${s.ls};color:${dotColor}`}>
+      {label}
+    </span>
+  )}
+</span>

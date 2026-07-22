@@ -1,0 +1,41 @@
+---
+// A single note in a list (home "Latest notes", journal, tag pages).
+// Serif title that tints to accent on hover, maturity dashes, ISO date, excerpt.
+import Maturity from './Maturity.astro';
+
+interface Props {
+  post: {
+    url: string;
+    frontmatter: {
+      title: string;
+      date: Date | string;
+      excerpt: string;
+      maturity: 'seedling' | 'growing' | 'evergreen';
+      lang?: 'en' | 'zh';
+    };
+  };
+  titleSize?: number;
+  excerptSize?: number;
+}
+const { post, titleSize = 24, excerptSize = 16.5 } = Astro.props;
+const { title, date, excerpt, maturity, lang = 'en' } = post.frontmatter;
+const iso = new Date(date).toISOString().slice(0, 10);
+---
+
+<a class="row-note" href={post.url}>
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <Maturity maturity={maturity} lang={lang} size="sm" />
+    <h3
+      class="rt"
+      style={`font-family:var(--serif);font-weight:500;font-size:${titleSize}px;line-height:1.16;color:var(--ink);margin:0;flex:1;min-width:55%`}
+    >
+      {title}
+    </h3>
+    <time datetime={iso} style="font:500 12px/1 var(--mono);color:var(--faint)">{iso}</time>
+  </div>
+  <p
+    style={`font-family:var(--serif);font-size:${excerptSize}px;line-height:1.5;color:var(--muted);margin:11px 0 0;max-width:70ch`}
+  >
+    {excerpt}
+  </p>
+</a>

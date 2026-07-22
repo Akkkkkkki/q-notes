@@ -6,6 +6,8 @@ tags: ["ai", "software", "open-source", "governance", "essay"]
 lang: en
 translationKey: pull-requests-are-knowledge-imports
 maturity: growing
+connections:
+  linksTo: ["agent-coordination-debt"]
 ---
 
 The pull request used to be a compact bargain: I did the work, here is the diff, please decide whether it belongs.

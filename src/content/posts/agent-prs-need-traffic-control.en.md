@@ -6,6 +6,8 @@ tags: ["ai", "software", "engineering", "management", "essay"]
 lang: en
 translationKey: agent-prs-need-traffic-control
 maturity: growing
+connections:
+  linksTo: ["codebase-maps-are-agent-interfaces"]
 ---
 
 Coding agents can fail even when each one writes decent code.

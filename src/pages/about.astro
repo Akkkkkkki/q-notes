@@ -3,24 +3,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="About">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-    <header class="mb-12 text-center" transition:animate="fade">
-      <h1 class="text-3xl sm:text-4xl md:text-5xl mb-4">About</h1>
-    </header>
-    
-    <div class="prose prose-lg dark:prose-invert max-w-none" transition:animate="fade">
+  <div class="wrap" style="max-width:720px;padding:56px 26px 40px">
+    <div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">About</div>
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:38px;letter-spacing:-.015em;color:var(--ink);margin:0 0 24px">Q's Notes</h1>
+
+    <div class="prose-body">
       <p>Hi, I'm Q.</p>
-      
       <p>
-        This is a small personal blog for notes, reviews, and things I'm thinking about.
+        This is a personal, bilingual notebook — notes, essays, and opinions on AI, agents,
+        software, business, and consulting, with the occasional aside on games, books, films, or
+        culture. It's tended, not published: pieces arrive early as <em>seedlings</em>, get argued
+        and sourced into <em>growing</em> notes, and settle into <em>evergreen</em> ones only when I
+        stand behind them as written.
       </p>
-      
       <p>
-        I may write in English or Chinese. Topics might include AI, games, books, films, travel, work, 
-        or anything else I feel like saving somewhere nicer than a random note app.
+        Every piece has an English and a Chinese version — transcreations, not literal translations,
+        so each reads like it was written in its own language. Most come out of a small weekly
+        writing loop rather than ad-hoc posting; the point of view is the only part that stays
+        manual.
       </p>
-      
-      <p>That's pretty much it.</p>
+      <p>That's pretty much it. Look around, or subscribe by <a href="/rss.xml">RSS</a>.</p>
     </div>
   </div>
 </BaseLayout>
