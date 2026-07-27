@@ -914,8 +914,18 @@ const tabs = [
         // an unconfirmed guess must not accuse the secrets).
         async function secretsGone() {
           try {
-            const h = await (await fetch('/api/health')).json();
-            return h.ok ? null : (h.secrets || {});
+            const res = await fetch('/api/health');
+            if (!res.ok) return null;
+            const h = await res.json();
+            // Only an explicit, well-formed negative counts as a verdict. A
+            // proxy error page or any body without the two presence booleans
+            // says nothing about the secrets, and inferring "missing" from a
+            // shape we don't recognise is exactly how the banner came to name
+            // secrets that were sitting in Cloudflare all along.
+            if (h.ok !== false || !h.secrets || typeof h.secrets !== 'object') return null;
+            if (typeof h.secrets.GITHUB_TOKEN !== 'boolean') return null;
+            if (typeof h.secrets.CAPTURE_TOKEN !== 'boolean') return null;
+            return h.secrets;
           } catch {
             return null;
           }
@@ -942,11 +952,13 @@ const tabs = [
           if (res.status === 503) {
             const data = await res.json().catch(() => ({}));
             const secrets = data.code === 'push_unconfigured' ? null : await secretsGone();
+            // Either way a 503 is the server's fault and worth retrying later,
+            // so callers holding unsaved work (capture) can queue it locally.
             if (secrets) {
               showConfig(secrets);
-              throw Object.assign(new Error('server-config'), { serverError: true, config: true });
+              throw Object.assign(new Error('server-config'), { serverError: true, config: true, retryable: true });
             }
-            throw Object.assign(new Error(data.error || 'request failed (503)'), { serverError: true, status: 503 });
+            throw Object.assign(new Error(data.error || 'request failed (503)'), { serverError: true, status: 503, retryable: true });
           }
           if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -1088,9 +1100,7 @@ const tabs = [
           if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
           // Non-blocking health probe: if the Worker lost its secrets, say so
           // up front instead of letting the next action fail confusingly.
-          fetch('/api/health').then((r) => r.json())
-            .then((h) => { if (!h.ok) showConfig(h.secrets || {}); })
-            .catch(() => {});
+          secretsGone().then((secrets) => { if (secrets) showConfig(secrets); });
           refreshBadges(false);
         });
 
