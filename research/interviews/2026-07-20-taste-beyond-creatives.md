@@ -1,7 +1,7 @@
 # Interview: Taste is just judgment wearing a nicer word
 
 **Source:** inbox spark "On 'AI can automate creative work faster than industries can reproduce taste'… a little bit cliché… find a better angle, more specific… what taste means for different industries, not just creatives, maybe link it to consultants or many other professions" (2026-07-17)
-**Status:** Awaiting answers
+**Status:** Answers in progress (2026-07-27)
 
 ## The idea in three sentences
 
@@ -26,3 +26,7 @@
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+### Q2
+
+It's just that it has been talked too many times by people and people just talk about taste taste taste they don't seem to define what taste is like and I find that generic cling to be cliche I want us to be able to define it in various scenarios or industries I think judgment is still a bit different from taste joshman is like able to define whether something is good or not as per the societies standard while taste is like there's no really wrong answer but something that in a longer term people will gradually find out okay this is the way to go
