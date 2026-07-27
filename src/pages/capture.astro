@@ -379,7 +379,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           queueSpark(spark);
           flashSaved(t('capture.savedHere'));
           setStatus(t('capture.connectToSync'));
-        } else if (e.config) {
+          // Any 503 (secrets gone, or one the health check couldn't attribute)
+          // is retryable, so the thought belongs in the local queue either way.
+        } else if (e.config || e.retryable) {
           queueSpark(spark);
           flashSaved(t('capture.savedHere'));
           setStatus(t('capture.willSyncServer', { n: getQueue().length }));

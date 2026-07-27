@@ -71,7 +71,9 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
     });
   }
   if (!env.GITHUB_TOKEN || !env.CAPTURE_TOKEN) {
-    return json({ error: 'Worker secrets not configured' }, 503);
+    // `code` lets the pages tell this apart from other 503s (e.g. web push
+    // being unconfigured, which says nothing about GITHUB_TOKEN/CAPTURE_TOKEN).
+    return json({ error: 'Worker secrets not configured', code: 'secrets_missing' }, 503);
   }
   if (!(await isAuthorized(request, env))) {
     return json({ error: 'Unauthorized' }, 401);

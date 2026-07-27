@@ -907,6 +907,30 @@ const tabs = [
           $('qn-connect').hidden = true;
         }
 
+        // The authority on whether the Worker still has its secrets: /api/health
+        // answers before the secrets check, so it is truthful even when every
+        // other endpoint is 503ing. Returns the presence map when they are
+        // really gone, null when they are fine (or when it cannot be reached —
+        // an unconfirmed guess must not accuse the secrets).
+        async function secretsGone() {
+          try {
+            const res = await fetch('/api/health');
+            if (!res.ok) return null;
+            const h = await res.json();
+            // Only an explicit, well-formed negative counts as a verdict. A
+            // proxy error page or any body without the two presence booleans
+            // says nothing about the secrets, and inferring "missing" from a
+            // shape we don't recognise is exactly how the banner came to name
+            // secrets that were sitting in Cloudflare all along.
+            if (h.ok !== false || !h.secrets || typeof h.secrets !== 'object') return null;
+            if (typeof h.secrets.GITHUB_TOKEN !== 'boolean') return null;
+            if (typeof h.secrets.CAPTURE_TOKEN !== 'boolean') return null;
+            return h.secrets;
+          } catch {
+            return null;
+          }
+        }
+
         async function api(path, body) {
           const res = await fetch(path, {
             method: body === undefined ? 'GET' : 'POST',
@@ -917,8 +941,25 @@ const tabs = [
             body: body !== undefined ? JSON.stringify(body) : undefined,
           });
           if (res.status === 401) { needToken(); throw Object.assign(new Error('unauthorized'), { unauthorized: true }); }
-          // 503 = the Worker lost its secrets — a server problem, not a key problem.
-          if (res.status === 503) { showConfig({}); throw Object.assign(new Error('server-config'), { serverError: true, config: true }); }
+          // 503 has two very different causes. The Worker having lost its
+          // secrets is a server problem, not a key problem — that earns the red
+          // banner. But an optional feature being unconfigured (web push, when
+          // the VAPID keys were never set) also 503s while the rest of the app
+          // is perfectly healthy; treating that as "the secrets are gone" told
+          // the phone to re-add two secrets that were sitting in Cloudflare all
+          // along. So confirm against /api/health before blaming the secrets,
+          // and name the ones actually missing rather than guessing both.
+          if (res.status === 503) {
+            const data = await res.json().catch(() => ({}));
+            const secrets = data.code === 'push_unconfigured' ? null : await secretsGone();
+            // Either way a 503 is the server's fault and worth retrying later,
+            // so callers holding unsaved work (capture) can queue it locally.
+            if (secrets) {
+              showConfig(secrets);
+              throw Object.assign(new Error('server-config'), { serverError: true, config: true, retryable: true });
+            }
+            throw Object.assign(new Error(data.error || 'request failed (503)'), { serverError: true, status: 503, retryable: true });
+          }
           if (!res.ok) {
             const data = await res.json().catch(() => ({}));
             throw Object.assign(new Error(data.error || 'request failed (' + res.status + ')'), { serverError: true, status: res.status });
@@ -1059,9 +1100,7 @@ const tabs = [
           if ('serviceWorker' in navigator) navigator.serviceWorker.register('/capture-sw.js');
           // Non-blocking health probe: if the Worker lost its secrets, say so
           // up front instead of letting the next action fail confusingly.
-          fetch('/api/health').then((r) => r.json())
-            .then((h) => { if (!h.ok) showConfig(h.secrets || {}); })
-            .catch(() => {});
+          secretsGone().then((secrets) => { if (secrets) showConfig(secrets); });
           refreshBadges(false);
         });
 

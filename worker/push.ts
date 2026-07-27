@@ -23,7 +23,7 @@ export function pushConfigured(env: Env): boolean {
 }
 
 export function getPublicKey(env: Env): Response {
-  if (!pushConfigured(env)) return json({ error: 'Push not configured' }, 503);
+  if (!pushConfigured(env)) return json({ error: 'Push not configured', code: 'push_unconfigured' }, 503);
   return json({ key: env.VAPID_PUBLIC_KEY });
 }
 
