@@ -28,13 +28,47 @@ describe('auth', () => {
 
   it('returns 503 when Worker secrets are missing', async () => {
     const env = makeEnv({ CAPTURE_TOKEN: '' as any });
-    const { status } = await call(worker, env, 'POST', '/api/spark', { text: 'x' });
+    const { status, data } = await call(worker, env, 'POST', '/api/spark', { text: 'x' });
     expect(status).toBe(503);
+    expect(data.code).toBe('secrets_missing');
   });
 
   it('404s unknown API routes', async () => {
     const { status } = await call(worker, makeEnv(), 'GET', '/api/nope');
     expect(status).toBe(404);
+  });
+});
+
+/**
+ * Two unrelated things answer 503, and the pages show a red "re-add your
+ * secrets" banner for one of them. Web push being unconfigured must never be
+ * mistaken for the secrets being gone — that banner sent the phone to
+ * Cloudflare to re-add two secrets that were there all along.
+ */
+describe('GET /api/health', () => {
+  it('reports the secrets present without exposing values', async () => {
+    const { status, data } = await call(worker, makeEnv(), 'GET', '/api/health', undefined, null);
+    expect(status).toBe(200);
+    expect(data).toEqual({
+      ok: true,
+      secrets: { GITHUB_TOKEN: true, CAPTURE_TOKEN: true, webPush: false },
+    });
+  });
+
+  it('names only the secret that is actually missing', async () => {
+    const env = makeEnv({ GITHUB_TOKEN: '' as any });
+    const { data } = await call(worker, env, 'GET', '/api/health', undefined, null);
+    expect(data.ok).toBe(false);
+    expect(data.secrets).toMatchObject({ GITHUB_TOKEN: false, CAPTURE_TOKEN: true });
+  });
+
+  it('stays ok when only web push is unconfigured, and push/key says so', async () => {
+    const { status, data } = await call(worker, makeEnv(), 'GET', '/api/push/key');
+    expect(status).toBe(503);
+    expect(data.code).toBe('push_unconfigured');
+
+    const health = await call(worker, makeEnv(), 'GET', '/api/health', undefined, null);
+    expect(health.data.ok).toBe(true);
   });
 });
 

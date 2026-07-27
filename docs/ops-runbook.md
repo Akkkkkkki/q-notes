@@ -63,12 +63,23 @@ The Companion pages call this endpoint themselves: when the server has lost
 its secrets they show a red **"The server lost its secrets"** banner instead
 of asking for your token, because re-pasting the token cannot fix a 503.
 
+`/api/health` is the *only* authority on that question. Not every 503 means the
+secrets are gone — an unconfigured optional feature answers 503 on its own
+while the rest of the app is healthy, and today that means web push:
+`GET /api/push/key` 503s with `code: "push_unconfigured"` whenever the VAPID
+keys are unset (`webPush: false` above). The pages therefore confirm against
+`/api/health` before showing the banner. **If the banner ever names secrets
+that `/api/health` reports as `true`, believe the health check** — the secrets
+are fine and something else 503'd.
+
 ## Symptom → cause table
 
 | Symptom | Meaning | Fix |
 |---|---|---|
 | Red banner "server lost its secrets" / `/api/health` says `ok:false` | A deploy wiped dashboard Text vars, or secrets were never set | Re-add both as **Secrets** (above) |
 | "token needed" keeps reappearing, health says `ok:true` | This device's stored token ≠ `CAPTURE_TOKEN` | Paste the current token once; it sticks |
+| Red banner but `/api/health` says `ok:true` | Some other endpoint 503'd (e.g. web push unconfigured) — the secrets are fine | Nothing to re-add; reload the page |
+| "Notifications unavailable" on the Answer page | `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_JWK` are unset (`webPush: false`) | Optional: `node scripts/generate-vapid.mjs`, then `wrangler secret put` both |
 | Sparks say "queued" | Phone offline, or server 503 | They flush automatically once send succeeds |
 | Everything 401s right after rotating `CAPTURE_TOKEN` | Expected — each device holds the old token | Paste the new one on each device |
 

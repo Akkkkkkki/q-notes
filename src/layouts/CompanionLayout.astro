@@ -907,6 +907,20 @@ const tabs = [
           $('qn-connect').hidden = true;
         }
 
+        // The authority on whether the Worker still has its secrets: /api/health
+        // answers before the secrets check, so it is truthful even when every
+        // other endpoint is 503ing. Returns the presence map when they are
+        // really gone, null when they are fine (or when it cannot be reached —
+        // an unconfirmed guess must not accuse the secrets).
+        async function secretsGone() {
+          try {
+            const h = await (await fetch('/api/health')).json();
+            return h.ok ? null : (h.secrets || {});
+          } catch {
+            return null;
+          }
+        }
+
         async function api(path, body) {
           const res = await fetch(path, {
             method: body === undefined ? 'GET' : 'POST',
@@ -917,8 +931,23 @@ const tabs = [
             body: body !== undefined ? JSON.stringify(body) : undefined,
           });
           if (res.status === 401) { needToken(); throw Object.assign(new Error('unauthorized'), { unauthorized: true }); }
-          // 503 = the Worker lost its secrets — a server problem, not a key problem.
-          if (res.status === 503) { showConfig({}); throw Object.assign(new Error('server-config'), { serverError: true, config: true }); }
+          // 503 has two very different causes. The Worker having lost its
+          // secrets is a server problem, not a key problem — that earns the red
+          // banner. But an optional feature being unconfigured (web push, when
+          // the VAPID keys were never set) also 503s while the rest of the app
+          // is perfectly healthy; treating that as "the secrets are gone" told
+          // the phone to re-add two secrets that were sitting in Cloudflare all
+          // along. So confirm against /api/health before blaming the secrets,
+          // and name the ones actually missing rather than guessing both.
+          if (res.status === 503) {
+            const data = await res.json().catch(() => ({}));
+            const secrets = data.code === 'push_unconfigured' ? null : await secretsGone();
+            if (secrets) {
+              showConfig(secrets);
+              throw Object.assign(new Error('server-config'), { serverError: true, config: true });
+            }
+            throw Object.assign(new Error(data.error || 'request failed (503)'), { serverError: true, status: 503 });
+          }
           if (!res.ok) {
             const data = await res.json().catch(() => ({}));
             throw Object.assign(new Error(data.error || 'request failed (' + res.status + ')'), { serverError: true, status: res.status });
