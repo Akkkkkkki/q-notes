@@ -34,3 +34,7 @@ It's just that it has been talked too many times by people and people just talk 
 ### Q3
 
 Depends on the domain
+
+### Q5
+
+I think awareness extremely important awareness of oneself and the awareness or understanding of a specific populations reaction to things and knowing what actions we need to take to that can incur or resolve certain reactions I know this is quite vague I do think taste is more reproducible it's almost like certain type of patent recognition that people can't summarize yet however it's just so subtle that makes it actually very hard questions to collect data and chewing the model
