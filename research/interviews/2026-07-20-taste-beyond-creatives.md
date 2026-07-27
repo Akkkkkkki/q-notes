@@ -30,3 +30,7 @@ _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are 
 ### Q2
 
 It's just that it has been talked too many times by people and people just talk about taste taste taste they don't seem to define what taste is like and I find that generic cling to be cliche I want us to be able to define it in various scenarios or industries I think judgment is still a bit different from taste joshman is like able to define whether something is good or not as per the societies standard while taste is like there's no really wrong answer but something that in a longer term people will gradually find out okay this is the way to go
+
+### Q3
+
+Depends on the domain
