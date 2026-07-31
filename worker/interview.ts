@@ -37,6 +37,13 @@ export interface Brief {
   title: string;
   status: string;
   closed: boolean;
+  /**
+   * The drafter has shipped this brief (`Status: Drafted…`), the terminal state
+   * routine 03 writes when it closes the loop. Terminal like `closed`: the
+   * author is done with it, so it must not be offered for more answers or for
+   * a second green light — tapping ready would overwrite the Drafted status.
+   */
+  drafted: boolean;
   /** The author explicitly green-lit this brief (`Status: Ready to draft`). */
   ready: boolean;
   /**
@@ -215,6 +222,7 @@ export function parseBrief(path: string, content: string): Brief {
   return {
     path, date, title, status,
     closed: /^closed|^declined/i.test(status),
+    drafted: /^drafted\b/i.test(status),
     ready,
     readyDate: ready ? (status.match(/\((\d{4}-\d{2}-\d{2})\)/)?.[1] ?? null) : null,
     idea, questions,

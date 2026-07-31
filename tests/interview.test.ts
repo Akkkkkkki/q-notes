@@ -90,6 +90,17 @@ describe('parseBrief', () => {
     expect(brief.closed).toBe(false);
   });
 
+  it('treats a drafted brief as terminal, like a closed one', () => {
+    const drafted = BRIEF.replace(
+      'Awaiting answers',
+      'Drafted in `src/content/posts/x.en.md` and `src/content/posts/x.zh.md` on 2026-06-12'
+    );
+    const brief = parseBrief(BRIEF_PATH, drafted);
+    expect(brief.drafted).toBe(true);
+    expect(brief.ready).toBe(false);
+    expect(parseBrief(BRIEF_PATH, BRIEF).drafted).toBe(false);
+  });
+
   it('reads the date off the green light so the Flow surface can clock the drafter', () => {
     expect(parseBrief(BRIEF_PATH, BRIEF).readyDate).toBeNull();
     const ready = BRIEF.replace('Awaiting answers', 'Ready to draft (2026-06-11)');

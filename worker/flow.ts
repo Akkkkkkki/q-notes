@@ -74,7 +74,7 @@ export async function getFlow(env: Env): Promise<Response> {
   const live = backlog.filter((b) => b.status === 'live');
 
   const interview =
-    brief && !brief.closed
+    brief && !brief.closed && !brief.drafted
       ? {
           path: brief.path,
           title: brief.title,
@@ -179,7 +179,11 @@ function attention(
   // the drafter never came. Without this the brief drops off `needsYou` the
   // moment it goes ready, so a dead Thursday routine looks exactly like a
   // quiet week — which is how a green-lit brief once sat untouched for days.
-  if (interview?.ready && !desk.length) {
+  // Only a PR opened *since* the green light is evidence the drafter ran for
+  // this brief. An older content PR still sitting on the Desk says nothing
+  // about last Thursday, and treating it as proof would suppress the warning
+  // for as long as that PR stays open.
+  if (interview?.ready && !draftedSinceGreenLight(desk, interview.readyDate)) {
     const waited = daysSinceDrafterSlot(interview.readyDate);
     if (waited !== null && waited >= DRAFTER_GRACE_DAYS) {
       out.push({
@@ -353,6 +357,18 @@ async function recentPublishes(env: Env): Promise<Array<{ date: string; summary:
 
 function ageDaysOf(date: string): number {
   return Math.max(0, Math.floor((Date.now() - Date.parse(date)) / DAY_MS));
+}
+
+/**
+ * Is any open content PR newer than the green light? That's the cheap stand-in
+ * for "the drafter ran for this brief" — the Desk carries no brief backlink, so
+ * recency is what we have. Without a date to compare against, assume it did and
+ * stay quiet; the warning is for the unambiguous case.
+ */
+function draftedSinceGreenLight(desk: DeskSummary[], readyDate: string | null): boolean {
+  if (!readyDate) return true;
+  const sinceReady = ageDaysOf(readyDate);
+  return desk.some((pr) => pr.ageDays <= sinceReady);
 }
 
 /**

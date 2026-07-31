@@ -265,6 +265,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     function render() {
       if (!brief) { showEmpty(t('answer.emptyNone')); return; }
       if (brief.closed) { showEmpty(t('answer.emptyClosed', { status: brief.status })); return; }
+      // Drafted is terminal too: the loop is closed, and offering the ready
+      // toggle here would let a tap overwrite the drafter's own status line.
+      if (brief.drafted) { showEmpty(t('answer.emptyDrafted', { status: brief.status })); return; }
       $('main').hidden = false;
       $('empty').hidden = true;
       $('idea').textContent = brief.idea;
