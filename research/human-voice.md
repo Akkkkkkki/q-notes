@@ -175,6 +175,52 @@ made directly, like other mechanical fixes.
       body); nothing firsthand is invented.
 - [ ] One or two natural light touches; none forced.
 
+## 5. What the linter checks, and what it can't
+
+`scripts/content-gate.mjs` now enforces the countable half of §3 so the rules don't
+depend on the same model that wrote the draft noticing it broke them. Run
+`node scripts/content-gate.mjs <file>` before opening a PR. Everything below is a
+**warning**, never a merge blocker — the thresholds are calibrated against our own
+published posts so a hit means something real rather than background noise.
+
+| Rule | Threshold | Corpus at the time of writing |
+|---|---|---|
+| Contractions by default (§3.7) | contractions ≥ half of contractible spots | 6 of 9 posts fail (0.00–0.11) |
+| Corrective pivots (§3.2) | ≤ 1 per post | 4 posts at 2–3 |
+| Rhetorical-question volley (§3.2) | no run of 3; ≤ 3 questions total | 3 posts fail |
+| Lumpy rhythm (§3.3) | sentence-length variation ≥ 0.45 | all pass (0.53–0.74) |
+| Paragraph shape (§3.3) | one 1-sentence and one ≥5-sentence paragraph | 4 posts fail |
+| Never-list and marketing words (§3.9) | zero | all pass |
+| Nominalisations, stiff connectives | zero | all pass |
+| One name for one thing | a coined term is reused, not just defined | all pass |
+| 万能动词 (§12) | ≤ 2 per post | all pass (0–2) |
+
+**Why these thresholds are trusted.** Commit `Apply the human pass to the two most
+recent posts` (2026-07-17) ran §4 by hand over two posts and nothing else, which makes
+a clean before/after on identical content. The lint reports six warnings on the
+pre-pass versions and two on the post-pass versions: both contraction warnings and the
+question volley cleared, and the two survivors are paragraph shape, which that pass
+never addressed. Across the whole corpus the contraction check partitions the nine
+posts exactly along "did a human pass touch this file" — 3 for 3 and 6 for 6 — with no
+knowledge of the git history. The lint agrees with the human editor where the editor
+looked, and catches what the editor skipped. That is the case for automating it.
+
+What it can't check, and what the ship gate and the author still own: whether a
+sentence survives the talk test, whether the first-person moment is real or invented,
+whether an opening reuses a recent frame, and whether the 中文版 was rewritten from the
+argument or aligned to the English sentence by sentence. The lint removes the form of
+slop. It cannot tell you the piece is worth reading.
+
+**On Simplified Technical English.** The lint borrows ASD-STE100's method — a
+self-lint of numeric rules rather than an instruction to write well — and two of its
+word rules (use the verb, not the nominalisation; ban marketing adjectives). We
+deliberately reject the rest. STE bans contractions and caps sentences at 20–25 words
+with a six-sentence paragraph maximum, which produces exactly the even, airless rhythm
+§1 diagnoses as our core problem. STE is written so a mechanic can follow a maintenance
+procedure under time pressure; uniformity is the goal there and the failure mode here.
+Our burstiness check is that cap inverted: it fails prose that is *too* even. Use strict
+STE for runbooks and error messages (`docs/ops-runbook.md`), never for a post.
+
 ## Sources
 
 - Paul Graham, [Write Like You Talk](https://www.paulgraham.com/talk.html) and
