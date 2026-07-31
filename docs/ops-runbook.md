@@ -72,6 +72,35 @@ keys are unset (`webPush: false` above). The pages therefore confirm against
 that `/api/health` reports as `true`, believe the health check** — the secrets
 are fine and something else 503'd.
 
+## Web push: silent until the VAPID keys are set
+
+`webPush: false` in the health check is not cosmetic — it disables **both** cron
+nudges. `notifyIfBriefOpen` and `notifyIfDeskOpen` (`worker/push.ts`) return
+immediately unless `pushConfigured(env)` is true, so the Tuesday "your brief is
+waiting" and Friday "the Desk has something" pushes never leave the Worker.
+A phone that never buzzes is easy to read as "nothing happened this week".
+
+To turn them on, from a machine with wrangler auth:
+
+```bash
+node scripts/generate-vapid.mjs        # prints the key pair
+npx wrangler secret put VAPID_PUBLIC_KEY
+npx wrangler secret put VAPID_PRIVATE_JWK
+```
+
+Then re-check `curl -s https://notes.qiuyue.dev/api/health` — `webPush` should
+read `true` — and re-subscribe once from the Answer page.
+
+Two things to know even after the keys are set:
+
+- The Tuesday nudge only fires for a brief **0–7 days old**
+  (`worker/push.ts`). A brief that goes unanswered past its first week stops
+  nudging exactly when it most needs one. Known and deliberate for now; if
+  briefs start aging out silently, widen that window.
+- Push is a convenience, never the source of truth. The Today tab's
+  `needsYou` list is — it is computed on every load and does not depend on a
+  subscription, a service worker, or OS notification permission.
+
 ## Symptom → cause table
 
 | Symptom | Meaning | Fix |

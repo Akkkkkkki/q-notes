@@ -39,6 +39,12 @@ export interface Brief {
   closed: boolean;
   /** The author explicitly green-lit this brief (`Status: Ready to draft`). */
   ready: boolean;
+  /**
+   * The date stamped on the green light (`Ready to draft (YYYY-MM-DD)`), or
+   * null when the brief isn't ready or the status carries no date. The Flow
+   * surface clocks the drafter against it — see the stall check in flow.ts.
+   */
+  readyDate: string | null;
   idea: string;
   questions: Array<{ n: number; text: string; answer: string | null } & Directions>;
 }
@@ -205,10 +211,12 @@ export function parseBrief(path: string, content: string): Brief {
   }
   if (current) pushQuestion(questions, current, answers);
 
+  const ready = /^ready to draft/i.test(status);
   return {
     path, date, title, status,
     closed: /^closed|^declined/i.test(status),
-    ready: /^ready to draft/i.test(status),
+    ready,
+    readyDate: ready ? (status.match(/\((\d{4}-\d{2}-\d{2})\)/)?.[1] ?? null) : null,
     idea, questions,
   };
 }

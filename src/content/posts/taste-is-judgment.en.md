@@ -8,6 +8,7 @@ translationKey: taste-is-judgment
 maturity: seedling
 connections:
   linksTo: ["consulting-barbell"]
+  citedBy: ["taste-is-a-bet"]
 ---
 
 "Taste is the new moat in the AI era." I've now heard this enough times that it's become a little bit cliché. It's true enough to repeat and vague enough to never be wrong. That's usually the sign a phrase has stopped doing any work.

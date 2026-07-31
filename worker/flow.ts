@@ -20,6 +20,12 @@ const POSTS_DIR = 'src/content/posts';
 const BACKLOG_EXPIRY_DAYS = 21;
 const PR_DOWNGRADE_DAYS = 7;
 const PR_KILL_DAYS = 14;
+/**
+ * Grace period after a Thursday drafter slot before a green-lit brief with no
+ * PR counts as a stall. One day absorbs a routine that runs late or a drafter
+ * that legitimately took a lower rung; past that, nothing ran.
+ */
+const DRAFTER_GRACE_DAYS = 1;
 const MAX_RECENT_SPARKS = 5;
 const MAX_EXPIRING_CALLOUTS = 3;
 const MAX_PUBLISHED = 3;
@@ -76,6 +82,7 @@ export async function getFlow(env: Env): Promise<Response> {
           answered: brief.questions.filter((q) => q.answer).length,
           total: brief.questions.length,
           ready: brief.ready,
+          readyDate: brief.readyDate,
         }
       : null;
 
@@ -110,7 +117,13 @@ export async function getFlow(env: Env): Promise<Response> {
  */
 function attention(
   desk: DeskSummary[],
-  interview: { title: string; answered: number; total: number; ready: boolean } | null,
+  interview: {
+    title: string;
+    answered: number;
+    total: number;
+    ready: boolean;
+    readyDate: string | null;
+  } | null,
   live: BacklogItem[],
   sparks: Spark[],
   weekday: number
@@ -160,6 +173,21 @@ function attention(
         : `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then tap “Ready to draft” when you're happy; that green light is what turns it into a full Essay ${by}.`,
       href: '/interview/',
     });
+  }
+
+  // The other half of that state: the author *did* give the green light, and
+  // the drafter never came. Without this the brief drops off `needsYou` the
+  // moment it goes ready, so a dead Thursday routine looks exactly like a
+  // quiet week — which is how a green-lit brief once sat untouched for days.
+  if (interview?.ready && !desk.length) {
+    const waited = daysSinceDrafterSlot(interview.readyDate);
+    if (waited !== null && waited >= DRAFTER_GRACE_DAYS) {
+      out.push({
+        urgency: 'now',
+        text: `Interview “${interview.title}” went ready on ${interview.readyDate} and Thursday's drafter has still opened no PR. Check that routine 03 is actually scheduled — see docs/pipeline.md §8.`,
+        href: '/desk/',
+      });
+    }
   }
 
   const expiring = live
@@ -325,6 +353,20 @@ async function recentPublishes(env: Env): Promise<Array<{ date: string; summary:
 
 function ageDaysOf(date: string): number {
   return Math.max(0, Math.floor((Date.now() - Date.parse(date)) / DAY_MS));
+}
+
+/**
+ * Days elapsed since the first Thursday drafter slot that followed `readyDate`,
+ * or null when there is no date to clock from. A green light stamped on a
+ * Thursday waits for the *next* one — routine 03 runs at 08:00, so a brief
+ * marked ready that day almost certainly missed its own slot.
+ */
+function daysSinceDrafterSlot(readyDate: string | null): number | null {
+  if (!readyDate) return null;
+  const ts = Date.parse(readyDate);
+  if (Number.isNaN(ts)) return null;
+  const toThursday = ((4 - new Date(ts).getUTCDay() + 7) % 7) || 7;
+  return ageDaysOf(readyDate) - toThursday;
 }
 
 /** 0=Sun … 6=Sat in the pipeline's timezone. */

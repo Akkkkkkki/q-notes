@@ -90,6 +90,15 @@ describe('parseBrief', () => {
     expect(brief.closed).toBe(false);
   });
 
+  it('reads the date off the green light so the Flow surface can clock the drafter', () => {
+    expect(parseBrief(BRIEF_PATH, BRIEF).readyDate).toBeNull();
+    const ready = BRIEF.replace('Awaiting answers', 'Ready to draft (2026-06-11)');
+    expect(parseBrief(BRIEF_PATH, ready).readyDate).toBe('2026-06-11');
+    // An undated green light is still a green light — just unclockable.
+    const undated = BRIEF.replace('Awaiting answers', 'Ready to draft');
+    expect(parseBrief(BRIEF_PATH, undated)).toMatchObject({ ready: true, readyDate: null });
+  });
+
   it('attributes existing answers to their questions', () => {
     const withAnswer = BRIEF + '\n### Q2\n\nthe ERP migration story\n';
     const brief = parseBrief(BRIEF_PATH, withAnswer);
