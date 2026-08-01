@@ -1,7 +1,7 @@
 # Interview: Taste is just judgment wearing a nicer word
 
 **Source:** inbox spark "On 'AI can automate creative work faster than industries can reproduce taste'… a little bit cliché… find a better angle, more specific… what taste means for different industries, not just creatives, maybe link it to consultants or many other professions" (2026-07-17)
-**Status:** Ready to draft (2026-07-27)
+**Status:** Drafted in `src/content/posts/taste-is-a-bet.en.md` and `src/content/posts/taste-is-a-bet.zh.md` on 2026-07-31
 
 ## The idea in three sentences
 

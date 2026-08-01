@@ -265,6 +265,65 @@ describe('GET /api/flow', () => {
     expect(data.needsYou.some((n: any) => n.href === '/interview/')).toBe(false);
   });
 
+  it('flags a stall when a green-lit brief has sat through a drafter slot with no PR', async () => {
+    gh.seedFile(BRIEF_PATH, BRIEF.replace('Awaiting answers', `Ready to draft (${daysAgo(21)})`));
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    const stall = data.needsYou.find((n: any) => /drafter has still opened no PR/.test(n.text));
+    expect(stall).toBeDefined();
+    expect(stall.urgency).toBe('now');
+    expect(stall.href).toBe('/desk/');
+    expect(stall.text).toMatch(/routine 03/);
+  });
+
+  it('does not cry stall while a PR opened since the green light is on the Desk', async () => {
+    gh.seedFile(BRIEF_PATH, BRIEF.replace('Awaiting answers', `Ready to draft (${daysAgo(21)})`));
+    gh.seedPr({
+      number: 9,
+      title: 'The essay the drafter produced',
+      body: 'Tier: essay.',
+      created_at: new Date(Date.now() - 3 * DAY_MS).toISOString(),
+      files: ['src/content/posts/a.en.md'],
+      comments: [],
+    });
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    expect(data.needsYou.some((n: any) => /drafter has still opened no PR/.test(n.text))).toBe(false);
+  });
+
+  it('still flags the stall when the only open PR predates the green light', async () => {
+    gh.seedFile(BRIEF_PATH, BRIEF.replace('Awaiting answers', `Ready to draft (${daysAgo(21)})`));
+    // An unrelated PR that has been sitting there since before the author
+    // green-lit this brief says nothing about whether the drafter ever ran.
+    gh.seedPr({
+      number: 9,
+      title: 'An older piece nobody has shipped',
+      body: 'Tier: note.',
+      created_at: new Date(Date.now() - 30 * DAY_MS).toISOString(),
+      files: ['src/content/posts/a.en.md'],
+      comments: [],
+    });
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    expect(data.needsYou.some((n: any) => /drafter has still opened no PR/.test(n.text))).toBe(true);
+  });
+
+  it('drops a brief the drafter has already shipped off the actionable list', async () => {
+    gh.seedFile(
+      BRIEF_PATH,
+      BRIEF.replace('Awaiting answers', 'Drafted in `src/content/posts/x.en.md` on 2026-06-12')
+    );
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    // Terminal like `closed`: no badge, no green-light prompt, no stall warning.
+    expect(data.interview).toBeNull();
+    expect(data.needsYou.some((n: any) => n.href === '/interview/')).toBe(false);
+    expect(data.needsYou.some((n: any) => /drafter has still opened no PR/.test(n.text))).toBe(false);
+  });
+
+  it('gives a freshly green-lit brief until its drafter slot before calling it stalled', async () => {
+    gh.seedFile(BRIEF_PATH, BRIEF.replace('Awaiting answers', `Ready to draft (${daysAgo(0)})`));
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    expect(data.interview.readyDate).toBe(daysAgo(0));
+    expect(data.needsYou.some((n: any) => /drafter has still opened no PR/.test(n.text))).toBe(false);
+  });
+
   it('shows the author’s takes back on their topic card', async () => {
     gh.files.set(
       'research/inbox.md',

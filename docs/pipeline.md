@@ -322,13 +322,45 @@ Each file in `automations/` is a self-contained, tool-agnostic prompt: paste it 
 scheduled cloud routine (Claude Code cloud sessions, Claude Desktop automations, a GitHub
 Action invoking an agent, or any scheduler that can run an agent with repo + web access).
 
-| Routine | Schedule | Needs web | Needs notify | Writes |
-|---|---|---|---|---|
-| 01 Topic scout | Mon 08:00 | yes | no | commit to `main` |
-| 02 Interview brief | Tue 08:00 | light | **yes** | commit to `main` |
-| 03 Drafter | Thu 08:00 | yes | no | PR |
-| 04 Ship gate | Fri 08:00 | no | **yes** | PR comments / edits |
-| 05 Gardener | 1st of month 09:00 | light | yes | commit + notification |
+**This is the step that is easy to skip and impossible to notice.** Writing the prompt
+files is not scheduling them. The pipeline once sat for days with a green-lit brief and no
+drafter because all five routines existed only as markdown in `automations/` — every
+"pipeline run" up to then had actually been a human running the prompt by hand. If the
+table below has no counterpart in your scheduler, the pipeline is not running.
+
+| Routine | Schedule (author's local time) | Cron (UTC) | Needs web | Needs notify | Writes |
+|---|---|---|---|---|---|
+| 01 Topic scout | Mon 08:00 | `0 0 * * 1` | yes | no | commit to `main` |
+| 02 Interview brief | Tue 08:00 | `0 0 * * 2` | light | **yes** | commit to `main` |
+| 03 Drafter | Thu 08:00 | `0 0 * * 4` | yes | no | PR |
+| 04 Ship gate | Fri 08:00 | `0 0 * * 5` | no | **yes** | PR comments / edits |
+| 05 Gardener | 1st of month 09:00 | `0 1 1 * *` | light | yes | commit + notification |
+
+The cron column assumes the author's `Asia/Shanghai` (UTC+8), where 08:00 local is 00:00
+UTC on the *same* day — no day-of-week shift. It matches the Worker's own crons in
+`wrangler.jsonc` (`30 0 * * 2` = Tuesday 08:30 Shanghai). Recompute both columns if the
+author's timezone changes.
+
+Point each routine at the prompt file rather than pasting its text, so edits to
+`automations/**` take effect without touching the scheduler:
+
+> Work in the `Akkkkkkki/q-notes` repository. Read `AGENTS.md`, `docs/pipeline.md`, and
+> `automations/03-drafter.md`, then carry out that routine exactly as written for today's
+> date. Never end the run silently — if no artifact is possible, commit the run report the
+> prompt requires.
+
+Each firing should start a **fresh session**: the prompts are standalone and a routine that
+accumulates conversation history will drift. Create exactly one routine per stage and list
+your scheduler's routines afterwards to confirm — a duplicated drafter is the failure mode
+called out at the end of this section.
+
+**Check the first real firing of each routine**, and don't assume a created routine is a
+working one. A scheduled session may start with a narrower toolset than the session that
+created it, and 03 and 04 in particular need repo write plus pull-request access to do
+anything at all. The tell is a run that ends with a report saying it couldn't open a PR,
+which is the "never end silently" rule doing its job — read those reports. Creating the
+routine and verifying its first run are two separate steps, and skipping the second is a
+quieter version of the same mistake as never scheduling it.
 
 Connector requirements: GitHub (all), web search/browse (scout, drafter), one
 notification channel the author actually checks — email or phone push — for the
@@ -368,3 +400,11 @@ pipeline design (not the author) gets revised:
 
 The fourth metric is the one that distinguishes this site from an aggregation feed.
 If it drops, the fix is more interviewing and archive mining, not more scouting.
+
+The last metric has a live counterpart, because a monthly report is too slow to catch a
+scheduler that has stopped: the Flow surface raises a **`now`** item on the Today tab when
+a brief marked `Ready to draft` has sat through a Thursday drafter slot with nothing on the
+Desk (`attention()` in `worker/flow.ts`). Before that check existed, a green-lit brief
+dropped off the "needs you" list the moment the author tapped the green light — so a dead
+routine and a finished week looked identical from the phone. If that item appears, check
+the scheduler against §8 before debugging anything in this repo.

@@ -69,7 +69,7 @@ export async function notifyIfBriefOpen(env: Env): Promise<void> {
   if (!pushConfigured(env)) return;
 
   const brief = await latestBrief(env);
-  if (!brief || brief.closed) return;
+  if (!brief || brief.closed || brief.drafted) return;
   const ageDays = (Date.now() - Date.parse(brief.date)) / 86400000;
   if (!(ageDays >= 0 && ageDays <= 7)) return;
   if (!brief.questions.some((q) => q.answer === null)) return;
