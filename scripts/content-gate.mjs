@@ -23,6 +23,78 @@ const WORD_BANDS = { note: [300, 700], essay: [800, 1500] }; // tracker: any
 const EM_DASH_PER_WORDS = 150; // flag denser than ~1 em dash / 150 words
 const RUN_ON_WORDS = 60; // flag a single sentence longer than this
 
+// --- English advisory thresholds -------------------------------------------
+// The English side of this gate used to check only length, em-dash density, and
+// run-ons, while the Chinese side had six check families. Everything else in
+// research/human-voice.md was prose guidance aimed at the same LLM that writes
+// the drafts. These checks make the §3–§4 rules mechanical, in the spirit of
+// ASD-STE100's self-lint: numeric thresholds a script can apply.
+//
+// What we deliberately do NOT borrow from STE: its sentence-uniformity rules
+// (20/25-word caps, max six sentences per paragraph) and its contraction ban.
+// STE optimises for a reader following a maintenance procedure; we optimise for
+// an essay that does not read as machine-written, and uniform sentence length is
+// the machine signature (human-voice.md §1, §3.3). EN_MIN_BURSTINESS below is
+// the inverted version of the STE cap: it fails prose that is too even.
+//
+// Thresholds are calibrated against the nine published English posts so that a
+// warning means a real hit rather than background noise. Corpus values are in
+// the comment on each constant.
+const EN_CONTRACTION_RATIO = 0.5; // contractions / (contractions + expandable). Corpus: 0.00–0.11 (old) vs 1.00 (recent)
+const EN_CONTRACTION_MIN_EXPANDED = 6; // don't judge the ratio on a handful of spots
+const EN_PIVOT_MAX = 1; // "It is not X. It is Y." — human-voice.md §3.2. Corpus: 0–5
+const EN_QUESTION_MAX = 3; // total unanswered-looking questions. Corpus: 0–11
+const EN_MIN_BURSTINESS = 0.45; // stddev/mean of sentence length. Corpus: 0.53–0.74
+const EN_BURSTINESS_MIN_SENTENCES = 25; // below this, the statistic is noise
+const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
+
+// Words the voiceprint never-list and STE's marketing-adjective rule both ban.
+// The corpus scores zero on all of these — the drafter already avoids them — so
+// this is a regression guard, not a source of routine warnings.
+const EN_LEXICON = [
+  'delve', 'underscore', 'intricate', 'crucial', 'pivotal', 'myriad', 'tapestry',
+  'landscape', 'seamless', 'seamlessly', 'robust', 'cutting-edge', 'world-class',
+  'best-in-class', 'next-generation', 'revolutionary', 'effortless', 'unparalleled',
+  'holistic', 'turnkey', 'it is important to note', "it's important to note",
+  'in today\'s fast-paced', 'ever-evolving', 'testament to',
+];
+// The never-list bans "leverage" as a verb only. The noun is ordinary consulting
+// vocabulary and appears four times in the corpus ("leverage ratios", "a real
+// source of leverage"), so matching the bare word would be a false positive.
+const EN_VERB_LEVERAGE = /\b(?:leverages|leveraging|leveraged|to leverage)\b/gi;
+// STE's "use a verb, not a nominalisation" rule. The article is required on
+// purpose: without it the pattern fires on ordinary prose ("makes judgment
+// cheap"), which is why the corpus scores zero here too.
+const EN_NOMINALIZATION =
+  /\b(perform|performs|conduct|conducts|undertake|undertakes|provide|provides|make|makes|carry out|carries out)\s+(an?|the)\s+(\w+(?:tion|sion|ment|ance|ence|ysis))\b/gi;
+// human-voice.md §8: "but"/"so" over "however"/"therefore", including at sentence start.
+const EN_STIFF_CONNECTIVE =
+  /(?:^|[.!?]\s+|\n\n)(However|Therefore|Moreover|Furthermore|Additionally|Consequently|Nevertheless)\b/g;
+// Contractions, listed explicitly so possessive "'s" never inflates the count.
+const EN_CONTRACTION =
+  /\b(?:\w+n't|it's|that's|there's|here's|what's|let's|I'm|you're|we're|they're|I've|you've|we've|they've|I'll|you'll|we'll|they'll|it'll|I'd|you'd|we'd|they'd|he's|she's|who's)\b/gi;
+const EN_EXPANDABLE =
+  /\b(?:do not|does not|did not|is not|are not|was not|were not|it is|that is|there is|cannot|can not|will not|would not|should not|could not|you are|we are|they are|have not|has not|had not|let us|I am)\b/gi;
+// The corrective pivot in both its forms: the two-sentence cleft and "not just X
+// but Y". The copulas cover contracted forms too — a draft that follows the
+// contractions rule writes "This isn't X. It's Y.", and matching only the expanded
+// forms would blind this check on exactly the posts that follow the rest of §3.
+const DEMONSTRATIVE = '(?:it|this|that|these|those)';
+const COPULA_NEG = "(?:\\s+(?:is|are|was|were)\\s+not|\\s*'(?:s|re)\\s+not|\\s+(?:isn't|aren't|wasn't|weren't))";
+const COPULA_POS = "(?:\\s+(?:is|are|was|were)|\\s*'(?:s|re))";
+const EN_PIVOT = [
+  new RegExp(`\\b${DEMONSTRATIVE}${COPULA_NEG}\\s+[^.!?;]{1,70}[.;]\\s+${DEMONSTRATIVE}${COPULA_POS}\\b`, 'gi'),
+  /\bnot\s+(?:just|only|merely|simply)\s+[^.!?;]{1,50}?,?\s+but\s+/gi,
+];
+
+// --- 中文 nominalisation (万能动词) -----------------------------------------
+// The Chinese half of STE's "use a verb" rule, and 余光中's first 欧化 symptom
+// (human-voice.md §12). Previously prose-only guidance.
+// 来/去 are excluded: 做出来 is a directional complement ("managed to make"), not
+// the 万能动词 pattern.
+const ZH_EMPTY_VERB = /(进行|作出|做出|加以|予以|给予|开展)[了过]?(?!来|去)([一-鿿]{2,4})/g;
+const ZH_EMPTY_VERB_MAX = 2; // a couple are idiomatic; a habit is not
+
 // --- Chinese advisory thresholds (lenient: warn only, never block) ----------
 // These mirror the English style warnings for zh posts, where the gate was
 // previously silent. Tuned loose on purpose — they exist to make a reviewer
@@ -63,6 +135,9 @@ function parseRaw(raw, path) {
     fm[kv[1]] = kv[2].trim();
   }
   fm.tagList = [...(fm.tags ?? '').matchAll(/["']([^"']+)["']/g)].map((t) => t[1]);
+  // `definedTerm` is a nested mapping, so the line-based loop above only sees the
+  // bare key. Pull the coined term itself out of the raw block.
+  fm.coinedTerm = (m[1].match(/^definedTerm:\s*\n\s+term:\s*["']([^"']+)["']/m) || [])[1] ?? null;
   return { path, frontmatter: fm, body: m[2] };
 }
 const parse = (path) => parseRaw(readFileSync(path, 'utf8'), path);
@@ -177,11 +252,128 @@ for (const file of targets) {
     if (dashes > 0 && words.length / dashes < EM_DASH_PER_WORDS) {
       warn(name, `${dashes} em dashes in ${words.length} words (denser than 1/${EM_DASH_PER_WORDS})`);
     }
-    const prose = body.replace(/```[\s\S]*?```/g, ' ').replace(/\n/g, ' ');
-    for (const sentence of prose.split(/(?<=[.!?])\s+/)) {
-      const n = sentence.trim().split(/\s+/).filter(Boolean).length;
+    // Block-level text keeps its line breaks (paragraph shape); `prose` is flat.
+    // Headings are dropped, not inlined — an unterminated heading otherwise glues
+    // itself to the sentence below it and reads as one long run-on.
+    const blocks = body
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/`[^`]*`/g, ' ')
+      .replace(/^#+ .*$/gm, '');
+    // Emphasis markers come off before any sentence-level analysis: an italicised
+    // question "*Who owns this?*" ends in "*", so the splitter never sees the
+    // question mark and the volley check misses it entirely. `blocks` keeps the
+    // markers because the paragraph filter needs list bullets at line start.
+    const prose = blocks
+      .replace(/\*+/g, '')
+      .replace(/(^|\s)_+|_+(?=[\s.,;:!?]|$)/gm, '$1')
+      .replace(/\n/g, ' ');
+    const sentences = prose
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    for (const sentence of sentences) {
+      const n = sentence.split(/\s+/).filter(Boolean).length;
       if (n > RUN_ON_WORDS) {
-        warn(name, `long sentence (${n} words): "${sentence.trim().split(/\s+/).slice(0, 8).join(' ')}…"`);
+        warn(name, `long sentence (${n} words): "${sentence.split(/\s+/).slice(0, 8).join(' ')}…"`);
+      }
+    }
+
+    // 1. Contractions by default (human-voice.md §1 "No contractions, ever", §3.7).
+    // The strongest single tell in our own published posts, and until now unchecked.
+    const contracted = (prose.match(EN_CONTRACTION) || []).length;
+    const expandable = (prose.match(EN_EXPANDABLE) || []).length;
+    const ratio = contracted / (contracted + expandable || 1);
+    if (expandable >= EN_CONTRACTION_MIN_EXPANDED && ratio < EN_CONTRACTION_RATIO) {
+      warn(
+        name,
+        `uncontracted English: ${expandable} expandable form(s) ("do not", "it is") vs ${contracted} contraction(s) — contract by default, expand only for emphasis`
+      );
+    }
+
+    // 2. Corrective pivots — signature move, capped at one per post (§3.2).
+    const pivots = EN_PIVOT.reduce((n, re) => n + (prose.match(re) || []).length, 0);
+    if (pivots > EN_PIVOT_MAX) {
+      warn(name, `${pivots} corrective pivots ("It is not X. It is Y." / "not just X but Y") — cap is ${EN_PIVOT_MAX} per post`);
+    }
+
+    // 3. Rhetorical-question volleys. A run of three is the tell §1 quotes; a
+    // contrastive pair ("is this PR correct? should it have started?") is a real
+    // device and stays legal, so the run threshold is 3, not 2.
+    const questions = sentences.filter((s) => s.endsWith('?')).length;
+    let run = 0;
+    let volley = false;
+    for (const s of sentences) {
+      run = s.endsWith('?') ? run + 1 : 0;
+      if (run >= 3) volley = true;
+    }
+    if (volley) warn(name, 'three questions in a row — humans ask one and answer it (§3.2)');
+    else if (questions > EN_QUESTION_MAX) {
+      warn(name, `${questions} questions — at most one should go unanswered (§3.2)`);
+    }
+
+    // 4. Burstiness. Uniform sentence length is the measurable machine signature
+    // (human-voice.md §1 "Uniform burstiness"), and the rule STE inverts.
+    const lengths = sentences
+      .map((s) => s.split(/\s+/).filter(Boolean).length)
+      .filter((n) => n > 2);
+    if (lengths.length >= EN_BURSTINESS_MIN_SENTENCES) {
+      const mean = lengths.reduce((a, n) => a + n, 0) / lengths.length;
+      const sd = Math.sqrt(lengths.reduce((a, n) => a + (n - mean) ** 2, 0) / lengths.length);
+      const cv = sd / mean;
+      if (cv < EN_MIN_BURSTINESS) {
+        warn(
+          name,
+          `even sentence rhythm (variation ${cv.toFixed(2)}, want ≥ ${EN_MIN_BURSTINESS}) — vary length on purpose (§3.3)`
+        );
+      }
+    }
+
+    // 5. Paragraph shape — at least one very short paragraph and one long one (§3.3).
+    const paragraphs = blocks
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter((p) => p && !/^[-*>|#\d]/.test(p));
+    if (paragraphs.length >= 6) {
+      const counts = paragraphs.map((p) => (p.match(/[.!?](?:\s|$)/g) || []).length || 1);
+      if (!counts.some((n) => n === 1) || !counts.some((n) => n >= 5)) {
+        warn(
+          name,
+          `paragraph lengths cluster (${Math.min(...counts)}–${Math.max(...counts)} sentences) — want at least one one-sentence paragraph and one genuinely long one (§3.3)`
+        );
+      }
+    }
+
+    // 6. Never-list lexicon and marketing adjectives (voiceprint Never, STE word rules).
+    let lexHits = 0;
+    for (const w of EN_LEXICON) {
+      if (lexHits >= EN_MAX_REPORTED) break;
+      if (new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(prose)) {
+        lexHits++;
+        warn(name, `never-list word "${w}" — say it plainly (voice.md §Never)`);
+      }
+    }
+
+    for (const m of [...new Set([...prose.matchAll(EN_VERB_LEVERAGE)].map((x) => x[0]))].slice(0, EN_MAX_REPORTED)) {
+      warn(name, `"${m}" — "leverage" as a verb is on the never-list; use "use" (the noun is fine)`);
+    }
+
+    // 7. Nominalisations and stiff connectives — STE's verb rules, the two that
+    // survive contact with essay prose.
+    for (const m of [...prose.matchAll(EN_NOMINALIZATION)].slice(0, EN_MAX_REPORTED)) {
+      warn(name, `nominalisation "${m[0]}" — use the verb instead`);
+    }
+    const stiff = [...blocks.matchAll(EN_STIFF_CONNECTIVE)].map((m) => m[1]);
+    for (const c of [...new Set(stiff)].slice(0, EN_MAX_REPORTED)) {
+      warn(name, `sentence-initial "${c}" — "but"/"so" read more like speech (§3.8)`);
+    }
+
+    // 8. One name for one thing: a coined term is defined on first use, then
+    // reused on purpose. Defined and never reused means it was decoration.
+    if (fm.coinedTerm) {
+      const uses = prose.toLowerCase().split(fm.coinedTerm.toLowerCase()).length - 1;
+      if (uses < 2) {
+        warn(name, `coined term "${fm.coinedTerm}" appears ${uses}× in the body — define it once, then reuse it or drop it`);
       }
     }
   }
@@ -222,6 +414,14 @@ for (const file of targets) {
     // Heavily stacked 不是…而是… (the zh form of "It is not X. It is Y." — fine once, noise repeated).
     const cleft = (prose.match(/不是[^，。、]{1,20}而是/g) || []).length;
     if (cleft >= 3) warn(name, `"不是…而是…" used ${cleft}× — vary the rhythm (voice.md §Rhythm)`);
+
+    // 3b. 万能动词 — the Chinese half of STE's "use a verb, not a nominalisation"
+    // rule, and 余光中's first 欧化 symptom (human-voice.md §12).
+    const emptyVerbs = [...prose.matchAll(ZH_EMPTY_VERB)].map((m) => m[0]);
+    if (emptyVerbs.length > ZH_EMPTY_VERB_MAX) {
+      const sample = [...new Set(emptyVerbs)].slice(0, 3).join('、');
+      warn(name, `万能动词 ${emptyVerbs.length} 处（${sample}）— 还原成动词（"进行研究"→"研究"）`);
+    }
 
     // 4. English residue that has a natural Chinese rendering (glossary terms exempt).
     for (const w of ZH_ENGLISH_RESIDUE) {
