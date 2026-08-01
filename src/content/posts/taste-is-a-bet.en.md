@@ -49,7 +49,7 @@ The distinction also decides how defensible any of it is. A standard that exists
 
 Ask what taste means for a consultant versus a designer and the honest answer is: it depends on the domain.
 
-That sounds like a dodge, but the mix is the interesting part. Most consulting work is judgment — reading a standard that already exists in the client's head, in the industry's norms, in what the last three boards approved. The taste fraction is small but it's the part nobody can staff around: choosing to make an argument the client hasn't asked for and isn't ready for, and being right about it eighteen months later.
+That sounds like a dodge, but the mix is the interesting part. Most consulting work is judgment — reading a standard that already exists in the client's head, in the industry's norms, in what the last three boards approved. The taste fraction is small but it's the part nobody can staff around: choosing to argue something the client hasn't asked for and isn't ready to hear, and being right about it eighteen months later.
 
 Design inverts the ratio. A lot of design is still judgment against known standards — accessibility, convention, the thing users have already learned. But the fraction that decides whether the work matters is the bet: this is what the category should look like next, and there's no way to check today.
 
