@@ -27,7 +27,18 @@ const TIERS = ['note', 'essay', 'tracker'];
 // instead. It covers the structural checks only: these posts still get every style
 // warning, and the list is closed — a post written under the contract can never join
 // it. Retiring an entry means doing the editorial work, not deleting the line.
-const LEGACY_KEYS = new Set(['consulting-barbell', 'consulting-coordination', 'consulting-outcomes']);
+// Keyed by file stem *and* publication date, not by translationKey: the key is
+// author-controlled frontmatter, so keying on it would let any new post inherit the
+// exemption just by claiming the name. Both halves have to match, so replacing one of
+// these files with new content also means backdating it — a deliberate act, not an
+// accident. That is what makes the list closed in practice and not just by assertion.
+const LEGACY_POSTS = new Map([
+  ['consulting-barbell', '2026-04-18'],
+  ['consulting-coordination', '2026-05-02'],
+  ['consulting-outcomes', '2026-04-25'],
+]);
+const isLegacy = (name, fm) =>
+  LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
 const WORD_BANDS = { note: [300, 700], essay: [800, 1500] }; // tracker: any
 const EM_DASH_PER_WORDS = 150; // flag denser than ~1 em dash / 150 words
 const RUN_ON_WORDS = 60; // flag a single sentence longer than this
@@ -242,7 +253,7 @@ for (const file of targets) {
   }
   if (fm.tagList.length === 0) err(name, 'no tags');
 
-  const legacy = LEGACY_KEYS.has(fm.translationKey);
+  const legacy = isLegacy(name, fm);
   const tier = fm.tagList.map((t) => t.toLowerCase()).find((t) => TIERS.includes(t));
   if (!tier && !legacy) err(name, `tags must include a tier (one of ${TIERS.join('/')})`);
 

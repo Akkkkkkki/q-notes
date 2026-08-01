@@ -185,6 +185,37 @@ describe('rhythm', () => {
   });
 });
 
+describe('pre-contract exemption', () => {
+  const tierless = (key: string, date: string) =>
+    [
+      'title: "T"',
+      `date: ${date}`,
+      'excerpt: "e"',
+      'tags: ["ai"]', // deliberately no tier
+      'lang: en',
+      `translationKey: ${key}`,
+      'maturity: seedling',
+    ].join('\n');
+
+  it('exempts a genuine legacy post from the tier check', () => {
+    const out = gate('consulting-barbell.en.md', tierless('consulting-barbell', '2026-04-18'), 'Body.');
+    expect(out).not.toContain('tags must include a tier');
+    expect(out).toContain('pre-contract post');
+  });
+
+  it('does not let a new post claim the exemption via translationKey', () => {
+    // translationKey is author-controlled frontmatter. Claiming a legacy key from a
+    // different file must not buy a tier-check bypass.
+    const out = gate('brand-new-post.en.md', tierless('consulting-barbell', '2026-08-01'), 'Body.');
+    expect(out).toContain('tags must include a tier');
+  });
+
+  it('does not exempt a legacy filename republished with a new date', () => {
+    const out = gate('consulting-barbell.en.md', tierless('consulting-barbell', '2026-08-01'), 'Body.');
+    expect(out).toContain('tags must include a tier');
+  });
+});
+
 describe('中文 万能动词', () => {
   it('flags stacked empty verbs', () => {
     const body = '团队进行研究之后，又作出决定，再进行分析，最后加以改进。';
