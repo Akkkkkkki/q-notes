@@ -70,6 +70,16 @@ describe('corrective pivots (human-voice §3.2)', () => {
     expect(gate('d.en.md', EN_FM, body)).not.toContain('corrective pivots');
   });
 
+  it('sees pivots written in contracted form', () => {
+    // The rest of §3 pushes drafts toward contractions, so a check that only
+    // matched "It is not X. It is Y." would go blind on compliant posts.
+    const body = `
+This isn't a speed problem. It's a review problem.
+That wasn't a clean win. It's a migration.
+`;
+    expect(gate('e2.en.md', EN_FM, body)).toContain('corrective pivots');
+  });
+
   it('flags the stacked signature move', () => {
     const body = `
 That is not a win. It is a migration. The cost moved.
@@ -118,6 +128,16 @@ describe('never-list lexicon and STE word rules', () => {
     expect(gate('j.en.md', EN_FM, 'Cheap action makes judgment scarce.')).not.toContain('nominalisation');
   });
 
+  it('flags "leverage" as a verb but not as a noun', () => {
+    expect(gate('h2.en.md', EN_FM, 'The firm is leveraging armies of MBAs.')).toContain(
+      '"leveraging"'
+    );
+    // "leverage ratios" and "a source of leverage" are ordinary consulting nouns.
+    expect(gate('h3.en.md', EN_FM, 'Utilization targets and leverage ratios drove it.')).not.toContain(
+      'never-list'
+    );
+  });
+
   it('flags a stiff sentence-initial connective', () => {
     expect(gate('k.en.md', EN_FM, 'The tools shipped. However, nobody used them.')).toContain(
       'sentence-initial "However"'
@@ -149,6 +169,14 @@ describe('rhythm', () => {
       (_, i) => `The team shipped the change on day ${i} now.`
     ).join(' ');
     expect(gate('n.en.md', EN_FM, body)).toContain('even sentence rhythm');
+  });
+
+  it('counts questions that are wrapped in emphasis', () => {
+    // "*Who owns this?*" ends in "*", so without stripping the markers the
+    // splitter never sees the question mark.
+    const body =
+      'The old question was *can the model do this?* Then *who owns the output?* And *who reviews it?* Nobody said.';
+    expect(gate('n2.en.md', EN_FM, body)).toContain('three questions in a row');
   });
 
   it('does not flag a heading as a run-on sentence', () => {

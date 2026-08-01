@@ -191,6 +191,7 @@ published posts so a hit means something real rather than background noise.
 | Lumpy rhythm (§3.3) | sentence-length variation ≥ 0.45 | all pass (0.53–0.74) |
 | Paragraph shape (§3.3) | one 1-sentence and one ≥5-sentence paragraph | 4 posts fail |
 | Never-list and marketing words (§3.9) | zero | all pass |
+| "leverage" as a verb (§3.9) | zero | 1 post ("leveraging armies of MBAs") |
 | Nominalisations, stiff connectives | zero | all pass |
 | One name for one thing | a coined term is reused, not just defined | all pass |
 | 万能动词 (§12) | ≤ 2 per post | all pass (0–2) |

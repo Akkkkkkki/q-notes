@@ -53,11 +53,15 @@ const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 // this is a regression guard, not a source of routine warnings.
 const EN_LEXICON = [
   'delve', 'underscore', 'intricate', 'crucial', 'pivotal', 'myriad', 'tapestry',
-  'seamless', 'seamlessly', 'robust', 'cutting-edge', 'world-class', 'best-in-class',
-  'next-generation', 'revolutionary', 'effortless', 'unparalleled', 'holistic',
-  'turnkey', 'it is important to note', "it's important to note",
+  'landscape', 'seamless', 'seamlessly', 'robust', 'cutting-edge', 'world-class',
+  'best-in-class', 'next-generation', 'revolutionary', 'effortless', 'unparalleled',
+  'holistic', 'turnkey', 'it is important to note', "it's important to note",
   'in today\'s fast-paced', 'ever-evolving', 'testament to',
 ];
+// The never-list bans "leverage" as a verb only. The noun is ordinary consulting
+// vocabulary and appears four times in the corpus ("leverage ratios", "a real
+// source of leverage"), so matching the bare word would be a false positive.
+const EN_VERB_LEVERAGE = /\b(?:leverages|leveraging|leveraged|to leverage)\b/gi;
 // STE's "use a verb, not a nominalisation" rule. The article is required on
 // purpose: without it the pattern fires on ordinary prose ("makes judgment
 // cheap"), which is why the corpus scores zero here too.
@@ -71,9 +75,15 @@ const EN_CONTRACTION =
   /\b(?:\w+n't|it's|that's|there's|here's|what's|let's|I'm|you're|we're|they're|I've|you've|we've|they've|I'll|you'll|we'll|they'll|it'll|I'd|you'd|we'd|they'd|he's|she's|who's)\b/gi;
 const EN_EXPANDABLE =
   /\b(?:do not|does not|did not|is not|are not|was not|were not|it is|that is|there is|cannot|can not|will not|would not|should not|could not|you are|we are|they are|have not|has not|had not|let us|I am)\b/gi;
-// The corrective pivot in both its forms: the two-sentence cleft and "not just X but Y".
+// The corrective pivot in both its forms: the two-sentence cleft and "not just X
+// but Y". The copulas cover contracted forms too — a draft that follows the
+// contractions rule writes "This isn't X. It's Y.", and matching only the expanded
+// forms would blind this check on exactly the posts that follow the rest of §3.
+const DEMONSTRATIVE = '(?:it|this|that|these|those)';
+const COPULA_NEG = "(?:\\s+(?:is|are|was|were)\\s+not|\\s*'(?:s|re)\\s+not|\\s+(?:isn't|aren't|wasn't|weren't))";
+const COPULA_POS = "(?:\\s+(?:is|are|was|were)|\\s*'(?:s|re))";
 const EN_PIVOT = [
-  /\b(?:it|this|that|these|those)\s+(?:is|are|was|were)\s+not\s+[^.!?;]{1,70}[.;]\s+(?:it|this|that|these|those)\s+(?:is|are|was|were)\b/gi,
+  new RegExp(`\\b${DEMONSTRATIVE}${COPULA_NEG}\\s+[^.!?;]{1,70}[.;]\\s+${DEMONSTRATIVE}${COPULA_POS}\\b`, 'gi'),
   /\bnot\s+(?:just|only|merely|simply)\s+[^.!?;]{1,50}?,?\s+but\s+/gi,
 ];
 
@@ -249,7 +259,14 @@ for (const file of targets) {
       .replace(/```[\s\S]*?```/g, ' ')
       .replace(/`[^`]*`/g, ' ')
       .replace(/^#+ .*$/gm, '');
-    const prose = blocks.replace(/\n/g, ' ');
+    // Emphasis markers come off before any sentence-level analysis: an italicised
+    // question "*Who owns this?*" ends in "*", so the splitter never sees the
+    // question mark and the volley check misses it entirely. `blocks` keeps the
+    // markers because the paragraph filter needs list bullets at line start.
+    const prose = blocks
+      .replace(/\*+/g, '')
+      .replace(/(^|\s)_+|_+(?=[\s.,;:!?]|$)/gm, '$1')
+      .replace(/\n/g, ' ');
     const sentences = prose
       .split(/(?<=[.!?])\s+/)
       .map((s) => s.trim())
@@ -335,6 +352,10 @@ for (const file of targets) {
         lexHits++;
         warn(name, `never-list word "${w}" — say it plainly (voice.md §Never)`);
       }
+    }
+
+    for (const m of [...new Set([...prose.matchAll(EN_VERB_LEVERAGE)].map((x) => x[0]))].slice(0, EN_MAX_REPORTED)) {
+      warn(name, `"${m}" — "leverage" as a verb is on the never-list; use "use" (the noun is fine)`);
     }
 
     // 7. Nominalisations and stiff connectives — STE's verb rules, the two that
