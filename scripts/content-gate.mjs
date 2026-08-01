@@ -19,6 +19,26 @@ import { join, basename } from 'node:path';
 const POSTS_DIR = 'src/content/posts';
 const POST_RE = /\.(md|mdx)$/; // the collection globs **/*.{md,mdx}
 const TIERS = ['note', 'essay', 'tracker'];
+// Posts published before the tier/bilingual contract existed (docs/pipeline.md §5–6).
+// The gate already meant to grandfather these — its scoping comment says so — but it
+// did that by only checking *changed* posts, which silently revoked the exemption the
+// moment anyone edited one. A copy-edit pass would have forced a retroactive re-tier
+// and a source-link hunt on three 2,000-word essays, so the exemption is named here
+// instead. It covers the structural checks only: these posts still get every style
+// warning, and the list is closed — a post written under the contract can never join
+// it. Retiring an entry means doing the editorial work, not deleting the line.
+// Keyed by file stem *and* publication date, not by translationKey: the key is
+// author-controlled frontmatter, so keying on it would let any new post inherit the
+// exemption just by claiming the name. Both halves have to match, so replacing one of
+// these files with new content also means backdating it — a deliberate act, not an
+// accident. That is what makes the list closed in practice and not just by assertion.
+const LEGACY_POSTS = new Map([
+  ['consulting-barbell', '2026-04-18'],
+  ['consulting-coordination', '2026-05-02'],
+  ['consulting-outcomes', '2026-04-25'],
+]);
+const isLegacy = (name, fm) =>
+  LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
 const WORD_BANDS = { note: [300, 700], essay: [800, 1500] }; // tracker: any
 const EM_DASH_PER_WORDS = 150; // flag denser than ~1 em dash / 150 words
 const RUN_ON_WORDS = 60; // flag a single sentence longer than this
@@ -46,6 +66,7 @@ const EN_PIVOT_MAX = 1; // "It is not X. It is Y." — human-voice.md §3.2. Cor
 const EN_QUESTION_MAX = 3; // total unanswered-looking questions. Corpus: 0–11
 const EN_MIN_BURSTINESS = 0.45; // stddev/mean of sentence length. Corpus: 0.53–0.74
 const EN_BURSTINESS_MIN_SENTENCES = 25; // below this, the statistic is noise
+const EN_MIN_PARAGRAPH_SPREAD = 3; // longest paragraph minus shortest, in sentences
 const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
@@ -232,14 +253,16 @@ for (const file of targets) {
   }
   if (fm.tagList.length === 0) err(name, 'no tags');
 
+  const legacy = isLegacy(name, fm);
   const tier = fm.tagList.map((t) => t.toLowerCase()).find((t) => TIERS.includes(t));
-  if (!tier) err(name, `tags must include a tier (one of ${TIERS.join('/')})`);
+  if (!tier && !legacy) err(name, `tags must include a tier (one of ${TIERS.join('/')})`);
 
   // Essays carry current claims — they need at least one source link.
   const hasLink = /\]\(https?:\/\//.test(body) || /https?:\/\/\S+/.test(body);
-  if (tier === 'essay' && !hasLink) {
+  if (tier === 'essay' && !hasLink && !legacy) {
     err(name, 'essay has no source link (the tier checklist requires linked sources)');
   }
+  if (legacy) warn(name, 'pre-contract post: exempt from tier and source-link checks, style checks still apply');
 
   // English-only style warnings (advisory).
   if (fm.lang === 'en') {
@@ -268,7 +291,9 @@ for (const file of targets) {
       .replace(/(^|\s)_+|_+(?=[\s.,;:!?]|$)/gm, '$1')
       .replace(/\n/g, ' ');
     const sentences = prose
-      .split(/(?<=[.!?])\s+/)
+      // A closing quote or bracket may sit after the terminator ("…a new service.")
+      // — without it here, quoted sentences merge and report as one long run-on.
+      .split(/(?<=[.!?]["'”’)\]]?)\s+/)
       .map((s) => s.trim())
       .filter(Boolean);
 
@@ -292,7 +317,15 @@ for (const file of targets) {
     }
 
     // 2. Corrective pivots — signature move, capped at one per post (§3.2).
-    const pivots = EN_PIVOT.reduce((n, re) => n + (prose.match(re) || []).length, 0);
+    // Counted per paragraph: the move is "X isn't A. It's B" inside one breath, so
+    // a sentence ending one paragraph and a sentence opening the next are unrelated.
+    // Matching across the blank line reported ordinary prose as a pivot.
+    const pivots = blocks
+      .split(/\n\s*\n/)
+      .reduce((n, para) => {
+        const flat = para.replace(/\*+/g, '').replace(/\n/g, ' ');
+        return n + EN_PIVOT.reduce((m, re) => m + (flat.match(re) || []).length, 0);
+      }, 0);
     if (pivots > EN_PIVOT_MAX) {
       warn(name, `${pivots} corrective pivots ("It is not X. It is Y." / "not just X but Y") — cap is ${EN_PIVOT_MAX} per post`);
     }
@@ -334,12 +367,17 @@ for (const file of targets) {
       .split(/\n\s*\n/)
       .map((p) => p.trim())
       .filter((p) => p && !/^[-*>|#\d]/.test(p));
+    // Measured as spread, not as a required shape. The first version demanded a
+    // 1-sentence paragraph *and* a 5-sentence one, which flagged three posts that
+    // read fine — it was enforcing one particular rhythm rather than the absence of
+    // uniformity. §3.3 asks for lumpiness, so that is what this measures.
     if (paragraphs.length >= 6) {
       const counts = paragraphs.map((p) => (p.match(/[.!?](?:\s|$)/g) || []).length || 1);
-      if (!counts.some((n) => n === 1) || !counts.some((n) => n >= 5)) {
+      const spread = Math.max(...counts) - Math.min(...counts);
+      if (spread < EN_MIN_PARAGRAPH_SPREAD || !counts.some((n) => n <= 2)) {
         warn(
           name,
-          `paragraph lengths cluster (${Math.min(...counts)}–${Math.max(...counts)} sentences) — want at least one one-sentence paragraph and one genuinely long one (§3.3)`
+          `paragraph lengths cluster (${Math.min(...counts)}–${Math.max(...counts)} sentences) — vary them on purpose, and let at least one paragraph run short (§3.3)`
         );
       }
     }

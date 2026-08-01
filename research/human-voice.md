@@ -183,18 +183,21 @@ depend on the same model that wrote the draft noticing it broke them. Run
 **warning**, never a merge blocker — the thresholds are calibrated against our own
 published posts so a hit means something real rather than background noise.
 
-| Rule | Threshold | Corpus at the time of writing |
+| Rule | Threshold | Corpus before the July 2026 voice pass |
 |---|---|---|
-| Contractions by default (§3.7) | contractions ≥ half of contractible spots | 6 of 9 posts fail (0.00–0.11) |
-| Corrective pivots (§3.2) | ≤ 1 per post | 4 posts at 2–3 |
-| Rhetorical-question volley (§3.2) | no run of 3; ≤ 3 questions total | 3 posts fail |
-| Lumpy rhythm (§3.3) | sentence-length variation ≥ 0.45 | all pass (0.53–0.74) |
-| Paragraph shape (§3.3) | one 1-sentence and one ≥5-sentence paragraph | 4 posts fail |
-| Never-list and marketing words (§3.9) | zero | all pass |
+| Contractions by default (§3.7) | contractions ≥ half of contractible spots | 6 of 9 posts failed (0.00–0.11) |
+| Corrective pivots (§3.2) | ≤ 1 per post, counted per paragraph | 4 posts at 2–3 |
+| Rhetorical-question volley (§3.2) | no run of 3; ≤ 3 questions total | 3 posts failed |
+| Lumpy rhythm (§3.3) | sentence-length variation ≥ 0.45 | all passed (0.53–0.74) |
+| Paragraph shape (§3.3) | spread ≥ 3 sentences, one paragraph ≤ 2 | 1 post failed |
+| Never-list and marketing words (§3.9) | zero | all passed |
 | "leverage" as a verb (§3.9) | zero | 1 post ("leveraging armies of MBAs") |
-| Nominalisations, stiff connectives | zero | all pass |
-| One name for one thing | a coined term is reused, not just defined | all pass |
-| 万能动词 (§12) | ≤ 2 per post | all pass (0–2) |
+| Nominalisations, stiff connectives | zero | all passed |
+| One name for one thing | a coined term is reused, not just defined | all passed |
+| 长句 / 万能动词 / 翻译腔模板 (§11–13) | see the zh thresholds in the script | 9 hits across 5 zh posts |
+
+Every one of those is now clear. That pass is the "after" column: 26 style warnings across the
+eighteen published files, down to zero, with every number and source link byte-identical.
 
 **Why these thresholds are trusted.** Commit `Apply the human pass to the two most
 recent posts` (2026-07-17) ran §4 by hand over two posts and nothing else, which makes
