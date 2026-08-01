@@ -38,7 +38,12 @@ resolve stuck work without waiting for the author to feel ready.
    aphorism closing every section, rhetorical-question volleys, a closer or opener
    framing reused from recent posts, LLM-lexicon words, and 中文版的翻译腔（欧化
    句式——万能动词、"在……的情况下"、前置长定语、多余的"被"——加上空转词、排比、
-   升华句、英文式分号冒号、与英文版逐句对齐、硬加的口语词）. Same protocol as other
+   升华句、英文式分号冒号、与英文版逐句对齐、硬加的口语词）. Read the content-gate
+   warnings on the PR first — contractions, corrective-pivot count, question volleys,
+   paragraph clustering, sentence-length variation and 万能动词 are counted for you
+   (`research/human-voice.md` §5), so spend your own attention on what the script
+   can't see: the talk test, invented first-person detail, a reused opening frame, and
+   whether the zh version was rewritten or aligned. Same protocol as other
    voice checks: unambiguous mechanical fixes (a contraction, a deleted 空转词, one
    pivot flattened into a direct statement) get made and pushed; anything that would
    change meaning or cut a load-bearing line is raised as a one-line question. Voice

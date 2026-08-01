@@ -106,6 +106,11 @@ wrote something under it in `## Author answers`.
 
 ## Closing the loop
 
+0. Run `node scripts/content-gate.mjs <en file> <zh file>` and clear what it reports.
+   The style warnings are the countable half of the human pass (`research/human-voice.md`
+   §5) — uncontracted English, stacked corrective pivots, question volleys, clustered
+   paragraph lengths, 万能动词. Fix them before the author sees them; leave a warning
+   standing only when the fix would cost a load-bearing line, and say so in the PR body.
 1. Mark the source backlog item `Drafted in <path> on YYYY-MM-DD`. For a **rung 1**
    (ready) brief, also mark the interview file `Status: Drafted`. For a **rung 2**
    (unsigned) brief used only as Note material, leave its `Status` untouched so the
