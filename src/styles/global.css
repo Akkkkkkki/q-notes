@@ -84,6 +84,11 @@
   --serif: 'Newsreader', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif;
   --sans: 'Geist', system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Layout rhythm. Both shrink on phones (see the ≤640px block below); pages
+     reference them instead of hard-coding 26px / 66px so the two stay in sync. */
+  --gutter: 26px;
+  --header-h: 66px;
 }
 
 .dark {
@@ -118,6 +123,10 @@ body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Safety net so a stray wide child can never give the page a horizontal
+     scrollbar. `clip` rather than `hidden`: `hidden` would make this a scroll
+     container and break the sticky header. */
+  overflow-x: clip;
 }
 a {
   color: var(--accent);
@@ -145,7 +154,7 @@ a:hover {
 .wrap {
   max-width: 1060px;
   margin: 0 auto;
-  padding: 0 26px;
+  padding: 0 var(--gutter);
 }
 .post-grid {
   display: grid;
@@ -182,6 +191,97 @@ a:hover .rt {
   color: var(--ink);
 }
 
+/* ---- Site header --------------------------------------------------------- */
+/* Laid out in CSS rather than inline so the gaps and control sizes can shrink
+   on phones — at 26px gutters the desktop row needs ~440px of a ~348px space. */
+.site-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-h);
+  gap: 16px;
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+.site-nav > a[data-bnav] {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.search-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 500 11.5px/1 var(--mono);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: var(--card2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.lang-toggle {
+  display: flex;
+  font: 600 11px/1 var(--mono);
+  flex: none;
+}
+.lang-toggle > *,
+.lang-toggle > a:hover {
+  padding: 6px 8px;
+  text-decoration: none;
+}
+.theme-toggle {
+  width: 36px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  flex: none;
+}
+
+/* ---- ⌘K search palette --------------------------------------------------- */
+/* Padding lives here rather than inline so phones can sit the dialog higher,
+   clear of the on-screen keyboard. */
+#qn-search {
+  padding: 14vh 20px 20px;
+}
+#qn-search-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* ---- Call-to-action buttons (home hero, 404) ----------------------------- */
+/* Desktop keeps the original padded-inline sizing; phones get a 44px target. */
+.cta,
+.cta-ghost {
+  border-radius: 9px;
+  text-decoration: none;
+}
+.cta {
+  font: 600 13px/1 var(--sans);
+  color: var(--paper);
+  background: var(--accent);
+  padding: 11px 18px;
+}
+.cta-ghost {
+  font: 500 13px/1 var(--mono);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 11px 15px;
+}
+
 /* Tappable chips (threads, filters). */
 .chip-tap {
   cursor: pointer;
@@ -197,12 +297,72 @@ a:hover .rt {
   border-color: var(--ink);
 }
 
+/* Article sidebar. Sticky alongside the prose on desktop; below 880px the grid
+   collapses and it becomes a plain section under the article, so it drops the
+   sticky positioning and grows a divider. Display lives here, not inline — an
+   inline `display` would beat `.hide-narrow` on the cards inside it. */
+.post-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: calc(var(--header-h) + 24px);
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
 @media (max-width: 880px) {
   .post-grid {
     grid-template-columns: 1fr;
   }
   .hide-narrow {
     display: none;
+  }
+  .post-aside {
+    position: static;
+    border-top: 1px solid var(--line);
+    margin-top: 36px;
+    padding-top: 26px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gutter: 18px;
+    --header-h: 58px;
+  }
+  .hide-mobile {
+    display: none;
+  }
+  .site-header-row {
+    gap: 10px;
+  }
+  .site-nav {
+    gap: 13px;
+  }
+  /* Comfortable tap targets — phones only, so desktop metrics are untouched. */
+  .site-nav > a[data-bnav] {
+    padding: 10px 0;
+  }
+  .cta,
+  .cta-ghost {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .search-open {
+    padding: 8px;
+  }
+  .lang-toggle {
+    font-size: 10px;
+  }
+  .lang-toggle > * {
+    padding: 7px 6px;
+  }
+  .theme-toggle {
+    width: 32px;
+  }
+  #qn-search {
+    padding: 8vh var(--gutter) 16px;
   }
 }
 
@@ -213,8 +373,10 @@ a:hover .rt {
 .prose-body {
   font-family: var(--serif);
   color: var(--body);
-  font-size: 19px;
+  font-size: clamp(17px, 4.4vw, 19px);
   line-height: 1.72;
+  /* A bare URL in a note must never widen the page on a phone. */
+  overflow-wrap: anywhere;
 }
 .prose-body > *:first-child {
   margin-top: 0;
@@ -225,7 +387,7 @@ a:hover .rt {
 .prose-body h2 {
   font-family: var(--serif);
   font-weight: 600;
-  font-size: 27px;
+  font-size: clamp(22px, 5.4vw, 27px);
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -268,7 +430,7 @@ a:hover .rt {
 }
 .prose-body blockquote p {
   font-style: italic;
-  font-size: 23px;
+  font-size: clamp(19px, 5vw, 23px);
   line-height: 1.34;
   color: var(--ink);
   margin: 0 0 8px;
@@ -375,7 +537,7 @@ a:hover .rt {
   line-height: 1.9;
 }
 .prose-body:lang(zh) blockquote p {
-  font-size: 20px;
+  font-size: clamp(18px, 4.8vw, 20px);
 }
 
 /* ---- View-transition fades (kept from the previous site) ----------------- */

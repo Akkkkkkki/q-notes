@@ -17,14 +17,14 @@ const stages = [
 ---
 
 <BaseLayout title="Journal">
-  <div class="wrap" style="padding:48px 26px 70px">
-    <h1 style="font-family:var(--serif);font-weight:500;font-size:38px;letter-spacing:-.015em;color:var(--ink);margin:0 0 8px">Journal</h1>
-    <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--muted);margin:0 0 28px">Every note, filterable — by growth stage or language.</p>
+  <div class="wrap" style="padding:48px var(--gutter) 70px">
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(28px,6.4vw,38px);letter-spacing:-.015em;color:var(--ink);margin:0 0 8px">Journal</h1>
+    <p style="font-family:var(--serif);font-style:italic;font-size:clamp(16px,4.2vw,18px);color:var(--muted);margin:0 0 28px">Every note, filterable — by growth stage or language.</p>
 
     <div style="display:flex;flex-wrap:wrap;gap:16px 26px;padding-bottom:20px;margin-bottom:8px;border-bottom:1px solid var(--line)">
       <div style="display:flex;flex-direction:column;gap:8px">
         <span style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">Stage</span>
-        <div id="stage-filter" style="display:flex;gap:7px">
+        <div id="stage-filter" style="display:flex;flex-wrap:wrap;gap:7px">
           {stages.map((s) => (
             <button
               class="stage-chip"

@@ -1,0 +1,44 @@
+---
+// "Read next" — the two closest notes to the current one, resolved by PostLayout.
+// Lives in the article aside, which sits beside the prose on desktop and becomes
+// a section under it below 880px, so the onward links survive on phones.
+interface Item {
+  url: string;
+  title: string;
+  maturity: 'seedling' | 'growing' | 'evergreen';
+}
+interface Props {
+  items: Item[];
+  lang?: 'en' | 'zh';
+}
+const { items, lang = 'en' } = Astro.props;
+
+const heading = lang === 'zh' ? '接着读' : 'Read next';
+const LABELS = {
+  en: { seedling: 'Seedling', growing: 'Growing', evergreen: 'Evergreen' },
+  zh: { seedling: '萌芽', growing: '成长', evergreen: '常青' },
+}[lang];
+---
+
+{items.length > 0 && (
+  <div>
+    <div style="font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px">
+      {heading}
+    </div>
+    {items.map((item, i) => (
+      <a
+        href={item.url}
+        style={`display:block;text-decoration:none;${i < items.length - 1 ? 'margin-bottom:13px' : ''}`}
+      >
+        <span
+          style={`font:600 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:${
+            item.maturity === 'seedling' ? 'var(--gold)' : 'var(--accent)'
+          };display:block;margin-bottom:5px`}
+        >{LABELS[item.maturity]}</span>
+        <span class="rt" style="font-family:var(--serif);font-size:14.5px;font-weight:500;line-height:1.24;color:var(--ink)">
+          {item.title}
+        </span>
+      </a>
+    ))}
+  </div>
+)}

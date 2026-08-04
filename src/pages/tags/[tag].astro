@@ -33,10 +33,10 @@ const sorted = posts
 ---
 
 <BaseLayout title={`Thread: ${tag}`} description={`Notes tagged ${tag} on Q's Notes.`}>
-  <div class="wrap" style="padding:48px 26px 70px">
+  <div class="wrap" style="padding:48px var(--gutter) 70px">
     <div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px">Thread</div>
-    <h1 style="font-family:var(--serif);font-weight:500;font-size:38px;letter-spacing:-.015em;color:var(--ink);margin:0 0 8px">{tag}</h1>
-    <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--muted);margin:0 0 20px">
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(28px,6.4vw,38px);letter-spacing:-.015em;color:var(--ink);margin:0 0 8px">{tag}</h1>
+    <p style="font-family:var(--serif);font-style:italic;font-size:clamp(16px,4.2vw,18px);color:var(--muted);margin:0 0 20px">
       {sorted.length} {sorted.length === 1 ? 'note' : 'notes'} in this thread
     </p>
     <div style="margin-bottom:8px">

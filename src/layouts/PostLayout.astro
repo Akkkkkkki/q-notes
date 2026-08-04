@@ -6,6 +6,7 @@ import DefinedTerm from '../components/DefinedTerm.astro';
 import PredictionTracker from '../components/PredictionTracker.astro';
 import Sources from '../components/Sources.astro';
 import PostConnections from '../components/PostConnections.astro';
+import ReadNext from '../components/ReadNext.astro';
 import { optimizeImagePath } from '../utils/optimizeImagePath';
 import { relativeTime } from '../utils/relativeTime';
 
@@ -104,7 +105,6 @@ const L =
     ? {
         min: '分钟',
         words: '字',
-        readNext: '接着读',
         fmReading: (r: number) => `${r} 分钟`,
         fmLang: hasSibling ? 'zh · en' : 'zh',
         keys: { maturity: 'maturity:', date: 'date:', reading: 'reading:', tags: 'tags:', lang: 'lang:' },
@@ -112,13 +112,11 @@ const L =
     : {
         min: 'min',
         words: 'words',
-        readNext: 'Read next',
         fmReading: (r: number) => `${r} min`,
         fmLang: hasSibling ? 'en · 中' : 'en',
         keys: { maturity: 'maturity:', date: 'date:', reading: 'reading:', tags: 'tags:', lang: 'lang:' },
       };
 const publishDate = new Date(date);
-const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing: lang === 'zh' ? '成长' : 'Growing', evergreen: lang === 'zh' ? '常青' : 'Evergreen' };
 ---
 
 <BaseLayout
@@ -132,11 +130,11 @@ const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing
 >
   <div class="dots">
     <!-- reading progress -->
-    <div style="height:3px;background:var(--soft);position:sticky;top:66px;z-index:40">
+    <div style="height:3px;background:var(--soft);position:sticky;top:var(--header-h);z-index:40">
       <div id="qn-progress-bar" style="width:0%;height:100%;background:var(--accent)"></div>
     </div>
 
-    <div class="wrap" style="padding:40px 26px 72px">
+    <div class="wrap" style="padding:40px var(--gutter) 72px">
       <div class="post-grid">
         <article id="main-content" style="min-width:0">
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
@@ -147,13 +145,13 @@ const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing
           </div>
 
           <h1
-            style="font-family:var(--serif);font-weight:500;font-size:43px;line-height:1.06;letter-spacing:-.017em;color:var(--ink);margin:0 0 18px"
+            style="font-family:var(--serif);font-weight:500;font-size:clamp(28px,7vw,43px);line-height:1.06;letter-spacing:-.017em;color:var(--ink);margin:0 0 18px"
             transition:name={`title-${translationKey}`}
           >
             {title}
           </h1>
           {excerpt && (
-            <p style="font-family:var(--serif);font-style:italic;font-size:21px;line-height:1.44;color:var(--muted);margin:0 0 20px">{excerpt}</p>
+            <p style="font-family:var(--serif);font-style:italic;font-size:clamp(17px,4.4vw,21px);line-height:1.44;color:var(--muted);margin:0 0 20px">{excerpt}</p>
           )}
 
           <div style="display:flex;flex-wrap:wrap;align-items:center;gap:9px 12px">
@@ -205,8 +203,8 @@ const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing
           {sources && sources.length > 0 && <Sources sources={sources} lang={lang} />}
         </article>
 
-        <aside class="hide-narrow" style="display:flex;flex-direction:column;gap:24px;position:sticky;top:90px">
-          <div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card2)">
+        <aside class="post-aside">
+          <div class="hide-narrow" style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card2)">
             <div style="display:flex;align-items:center;gap:6px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--card)">
               <span style="width:7px;height:7px;border-radius:99px;background:#e5695f"></span>
               <span style="width:7px;height:7px;border-radius:99px;background:#e7b34f"></span>
@@ -229,15 +227,7 @@ const readNextLabel = { seedling: lang === 'zh' ? '萌芽' : 'Seedling', growing
           {readNext.length > 0 && (
             <>
               <div style="height:1px;background:var(--line)"></div>
-              <div>
-                <div style="font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:12px">{L.readNext}</div>
-                {readNext.map((r, i) => (
-                  <a href={r.url} style={`display:block;text-decoration:none;${i < readNext.length - 1 ? 'margin-bottom:13px' : ''}`}>
-                    <span style={`font:600 9px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:${r.maturity === 'seedling' ? 'var(--gold)' : 'var(--accent)'};display:block;margin-bottom:5px`}>{readNextLabel[r.maturity]}</span>
-                    <span class="rt" style="font-family:var(--serif);font-size:14.5px;font-weight:500;line-height:1.24;color:var(--ink)">{r.title}</span>
-                  </a>
-                ))}
-              </div>
+              <ReadNext items={readNext} lang={lang} />
             </>
           )}
         </aside>
