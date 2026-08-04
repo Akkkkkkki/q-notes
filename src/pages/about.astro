@@ -3,9 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="About">
-  <div class="wrap" style="max-width:720px;padding:56px 26px 40px">
+  <div class="wrap" style="max-width:720px;padding:56px var(--gutter) 40px">
     <div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">About</div>
-    <h1 style="font-family:var(--serif);font-weight:500;font-size:38px;letter-spacing:-.015em;color:var(--ink);margin:0 0 24px">Q's Notes</h1>
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(28px,6.4vw,38px);letter-spacing:-.015em;color:var(--ink);margin:0 0 24px">Q's Notes</h1>
 
     <div class="prose-body">
       <p>Hi, I'm Q.</p>

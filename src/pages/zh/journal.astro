@@ -17,14 +17,14 @@ const stages = [
 ---
 
 <BaseLayout title="文章" lang="zh">
-  <div class="wrap" style="padding:48px 26px 70px">
-    <h1 style="font-family:var(--serif);font-weight:500;font-size:36px;color:var(--ink);margin:0 0 8px">文章</h1>
-    <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--muted);margin:0 0 28px">每一篇笔记，可按成长阶段或语言筛选。</p>
+  <div class="wrap" style="padding:48px var(--gutter) 70px">
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(26px,6vw,36px);color:var(--ink);margin:0 0 8px">文章</h1>
+    <p style="font-family:var(--serif);font-style:italic;font-size:clamp(16px,4.2vw,18px);color:var(--muted);margin:0 0 28px">每一篇笔记，可按成长阶段或语言筛选。</p>
 
     <div style="display:flex;flex-wrap:wrap;gap:16px 26px;padding-bottom:20px;margin-bottom:8px;border-bottom:1px solid var(--line)">
       <div style="display:flex;flex-direction:column;gap:8px">
         <span style="font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)">阶段</span>
-        <div id="stage-filter" style="display:flex;gap:7px">
+        <div id="stage-filter" style="display:flex;flex-wrap:wrap;gap:7px">
           {stages.map((s) => (
             <button
               class="stage-chip"

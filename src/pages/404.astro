@@ -3,15 +3,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="404 — Not found" description="That page doesn't exist or has moved.">
-  <div class="wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:64vh;padding:60px 26px">
+  <div class="wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:64vh;padding:60px var(--gutter)">
     <div style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:18px">404</div>
-    <h1 style="font-family:var(--serif);font-weight:500;font-size:40px;letter-spacing:-.015em;color:var(--ink);margin:0 0 14px">This page hasn't sprouted.</h1>
-    <p style="font-family:var(--serif);font-size:18px;color:var(--muted);max-width:44ch;margin:0 0 28px">
+    <h1 style="font-family:var(--serif);font-weight:500;font-size:clamp(28px,6.6vw,40px);letter-spacing:-.015em;color:var(--ink);margin:0 0 14px">This page hasn't sprouted.</h1>
+    <p style="font-family:var(--serif);font-size:clamp(16px,4.2vw,18px);color:var(--muted);max-width:44ch;margin:0 0 28px">
       The note you're after doesn't exist, or it's been moved somewhere it can keep growing.
     </p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
-      <a href="/" style="font:600 13px/1 var(--sans);color:var(--paper);background:var(--accent);border-radius:9px;padding:11px 18px;text-decoration:none">Back home</a>
-      <a href="/journal" style="font:500 13px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:11px 15px;text-decoration:none">Browse the journal</a>
+      <a class="cta" href="/">Back home</a>
+      <a class="cta-ghost" href="/journal">Browse the journal</a>
     </div>
   </div>
 </BaseLayout>

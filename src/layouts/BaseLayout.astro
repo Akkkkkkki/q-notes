@@ -133,48 +133,35 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
     <header
       style="border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:50"
     >
-      <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;height:66px;gap:16px">
+      <div class="wrap site-header-row">
         <a
           href={homeHref}
-          style="font-family:var(--serif);font-weight:500;font-size:21px;color:var(--ink);text-decoration:none;flex:none"
+          style="font-family:var(--serif);font-weight:500;font-size:clamp(18px,5vw,21px);color:var(--ink);text-decoration:none;flex:none"
           transition:animate="fade">Q's Notes</a
         >
-        <nav style="display:flex;align-items:center;gap:20px">
-          <a data-bnav aria-current={isHome ? 'page' : undefined} href={homeHref}
-            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.home}</a>
-          <a data-bnav aria-current={isJournal ? 'page' : undefined} href={journalHref}
-            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.journal}</a>
-          <a class="hide-narrow" data-bnav aria-current={isAbout ? 'page' : undefined} href="/about"
-            style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none">{nav.about}</a>
-          <button
-            type="button"
-            data-search-open
-            aria-label={nav.search}
-            style="display:inline-flex;align-items:center;gap:7px;font:500 11.5px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--card2);cursor:pointer"
-          >
+        <nav class="site-nav">
+          <!-- On phones the logo is the home link, so this one drops out to buy room. -->
+          <a class="hide-mobile" data-bnav aria-current={isHome ? 'page' : undefined} href={homeHref}>{nav.home}</a>
+          <a data-bnav aria-current={isJournal ? 'page' : undefined} href={journalHref}>{nav.journal}</a>
+          <a class="hide-narrow" data-bnav aria-current={isAbout ? 'page' : undefined} href="/about">{nav.about}</a>
+          <button type="button" class="search-open" data-search-open aria-label={nav.search}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <span class="hide-narrow">{nav.search}</span> <span style="opacity:.55">⌘K</span>
+            <span class="hide-narrow">{nav.search}</span> <span class="hide-mobile" style="opacity:.55">⌘K</span>
           </button>
-          <span style="display:flex;font:600 11px/1 var(--mono)">
+          <span class="lang-toggle">
             {lang === 'zh' ? (
               <>
-                <a href={altHref} style="border:1px solid var(--line);border-right:none;color:var(--muted);padding:6px 8px;border-radius:6px 0 0 6px;text-decoration:none">EN</a>
-                <span style="background:var(--ink);color:var(--paper);padding:6px 8px;border-radius:0 6px 6px 0">中</span>
+                <a href={altHref} style="border:1px solid var(--line);border-right:none;color:var(--muted);border-radius:6px 0 0 6px">EN</a>
+                <span style="background:var(--ink);color:var(--paper);border-radius:0 6px 6px 0">中</span>
               </>
             ) : (
               <>
-                <span style="background:var(--ink);color:var(--paper);padding:6px 8px;border-radius:6px 0 0 6px">EN</span>
-                <a href={altHref} style="border:1px solid var(--line);border-left:none;color:var(--muted);padding:6px 8px;border-radius:0 6px 6px 0;text-decoration:none">中</a>
+                <span style="background:var(--ink);color:var(--paper);border-radius:6px 0 0 6px">EN</span>
+                <a href={altHref} style="border:1px solid var(--line);border-left:none;color:var(--muted);border-radius:0 6px 6px 0">中</a>
               </>
             )}
           </span>
-          <button
-            type="button"
-            class="theme-toggle"
-            aria-label="Toggle theme"
-            title="Toggle theme"
-            style="width:36px;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none"
-          >
+          <button type="button" class="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" stroke="none"></path></svg>
           </button>
         </nav>
@@ -185,7 +172,7 @@ const jsonLD = type === 'article' && jsonLDArticle ? jsonLDArticle : jsonLDWebsi
       <slot />
     </main>
 
-    <footer class="wrap" style="padding:44px 26px 70px;margin-top:24px">
+    <footer class="wrap" style="padding:44px var(--gutter) 70px;margin-top:24px">
       <div style="border-top:1px solid var(--line);padding-top:26px;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
         <div style="font-family:var(--serif);font-size:16px;color:var(--muted)">
           {footerTagline.a} <span style="color:var(--ink)">{footerTagline.b}</span>
