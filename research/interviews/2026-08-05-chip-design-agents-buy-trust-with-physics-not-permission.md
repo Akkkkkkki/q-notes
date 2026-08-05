@@ -49,3 +49,7 @@ Don't think it should happen but I'm sure it's already hidden somewhere
 ### Q5
 
 I don't think software failure is any cheaper than hardware. Yes hardware errors are expensive however software can be expensive too not about money or time but more on the purpose of the software. For example, some softwares failure will cost significant security safety privacy etc issues that can't even be irreversible, for example the death of people
+
+### Q6
+
+I'm not going to say this here. however I really want you to know in this article that I really don't know much about hardware, manufacturing, electric industry at all and I should not pretend to be an hardware expert
