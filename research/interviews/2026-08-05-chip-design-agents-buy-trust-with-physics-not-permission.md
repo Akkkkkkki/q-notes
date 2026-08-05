@@ -1,7 +1,7 @@
 # Interview: Chip design agents buy trust with physics, not permission
 
 **Source:** backlog item 2026-08-05 — Chip design agents buy trust with physics, not permission | inbox spark "Can we think about how AI in software development life cycle mean for manufacturing customers for example in semiconductor in car manufacturers etc or even robotics industry... I need to ask some intelligence questions or things that only a deep industry expert can have a very good point of view on" (2026-07-17)
-**Status:** Awaiting answers
+**Status:** Ready to draft (2026-08-05)
 
 ## The idea in three sentences
 
@@ -29,3 +29,27 @@ At DAC 2026, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+### Q1
+
+every verification gate is theater until someone gets fired for skipping it. We had arguments with colleagues on the amount of effort we should spend in reviewing the work from someone who explicitly said they used AI and asked us to review before using the content. It's the same as people who "don't taking any ownership" at work
+
+### Q2
+
+It's cheaper, but it scales at exponential speed. Ive seen a client's codebase becoming a disastrously messy entangled myth within 2.5 months using uncontrolled unverified AI coding
+
+### Q3
+
+I'd tend to agree, with caveats
+
+### Q4
+
+Don't think it should happen but I'm sure it's already hidden somewhere
+
+### Q5
+
+I don't think software failure is any cheaper than hardware. Yes hardware errors are expensive however software can be expensive too not about money or time but more on the purpose of the software. For example, some softwares failure will cost significant security safety privacy etc issues that can't even be irreversible, for example the death of people
+
+### Q6
+
+I'm not going to say this here. however I really want you to know in this article that I really don't know much about hardware, manufacturing, electric industry at all and I should not pretend to be an hardware expert
