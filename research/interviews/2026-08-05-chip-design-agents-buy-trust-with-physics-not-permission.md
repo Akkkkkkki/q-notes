@@ -41,3 +41,7 @@ It's cheaper, but it scales at exponential speed. Ive seen a client's codebase b
 ### Q3
 
 I'd tend to agree, with caveats
+
+### Q4
+
+Don't think it should happen but I'm sure it's already hidden somewhere
