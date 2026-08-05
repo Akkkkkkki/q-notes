@@ -117,7 +117,14 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         .filter(Boolean);
     }
 
-    function statusFor(verdict) {
+    // Feedback you sent that no editor pass has answered yet outranks the
+    // verdict: a "ready to publish" badge over unread notes is the one state
+    // that makes publishing do the wrong thing quietly.
+    function statusFor(pr) {
+      if (pr.pending > 0) {
+        return { cls: 'attention', label: t('publish.feedbackPendingStatus', { n: pr.pending }) };
+      }
+      const verdict = pr.verdict;
       if (!verdict) return { cls: 'none', label: t('publish.notCheckedStatus') };
       if (/ready to ship/i.test(verdict)) return { cls: 'ready', label: t('publish.readyStatus') };
       if (/needs your call/i.test(verdict)) return { cls: 'attention', label: t('publish.needsCallStatus') };
@@ -128,7 +135,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       const card = el('section', 'card draft');
 
       // Plain-language status badge derived from the ship gate's verdict.
-      const st = statusFor(pr.verdict);
+      const st = statusFor(pr);
       const badge = el('div', 'status-badge ' + st.cls);
       badge.appendChild(el('span', 'dot'));
       badge.appendChild(el('span', '', st.label));
