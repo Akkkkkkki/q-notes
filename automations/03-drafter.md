@@ -156,4 +156,5 @@ one-tap questions, and anything else is invisible to the author's thumb:
 Numbered question lines, lettered options as list items, the drafted version always A.
 The author's choices come back as PR comments (`**A/B calibration — Q1: B.**`) and as
 raw dated records the Desk appends to `research/voice.md ## Proposed`; treat an answered
-question as settled — apply the chosen rendering on your next pass over the PR.
+question as settled. The Friday ship gate applies the chosen rendering to the PR
+(routine 04, step 3) — you apply it only if you make another pass over the draft first.

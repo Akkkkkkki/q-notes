@@ -49,7 +49,27 @@ resolve stuck work without waiting for the author to feel ready.
    change meaning or cut a load-bearing line is raised as a one-line question. Voice
    flags are rendered as
    questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
-3. **Checklist passes** → comment a verdict:
+3. **Process the author's feedback first — before any verdict.** The Desk posts the
+   author's calls as PR comments with fixed shapes, and every one of them is a change
+   request on *this* PR, not a note for some later piece. Read every comment newer than
+   your last verdict and act on each:
+   - `**One change:** …` → make that change. It is the author's single highest-priority
+     edit; do the work it asks for, including research the draft doesn't yet carry, and
+     push to the PR branch. If it is genuinely bigger than a gate pass (a rewrite around
+     new reporting, a different thesis), do the part you can, then say in one line what is
+     left and what it needs — an unactioned request must never sit silent under a verdict.
+   - `**A/B calibration — Qn: X.**` → the author has chosen a rendering. If the draft uses
+     a different one, swap it in, in both languages where the passage has a counterpart.
+     Treat the `Why:` line as a rule, not a comment: a stated dislike ("avoid the dash
+     here", "too generic") applies to the whole piece, not only the sentence quoted, and
+     also goes to `research/voice.md ## Proposed` under the protocol in step 5.
+   - `**读稿标记 — 我不会这么说：**` → step 5; same contract, plus the rule to distill.
+   - `**Voice flag — keep/cut:**` and `**Downgrade to note**` → apply as stated.
+   Then re-run the checklist against the revised draft and post the verdict below. **Never
+   post "Ready to ship" on a PR carrying feedback you have not applied** — the phone shows
+   the verdict as the go-ahead, so a stale one turns "I asked for a change" into a
+   published draft that ignores it.
+4. **Checklist passes** → comment a verdict:
    - First check cadence: the site publishes **at most one post per 7 days** (quality
      over quantity). If a post was published (merged to `main`) within the last 7 days,
      the verdict is "**Ready — queued**": the piece passed, but hold the merge until the
@@ -62,7 +82,7 @@ resolve stuck work without waiting for the author to feel ready.
    - If the author still hesitates on a passing piece, the documented remedy is to set
      `maturity: seedling` and ship — remind them of that contract in the comment, once,
      without nagging.
-4. **Author has marked "我不会这么说" sentences** (in PR comments or a review, on this
+5. **Author has marked "我不会这么说" sentences** (in PR comments or a review, on this
    pass or a previous one — Desk marks arrive as a `**读稿标记 — 我不会这么说：**`
    comment with a bulleted sentence list) → each mark converts into a rule and a fix:
    rewrite the marked sentence in place (staying inside claim parity), and record a
@@ -74,18 +94,19 @@ resolve stuck work without waiting for the author to feel ready.
    needs no explanation from the author; inferring the rule is your job, and a mark you
    can't generalize still gets the sentence fixed. These marks are the highest-signal
    voice feedback the system gets — never let one expire unprocessed.
-5. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
+6. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
    gaps, build errors) and push to the PR branch. Only bounce to the author if the gap is
    substantive (a claim needs their judgment), and say precisely which checklist line
    fails and what the smallest fix is.
-6. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
+7. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
    (both languages), re-tier the frontmatter, trim everything that doesn't serve that one
    idea, push, and comment what you cut and why. A shipped note beats a stuck essay.
-7. **PR open > 14 days** → close it. Add one line to the source backlog item:
+8. **PR open > 14 days** → close it. Add one line to the source backlog item:
    `Killed YYYY-MM-DD: <reason>`. Killed is a valid outcome; a zombie PR is not.
 
 ## After the pass
 
 Send the author one consolidated notification: PRs ready to ship (with one-line
-summaries), PRs needing a decision (with the specific question), and anything downgraded
-or killed. One message, phone-readable, no guilt.
+summaries), what you changed in response to their feedback (one line per request — they
+sent it from a phone and cannot see a diff), PRs needing a decision (with the specific
+question), and anything downgraded or killed. One message, phone-readable, no guilt.

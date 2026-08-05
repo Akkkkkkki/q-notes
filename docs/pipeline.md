@@ -188,6 +188,15 @@ the title at ship time without writing anything.
 
 The anti-perfectionism enforcer. For every open content PR:
 
+- **Work in the author's feedback before anything else.** Every Desk action that isn't
+  Ship or Kill lands as a PR comment — `One change`, an A/B choice and its `Why:` line,
+  a read-aloud mark, a voice keep/cut — and each is a change request on *that* PR. The
+  gate applies them, pushes, and only then re-runs the checklist and posts a verdict. A
+  "Ready to ship" over unapplied feedback is the failure this rule exists to prevent:
+  from the phone, the verdict *is* the go-ahead, so a stale one turns "please change
+  this" into a published draft that ignores it. Nothing else in the pipeline reads these
+  comments — the drafter builds next week's piece, not this one — so the request that the
+  gate skips is a request that never happens.
 - Run the tier's definition-of-done checklist (§5). If it passes, comment a verdict:
   **"Ready to ship"** plus a 3-bullet summary, so the author's approval takes five
   minutes on a phone.

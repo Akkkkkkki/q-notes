@@ -246,6 +246,45 @@ describe('GET /api/flow', () => {
     expect(ranks).toEqual([...ranks].sort((a: number, b: number) => a - b));
   });
 
+  it('raises author feedback that no gate pass has answered, above a stale ready verdict', async () => {
+    gh.seedPr({
+      number: 9,
+      title: 'Note with feedback',
+      body: 'Tier: note.',
+      files: ['src/content/posts/c.en.md'],
+      comments: [
+        'Ready to ship — 3 bullets.',
+        '**A/B calibration — Q1: C.** “…”\n\n_(via Desk)_',
+        '**One change:** more real examples, deeper research.\n\n_(via Desk)_',
+      ],
+    });
+
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    const item = data.needsYou.find((n: any) => n.text.includes('#9'));
+    expect(item.urgency).toBe('now');
+    expect(item.text).toMatch(/2 notes from you not worked in yet/);
+    // The verdict predates the feedback, so it must not read as a go-ahead.
+    expect(data.needsYou.filter((n: any) => n.text.includes('#9'))).toHaveLength(1);
+    expect(item.text).not.toMatch(/ready to ship/i);
+  });
+
+  it('keeps the downgrade clock visible on an aging PR that also has pending feedback', async () => {
+    gh.seedPr({
+      number: 10,
+      title: 'Aging note with feedback',
+      body: 'Tier: note.',
+      created_at: new Date(Date.now() - 8 * DAY_MS).toISOString(),
+      files: ['src/content/posts/d.en.md'],
+      comments: ['**One change:** tighten the closer.\n\n_(via Desk)_'],
+    });
+
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    const items = data.needsYou.filter((n: any) => n.text.includes('#10'));
+    expect(items).toHaveLength(2);
+    expect(items.some((n: any) => /1 note from you/.test(n.text))).toBe(true);
+    expect(items.some((n: any) => /7-day mark/.test(n.text))).toBe(true);
+  });
+
   it('keeps prompting for the green light when every question is answered but the brief is not ready', async () => {
     gh.seedFile(
       BRIEF_PATH,

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import worker from '../worker/index';
 import {
   parsePrBody,
+  pendingRequests,
   extractPreviewUrl,
   replaceTitle,
   lastParagraph,
@@ -93,6 +94,20 @@ describe('PR body parsing', () => {
   it('treats an explicit "None" under untraceable opinions as an empty list', () => {
     const parsed = parsePrBody('## Voice\n\n### Opinions I could not trace to author input\n\n- None.\n');
     expect(parsed.flags).toEqual([]);
+  });
+
+  it('counts author feedback sent after the last verdict as still owed a gate pass', () => {
+    const verdict = '**Ready to ship**\n- three bullets';
+    const change = '**One change:** more examples\n\n_(via Desk)_';
+    const ab = '**A/B calibration — Q3: B.** “…”\n\n_(via Desk)_';
+    const mark = '**读稿标记 — 我不会这么说：**\n\n- “…”\n\n_(via Desk)_';
+
+    expect(pendingRequests([verdict, change, ab, mark])).toBe(3);
+    // A verdict after the feedback is the gate saying it handled it.
+    expect(pendingRequests([change, ab, verdict])).toBe(0);
+    // Only the requests count — bot chatter and the author's plain replies don't.
+    expect(pendingRequests(['Cloudflare preview: https://x.workers.dev', 'nice one'])).toBe(0);
+    expect(pendingRequests([])).toBe(0);
   });
 
   it('finds the branch preview URL buried in bot comments', () => {

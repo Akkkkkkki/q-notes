@@ -131,7 +131,23 @@ function attention(
   const out: Attention[] = [];
 
   for (const pr of desk) {
-    if (pr.verdict === 'ready') {
+    // Feedback the author sent that no gate pass has answered yet. It outranks
+    // the verdict line, because the dangerous state is a "ready to ship" badge
+    // sitting on top of unread notes: ship then, and the draft goes live as
+    // written, with the feedback still unapplied on the PR.
+    if (pr.pending > 0) {
+      const notes = pr.pending === 1 ? '1 note' : `${pr.pending} notes`;
+      out.push({
+        urgency: pr.verdict === 'ready' ? 'now' : 'soon',
+        text: `#${pr.number} “${pr.title}” — ${notes} from you not worked in yet. Friday's gate applies them and re-verdicts; publishing before that ships the draft as it stands.`,
+        href: '/desk/',
+      });
+    }
+
+    // The clocks still apply while feedback is pending — an aging PR gets its
+    // downgrade warning either way — but "ready to ship" and the idle line are
+    // suppressed, because the pending item above already says what's true.
+    if (pr.verdict === 'ready' && !pr.pending) {
       out.push({
         urgency: 'now',
         text: `#${pr.number} “${pr.title}” — the gate says ready to ship. Five minutes on the Desk.`,
@@ -149,7 +165,7 @@ function attention(
         text: `#${pr.number} “${pr.title}” — ${PR_DOWNGRADE_DAYS - pr.ageDays}d until it gets downgraded to a note. Ship, one-change, or kill.`,
         href: '/desk/',
       });
-    } else {
+    } else if (!pr.pending) {
       out.push({
         urgency: 'soon',
         text: `#${pr.number} “${pr.title}”${pr.tier ? ` (${pr.tier})` : ''} — on the Desk${pr.verdict === 'attention' ? ', the gate needs your call' : ', no gate verdict yet'}.`,

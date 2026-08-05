@@ -58,6 +58,8 @@ export interface DeskPr {
   titleOptions: string[];
   /** Current last paragraph per content file, for the last-line slot. */
   lastLines: Array<{ path: string; text: string }>;
+  /** Author feedback sent after the last verdict, still owed a gate pass. */
+  pending: number;
 }
 
 interface PrSummary {
@@ -122,6 +124,7 @@ export async function listDesk(env: Env): Promise<Response> {
       ab: { questions: parseAbQuestions(pr.body ?? ''), answered: answeredAbQuestions(comments) },
       titleOptions: body.titleOptions,
       lastLines,
+      pending: pendingRequests(comments),
     });
   }
   return json({ prs: cards });
@@ -135,13 +138,16 @@ export interface DeskSummary {
   ageDays: number;
   tier: string | null;
   verdict: 'ready' | 'attention' | 'none';
+  /** Author feedback sent after the last verdict, still owed a gate pass. */
+  pending: number;
 }
 
 export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
   const open = await listOpenContentPrs(env);
   const out: DeskSummary[] = [];
   for (const { pr } of open) {
-    const verdict = latestVerdict(await prComments(env, pr.number));
+    const comments = await prComments(env, pr.number);
+    const verdict = latestVerdict(comments);
     out.push({
       number: pr.number,
       title: pr.title,
@@ -149,6 +155,7 @@ export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
       ageDays: Math.floor((Date.now() - Date.parse(pr.created_at)) / 86400000),
       tier: parsePrBody(pr.body ?? '').tier,
       verdict: verdict ? (/ready to ship/i.test(verdict) ? 'ready' : 'attention') : 'none',
+      pending: pendingRequests(comments),
     });
   }
   return out;
@@ -425,13 +432,38 @@ async function contentPrOrNull(
   return { number: n, pr, files };
 }
 
+const VERDICT_RE = /ready to ship|needs your call|checklist fails|downgraded/i;
+
 /** Ship-gate verdict: the latest comment that opens with one of its phrasings. */
 function latestVerdict(comments: string[]): string | null {
+  const i = latestVerdictIndex(comments);
+  return i === -1 ? null : comments[i];
+}
+
+function latestVerdictIndex(comments: string[]): number {
   for (let i = comments.length - 1; i >= 0; i--) {
-    const c = comments[i];
-    if (/ready to ship|needs your call|checklist fails|downgraded/i.test(c)) return c;
+    if (VERDICT_RE.test(comments[i])) return i;
   }
-  return null;
+  return -1;
+}
+
+/** The Desk comment shapes the ship gate is obliged to act on (routine 04 §4). */
+const REQUEST_RE = /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note)/;
+
+/**
+ * How much author feedback is still owed a gate pass. Issue comments come back
+ * in chronological order, so anything the author sent *after* the last verdict
+ * has not been answered by one: the gate's contract is to apply the feedback
+ * and post a fresh verdict (routine 04), which means a non-zero count is the
+ * system owing the author a round, not the author owing the system anything.
+ * Without this the phone showed a stale "Ready to ship" over unread feedback,
+ * and the only visible difference between "worked in" and "ignored" was the
+ * author rereading the draft.
+ */
+export function pendingRequests(comments: string[]): number {
+  return comments
+    .slice(latestVerdictIndex(comments) + 1)
+    .filter((c) => REQUEST_RE.test(c)).length;
 }
 
 /** The branch preview URL the deploy bot buries in a comment (vision §3.3). */
