@@ -93,3 +93,4 @@ for two months get deleted by the gardener.
 - 2026-07-17 (chat observation) Rhythm: 中英自然混排——中文句里嵌英文词组（放下 ego / take a step back / best practice），写作中可保留但节制。
 - 2026-07-17 (chat observation) Rhythm: 商量式口吻与叠词（"要不我们换个思路""多互动互动"），不是指令式。
 - 2026-07-17 (chat observation) Move: 反馈先给结论、短句收尾、不解释过度（"目前的还是有些生硬。请继续调查。"）。
+- 2026-08-05 (A/B choice, PR #58) en opening: chose C — “Before anyone writes another trend piece on generative AI and games, here's the question nobody's answering: what actually makes a game "AI…”; why: A and B are too generic. C is only slightly better
