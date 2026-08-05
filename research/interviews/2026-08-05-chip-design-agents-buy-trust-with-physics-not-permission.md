@@ -33,3 +33,7 @@ _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are 
 ### Q1
 
 every verification gate is theater until someone gets fired for skipping it. We had arguments with colleagues on the amount of effort we should spend in reviewing the work from someone who explicitly said they used AI and asked us to review before using the content. It's the same as people who "don't taking any ownership" at work
+
+### Q2
+
+It's cheaper, but it scales at exponential speed. Ive seen a client's codebase becoming a disastrously messy entangled myth within 2.5 months using uncontrolled unverified AI coding
