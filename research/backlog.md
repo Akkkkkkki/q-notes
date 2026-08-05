@@ -559,7 +559,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-07-03 — AI-native games need rules more than generation
 
-**Status:** Expired (2026-08-05)
+**Status:** Drafted in `src/content/posts/ai-native-game-is-a-test.en.md` and `src/content/posts/ai-native-game-is-a-test.zh.md` on 2026-08-05 — via inbox spark (2026-07-22), not this candidate's own interview questions. Expired same-day by the scout before the drafter picked up the author's spark reacting to it; corrected here rather than left expired, since the 21-day clock shouldn't overwrite a real outcome.
 
 **One-line thesis:** The hard part of AI-native games is not making infinite content; it is turning open-ended generation into rules, goals, state, feedback, and player agency that still feel like a game.
 
