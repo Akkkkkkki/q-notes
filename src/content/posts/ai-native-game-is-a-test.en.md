@@ -10,7 +10,7 @@ connections:
   linksTo: ["taste-is-judgment"]
 ---
 
-"Is this an AI-native game, or just another buzzword?" I want that answered before anyone writes one more trend piece about generative AI and games.
+Before anyone writes another trend piece on generative AI and games, here's the question nobody's answering: what actually makes a game "AI-native"?
 
 Here's a test that actually works, from a July survey of 53 AI-native games and prototypes. Take the generative model out of the game. If the core loop collapses, or turns into something fundamentally different, the game is AI-native. If it keeps working fine without the model, you were looking at AI-augmented content, not an AI-native game, and passing that test says nothing about whether the result is any good — which is where I think the current wave falls short: it doesn't really have much taste. Ask a runtime generator for dialogue, a quest, an NPC reaction, and you get some average thing that people kind of expect, statistically reasonable and forgettable the moment it lands.
 
