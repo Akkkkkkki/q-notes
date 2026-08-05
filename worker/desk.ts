@@ -432,23 +432,39 @@ async function contentPrOrNull(
   return { number: n, pr, files };
 }
 
-const VERDICT_RE = /ready to ship|needs your call|checklist fails|downgraded/i;
+const VERDICT_RE = /ready to ship|ready\s*[—–-]\s*queued|needs your call|checklist fails|downgraded/i;
 
-/** Ship-gate verdict: the latest comment that opens with one of its phrasings. */
+/**
+ * Ship-gate verdict: the latest comment carrying one of its phrasings, matched
+ * loosely — this one only picks the text the card displays, so a verdict with a
+ * preamble is better shown than missed.
+ */
 function latestVerdict(comments: string[]): string | null {
-  const i = latestVerdictIndex(comments);
-  return i === -1 ? null : comments[i];
+  for (let i = comments.length - 1; i >= 0; i--) {
+    if (VERDICT_RE.test(comments[i])) return comments[i];
+  }
+  return null;
 }
+
+/** The Desk comment shapes the ship gate is obliged to act on (routine 04 step 3). */
+const REQUEST_RE = /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note)/;
+
+/**
+ * The same phrasings, but anchored to the top of the comment, where routine 04
+ * puts its verdict. The pending cutoff needs the stricter test: a loose match
+ * lets an author's own comment ("is this ready to ship?") pose as a verdict and
+ * silently zero out their feedback, which is the one error this signal must not
+ * make. A Desk request is never a verdict however it reads, so its marker wins.
+ */
+const VERDICT_OPENING_RE = new RegExp(`^[\\s>#*_]*(?:${VERDICT_RE.source})`, 'i');
 
 function latestVerdictIndex(comments: string[]): number {
   for (let i = comments.length - 1; i >= 0; i--) {
-    if (VERDICT_RE.test(comments[i])) return i;
+    if (REQUEST_RE.test(comments[i])) continue;
+    if (VERDICT_OPENING_RE.test(comments[i])) return i;
   }
   return -1;
 }
-
-/** The Desk comment shapes the ship gate is obliged to act on (routine 04 §4). */
-const REQUEST_RE = /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note)/;
 
 /**
  * How much author feedback is still owed a gate pass. Issue comments come back

@@ -105,9 +105,21 @@ describe('PR body parsing', () => {
     expect(pendingRequests([verdict, change, ab, mark])).toBe(3);
     // A verdict after the feedback is the gate saying it handled it.
     expect(pendingRequests([change, ab, verdict])).toBe(0);
+    // The cadence hold is a verdict too (routine 04 step 4).
+    expect(pendingRequests([change, '**Ready — queued** until 2026-08-12.'])).toBe(0);
     // Only the requests count — bot chatter and the author's plain replies don't.
     expect(pendingRequests(['Cloudflare preview: https://x.workers.dev', 'nice one'])).toBe(0);
     expect(pendingRequests([])).toBe(0);
+  });
+
+  it('does not let a comment that merely mentions a verdict swallow the feedback', () => {
+    const change = '**One change:** more examples\n\n_(via Desk)_';
+    // A Desk request is never a verdict, however it reads…
+    expect(pendingRequests([change, '**One change:** is this ready to ship yet?\n\n_(via Desk)_'])).toBe(2);
+    // …and neither is a plain comment that talks about one.
+    expect(pendingRequests([change, 'Looks ready to ship to me, but see above.'])).toBe(1);
+    // The real thing leads with it.
+    expect(pendingRequests([change, '**Ready to ship**\n- three bullets'])).toBe(0);
   });
 
   it('finds the branch preview URL buried in bot comments', () => {
