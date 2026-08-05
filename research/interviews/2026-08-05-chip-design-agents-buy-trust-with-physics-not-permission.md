@@ -37,3 +37,7 @@ every verification gate is theater until someone gets fired for skipping it. We 
 ### Q2
 
 It's cheaper, but it scales at exponential speed. Ive seen a client's codebase becoming a disastrously messy entangled myth within 2.5 months using uncontrolled unverified AI coding
+
+### Q3
+
+I'd tend to agree, with caveats
