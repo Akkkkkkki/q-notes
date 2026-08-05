@@ -4,6 +4,40 @@ Reviewed 2026-08-05 against our own pipeline (`docs/pipeline.md`), the human-voi
 playbook (`research/human-voice.md`), the voiceprint (`research/voice.md`), and the
 content gate (`scripts/content-gate.mjs`).
 
+## Reviewed revision, and how to reproduce the counts
+
+Source: <https://github.com/KKKKhazix/human-writing>, commit
+[`4fda173`](https://github.com/KKKKhazix/human-writing/commit/4fda173f3fef7fb808f3eba991eeb2528ea4b189)
+(`4fda173f3fef7fb808f3eba991eeb2528ea4b189`, 2026-08-05), which is `VERSION` 1.1.0. It's
+an external repo under MIT, and we hold no copy — pin the SHA when re-checking, because
+the upstream default branch will move.
+
+```sh
+git clone https://github.com/KKKKhazix/human-writing /tmp/human-writing
+git -C /tmp/human-writing checkout 4fda173f3fef7fb808f3eba991eeb2528ea4b189
+
+# their linter, over our published Chinese posts
+for f in src/content/posts/*.zh.md; do
+  echo "### $f"
+  python3 /tmp/human-writing/human-writing/scripts/check_prose.py "$f"
+done
+
+# our gate, over the same files
+node scripts/content-gate.mjs src/content/posts/*.zh.md
+```
+
+The corpus totals below are the sums of that first loop's summary line across the ten
+`.zh.md` posts on `main` as of this review. The 19-instance pivot count in §2 is an
+independent check, not their linter's number:
+
+```sh
+node -e 'const fs=require("fs");let n=0;
+for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".zh.md")))
+  n += (fs.readFileSync("src/content/posts/"+f,"utf8")
+    .match(/(不是|并非|不在于)[^。！？\n]{0,90}(而是|而在于)/g)||[]).length;
+console.log(n);'
+```
+
 ## What it is
 
 A Chinese-only writing skill: `SKILL.md` plus five reference files (forum prose,
@@ -89,10 +123,11 @@ five 的 sails through.
 
 赋能, 抓手, 降本增效, 底层逻辑, 顶层设计, 组合拳, 全链路 — consulting-Chinese filler
 that we're unusually exposed to given our topics. One already shipped (赋能 in
-`consulting-coordination.zh.md`). Take the obvious ones as hard fails.
+`consulting-coordination.zh.md`). Take the obvious ones as warnings, like everything
+else here — they name the word and ask for a rewrite, which is all a reviewer needs.
 
 Not the whole list. 技术底座, 技术主权, 单点风险 are legitimate vocabulary in an
-AI-policy post; they belong in the context-check bucket, not the ban list.
+AI-policy post; they don't belong on any list, hard or soft, until we've seen one misfire.
 
 ### 7. Two prose rules worth stealing verbatim
 
