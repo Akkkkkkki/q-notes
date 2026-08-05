@@ -1,7 +1,7 @@
 # Interview: Chip design agents buy trust with physics, not permission
 
 **Source:** backlog item 2026-08-05 — Chip design agents buy trust with physics, not permission | inbox spark "Can we think about how AI in software development life cycle mean for manufacturing customers for example in semiconductor in car manufacturers etc or even robotics industry... I need to ask some intelligence questions or things that only a deep industry expert can have a very good point of view on" (2026-07-17)
-**Status:** Awaiting answers
+**Status:** Answers in progress (2026-08-05)
 
 ## The idea in three sentences
 
@@ -29,3 +29,7 @@ At DAC 2026, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+### Q1
+
+every verification gate is theater until someone gets fired for skipping it. We had arguments with colleagues on the amount of effort we should spend in reviewing the work from someone who explicitly said they used AI and asked us to review before using the content. It's the same as people who "don't taking any ownership" at work
