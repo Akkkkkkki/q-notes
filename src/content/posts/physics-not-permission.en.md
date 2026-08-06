@@ -38,23 +38,23 @@ connections:
 
 At DAC 2026 in late July, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-design agents within days of each other, all built on NVIDIA's shared agentic stack. None of them will actually ship without the same feature: every agent decision has to clear a hard physics-verification check first. Siemens routes agent output through Calibre and Questa One before it can proceed. Synopsys pairs its "fully autonomous" verification agent with signoff-grade checks, claiming up to 50x faster time-to-validated RTL and 20% more coverage.
 
-The tidy reading is that a bad tapeout is catastrophically expensive and physically irreversible, so hardware forces the verification-before-autonomy gate that software gets to skip.
+The tidy reading is that a bad tapeout is catastrophically expensive and physically irreversible, so hardware forces the verification-before-autonomy gate that software gets to skip. I used to buy that story. What actually forces a gate like this, I've come to think, isn't the cost of reversing the mistake. It's whether a specific, named person answers for it. Call that a *consequence gate*: chip design already has one where most software agent work doesn't.
 
-I used to buy that story. I don't, not fully.
+I should say upfront: I don't know hardware. I don't know chip manufacturing, and I'm not pretending otherwise for the length of this piece.
 
-I should say upfront: I don't know hardware. I don't know chip manufacturing. I'm not going to pretend I do for the length of this piece. What I can do is read the same public reporting anyone can read, and compare it to what I've actually watched happen with unverified AI coding, which is the part I do know.
+What I can do is read the same public reporting anyone can read, and compare it with what I've actually watched happen with unverified AI coding — which is the part I do know.
 
 ## What the vendors actually shipped
 
 Strip the marketing and the facts are: three vendors converged on the same architecture in the same week, all riding [NVIDIA's shared agentic stack](https://nvidianews.nvidia.com/news/nvidia-expands-nvidia-agent-toolkit-with-nvidia-physicsnemo-and-cuda-x-libraries-to-transform-how-the-world-engineers-designs-and-builds), none of it generally available yet. [Synopsys says](https://www.prnewswire.com/news-releases/synopsys-showcases-comprehensive-autonomous-engineering-workflows-from-silicon-to-systems-developed-with-nvidia-technology-302834791.html) customers are still evaluating, with broader release planned for the second half of 2026. The numbers — 50x, +20% coverage — are vendor-reported and unaudited. The [Siemens detail](https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm) is the interesting one: agent decisions get checked against Calibre or Questa One, tools that return a pass-or-fail owed nothing to a model's opinion of its own work. Whatever the model believes about its own reasoning, the gate doesn't ask.
 
-That's a real design decision, and it's a good one. My disagreement is with the story about why hardware gets a gate like this and software doesn't, not with the gate itself.
+That's a real design decision. My disagreement is with the story about why hardware gets a gate like this and software doesn't, not with the gate itself.
 
 ## The reversibility story doesn't fully hold
 
-I'd tend to agree that cost of reversal predicts governance — with caveats. The caveat is the whole essay: software's failures aren't uniformly cheap to reverse. Some of them cost the same as a bad tapeout, or worse. A security breach that leaks customer data isn't undone by a revert. A safety-critical failure in medical device firmware, industrial control code, or a car's braking stack isn't undone by anything. Software already has a domain where mistakes are exactly as unforgiving as a blown mask set, and that domain already has a hard, physics-adjacent gate: aviation software has to clear [DO-178C](https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf), a certification process that runs formal methods and structured verification against every safety-critical line, signed off by an engineer the FAA has specifically authorized to make that call.
+I'd tend to agree that cost of reversal predicts governance — with caveats. The caveat is the whole essay: software's failures aren't uniformly cheap to reverse. Some of them cost the same as a bad tapeout, or worse. A security breach that leaks customer data isn't undone by a revert. A safety-critical failure in medical device firmware, industrial control code, or a car's braking stack isn't undone by anything. Software already has a domain where mistakes are exactly as unforgiving as a blown mask set, and that domain already has a hard, physics-adjacent gate. Aviation software has to clear [DO-178C](https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf). Its structural verification requirements get stricter as the software gets more safety-critical: testing and coverage analysis are mandatory, and formal proof is one optional route to meeting that same bar. A certifying engineer the FAA has specifically authorized reviews the evidence and signs off, and the FAA can revoke that authorization.
 
-So the split was never really hardware versus software. It's whether the mistake is the kind nobody can walk back. More precisely, whether someone specific is on the hook for it. Call that a *consequence gate*: a check no agent output can skip, that exists because a named person answers for what happens if it's wrong, not because the check itself is technically hard.
+So the split was never really hardware versus software. It's whether the mistake is the kind nobody can walk back, tied to whether someone specific is on the hook for it — the consequence gate again, this time installed by a regulator.
 
 ## What actually forces the gate
 
@@ -64,7 +64,7 @@ I've also watched what happens when nothing catches that. A client's codebase tu
 
 A chip company can't get away with that math, not because silicon is special, but because the company has a name on the tapeout bill and a board that will ask about it. A tapeout failure has an owner by construction. Most AI-agent-authored code at a normal software company doesn't. It lands in a PR, gets a skim review, and if it's wrong, the cost shows up months later as an entangled mess nobody can trace back to a decision, let alone a decision-maker.
 
-DO-178C isn't a counterexample to that. It's the same mechanism, just installed by a regulator instead of a market. A certifying engineer signs their name, and the FAA can revoke the authorization that lets them sign. Strip the legal machinery away and it's an accountability gate wearing a technical costume, exactly like Calibre and Questa One are.
+DO-178C isn't a counterexample to that. It's the same mechanism wearing different institutional clothes: a certifying engineer signs their name, and the FAA can revoke the authorization that lets them sign. Strip the legal machinery away and it's an accountability gate wearing a technical costume, exactly like Calibre and Questa One are.
 
 ## Where this leaves software agents
 
