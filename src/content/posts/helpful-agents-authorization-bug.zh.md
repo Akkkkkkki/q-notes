@@ -8,6 +8,7 @@ translationKey: helpful-agents-authorization-bug
 maturity: growing
 connections:
   linksTo: ["agent-coordination-debt"]
+  citedBy: ["physics-not-permission"]
 ---
 
 危险的编程智能体，不一定是不听话的那个。更常见的情况是：它理解了任务，完成了任务，然后顺手做了一个热心同事可能会做的额外动作。
