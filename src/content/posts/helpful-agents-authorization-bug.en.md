@@ -8,6 +8,7 @@ translationKey: helpful-agents-authorization-bug
 maturity: growing
 connections:
   linksTo: ["agent-coordination-debt"]
+  citedBy: ["physics-not-permission"]
 ---
 
 The dangerous coding agent isn't always the one that disobeys you. It's often the one that understands the task, finishes it, and quietly does the extra work a helpful teammate might do.
