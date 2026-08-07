@@ -38,7 +38,7 @@ connections:
 
 At DAC 2026 in late July, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-design agents within days of each other, all built on NVIDIA's shared agentic stack. None of them will actually ship without the same feature: every agent decision has to clear a hard physics-verification check first. Siemens routes agent output through Calibre and Questa One before it can proceed. Synopsys pairs its "fully autonomous" verification agent with signoff-grade checks, claiming up to 50x faster time-to-validated RTL and 20% more coverage.
 
-The tidy reading is that a bad tapeout is catastrophically expensive and physically irreversible, so hardware forces the verification-before-autonomy gate that software gets to skip. I used to buy that story. What actually forces a gate like this, I've come to think, isn't the cost of reversing the mistake. It's whether a specific, named person answers for it. Call that a *consequence gate*: chip design already has one where most software agent work doesn't.
+The tidy reading is that a bad tapeout is catastrophically expensive and physically irreversible, so hardware forces the verification-before-autonomy gate that software gets to skip. I used to buy that story. What actually forces a gate like this, I've come to think, is whether a specific, named person answers for it, not the cost of reversing the mistake. Call that a *consequence gate*: chip design already has one where most software agent work doesn't.
 
 I should say upfront: I don't know hardware. I don't know chip manufacturing, and I'm not pretending otherwise for the length of this piece.
 
