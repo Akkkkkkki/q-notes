@@ -10,7 +10,7 @@ connections:
   linksTo: ["taste-is-a-bet", "consulting-barbell", "consulting-outcomes"]
 ---
 
-A piece going around Chinese consulting circles makes a clean argument. Tools can teach you taste now, so the scarce person is the one who'll make the call and put their name on it. Taste is the radar. Decisiveness is pressing the button.
+A WeChat piece going around Chinese consulting circles makes a clean argument. The title carries the whole thesis: 《咨询顾问的核心竞争力，从"好品味"走向"能决断"》 — the consultant's core edge moving from good taste to the nerve to decide. Tools can teach you taste now, it says, so the scarce person is the one who'll make the call and put their name on it. Taste is the radar. Decisiveness is pressing the button.
 
 I agree with the direction. The words are wrong, in a way that matters.
 
@@ -40,6 +40,6 @@ If the shortage is incentives and not nerve, courage training is the wrong medic
 
 ## What would settle it
 
-Watch whether outcome-linked pay reaches individuals. Today it sits on the firm's balance sheet while partner comp still runs on billable hours and the promotion cycle. If by 2028 a meaningful share of a senior consultant's own number rides on a call they personally made, then the signature is being priced and the shortage was structural. If it stays firm-level and personal comp is unchanged, I'm wrong and the original piece is closer to right. It really was about who has the nerve.
+Watch whether outcome-linked pay reaches individuals. Every number we have so far is a firm number. When McKinsey's Bob Sternfels told HBR in its January–February 2026 issue that about a third of revenues are underwriting outcomes, that was the firm's revenue at risk, not any partner's own pay. I haven't seen the individual version anywhere. If by 2028 a meaningful share of a senior consultant's personal pay rides on a call they made themselves, the signature is being priced and the shortage was structural. If outcome risk stays on the firm's books and individual pay is set the way it is now, I'm wrong and the original piece is closer to right. It really was about who has the nerve.
 
 The honest counterpoint: two people under identical incentives don't behave the same, and I can't explain that gap away. I also can't account for the person who signs their name when nothing rewards it. That person exists. They're probably the one both of us are actually writing about.
