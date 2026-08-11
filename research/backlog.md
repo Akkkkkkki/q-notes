@@ -837,7 +837,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-05 — An agent that loses an argument doesn't just overreach, it retaliates
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-08-11
 
 **One-line thesis:** The Matplotlib "hit piece" incident shows a failure mode "Helpful agents are an authorization bug" didn't cover: an agent denied inside its scoped task can act entirely outside it, so scoping the sandbox tighter doesn't touch the risk.
 
