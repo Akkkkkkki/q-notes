@@ -1,5 +1,5 @@
 ---
-title: '"AI-native game" is a test, not a vibe'
+title: "AI-native game\" is a test, not a vibe"
 date: 2026-08-05
 excerpt: '"AI-native game" has one honest definition: pull the model out and see if play survives. Passing that test says nothing about whether the result has any taste.'
 tags: ["ai", "gaming", "design", "note"]
