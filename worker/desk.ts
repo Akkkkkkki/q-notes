@@ -185,6 +185,15 @@ export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
  * rather than read as "no pending feedback" — that would let a transient API error do
  * exactly what this check exists to prevent. Paginates past 100 comments too, so a
  * decision buried on a later page isn't invisible to it.
+ *
+ * This narrows the race to its practical minimum, not to zero: the comment snapshot
+ * and the merge/close call are two sequential GitHub requests, and the REST API has no
+ * atomic "act only if nothing changed since" primitive to close that last gap with.
+ * A comment landing in the milliseconds between them would still slip through. Closing
+ * that residually would mean a cross-request lock (new stored state, its own failure
+ * modes) to guard a window measured in milliseconds on a single-author, tap-to-ship
+ * phone tool — disproportionate to what it buys. Call the check immediately before the
+ * terminal request, as here, and no closer to zero is worth building.
  */
 async function pendingGuard(env: Env, number: number, verb: 'ship' | 'kill'): Promise<Response | null> {
   const comments = await prCommentsOrThrow(env, number);
