@@ -180,6 +180,20 @@ export async function shipPr(request: Request, env: Env): Promise<Response> {
   const pr = await contentPrOrNull(env, body.number);
   if (!pr) return json({ error: 'Not an open content PR' }, 400);
 
+  // A One-change, A/B choice, mark, voice flag, or Adopt/Reject hypothesis that
+  // hasn't had a gate pass yet must not be shippable out from under it — for an
+  // Adopt/Reject in particular, merging now closes the PR before the ship gate
+  // ever applies the decision, which is exactly the record loss `research/positions.md`
+  // exists to prevent (docs/pipeline.md §10). Fail closed until pendingRequests is 0.
+  const comments = await prComments(env, pr.number);
+  const pending = pendingRequests(comments);
+  if (pending > 0) {
+    return json(
+      { error: `${pending} piece(s) of feedback still owed a ship-gate pass — cannot ship yet` },
+      409
+    );
+  }
+
   const res = await gh(env, 'PUT', `pulls/${pr.number}/merge`, {
     merge_method: 'merge',
   });

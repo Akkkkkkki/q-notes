@@ -175,7 +175,10 @@ One card per open content PR, built from the ship gate's output:
   remedy). A fourth, smaller: **Kill**.
 - **Ship-time slots**: tapping Ship offers the two author-owned slots — the title pick
   and the last line (§4.3). Each is skippable in one tap and the drafter's defaults
-  stand; shipping is never blocked.
+  stand. Shipping itself is blocked only while the PR carries feedback the ship gate
+  hasn't applied yet — a One change, an A/B choice, a mark, or an Adopt/Reject
+  hypothesis decision (`docs/pipeline.md` §10) — since merging then would close the PR
+  before that feedback, or a hypothesis adoption, is ever recorded.
 - Push notifications (web push) replace the email channel for the Tuesday brief, the
   Friday desk summary, and the monthly gardener report. Notification deep-links open the
   relevant surface directly.

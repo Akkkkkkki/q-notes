@@ -255,6 +255,34 @@ describe('POST /api/desk/ship', () => {
     gh.prs[0].state = 'closed';
     expect((await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 })).status).toBe(400);
   });
+
+  it('refuses to ship a PR carrying feedback the gate has not applied yet', async () => {
+    gh.prs[0].comments.push('**One change:** more examples\n\n_(via Desk)_');
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/feedback/i);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('refuses to ship over an unprocessed Adopt/Reject hypothesis decision', async () => {
+    // Merging now would close the PR before the ship gate ever appends the decision
+    // to research/positions.md or inserts it into the article — exactly the loss the
+    // adoption protocol exists to prevent (docs/pipeline.md §10).
+    gh.prs[0].comments.push('**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('ships once a fresh verdict follows the feedback', async () => {
+    gh.prs[0].comments.push(
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Ready to ship**\n- three bullets'
+    );
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(200);
+    expect(data.merged).toBe(true);
+  });
 });
 
 describe('POST /api/desk/comment', () => {
