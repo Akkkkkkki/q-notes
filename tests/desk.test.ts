@@ -283,6 +283,23 @@ describe('POST /api/desk/ship', () => {
     expect(status).toBe(200);
     expect(data.merged).toBe(true);
   });
+
+  it('sees a pending decision buried past the first page of comment history', async () => {
+    // The verdict lands on page 1; 100 filler comments push the actual decision onto
+    // page 2. If the pending check only read the first page, this would ship clean.
+    const filler = Array.from({ length: 100 }, (_, i) => `filler ${i}`);
+    gh.prs[0].comments.push(...filler, '**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('fails closed instead of shipping when the comment history is unreadable', async () => {
+    gh.failNextComments = true;
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(502);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
 });
 
 describe('POST /api/desk/comment', () => {

@@ -184,8 +184,13 @@ export async function shipPr(request: Request, env: Env): Promise<Response> {
   // hasn't had a gate pass yet must not be shippable out from under it — for an
   // Adopt/Reject in particular, merging now closes the PR before the ship gate
   // ever applies the decision, which is exactly the record loss `research/positions.md`
-  // exists to prevent (docs/pipeline.md §10). Fail closed until pendingRequests is 0.
-  const comments = await prComments(env, pr.number);
+  // exists to prevent (docs/pipeline.md §10). Fail closed until pendingRequests is 0:
+  // unlike `prComments` (used for display, where an empty result just means a card
+  // shows less), a fetch failure here must propagate rather than read as "no pending
+  // feedback" — that would let a transient API error do exactly what this check
+  // exists to prevent. Paginates past 100 comments too, so a decision buried on a
+  // later page isn't invisible to it.
+  const comments = await prCommentsOrThrow(env, pr.number);
   const pending = pendingRequests(comments);
   if (pending > 0) {
     return json(
@@ -442,6 +447,25 @@ async function prComments(env: Env, number: number): Promise<string[]> {
   if (!res.ok) return [];
   const data = (await res.json()) as Array<{ body?: string }>;
   return data.map((c) => c.body ?? '');
+}
+
+/**
+ * Full comment history, for the ship-time pending-feedback check only. `prComments`
+ * fails soft (empty list) because it only ever feeds a display — an unreadable
+ * history there just means a card shows less. Here an unreadable history must not
+ * be read as "no pending feedback", so a non-2xx page throws instead, and every
+ * page is fetched rather than just the first 100 comments.
+ */
+async function prCommentsOrThrow(env: Env, number: number): Promise<string[]> {
+  const out: string[] = [];
+  for (let page = 1; ; page++) {
+    const res = await gh(env, 'GET', `issues/${number}/comments?per_page=100&page=${page}`);
+    if (!res.ok) throw new Error(`GitHub comments fetch failed (${res.status})`);
+    const data = (await res.json()) as Array<{ body?: string }>;
+    out.push(...data.map((c) => c.body ?? ''));
+    if (data.length < 100) break;
+  }
+  return out;
 }
 
 async function contentPrOrNull(
