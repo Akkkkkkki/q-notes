@@ -496,9 +496,12 @@ Every load-bearing claim in a draft carries one class, listed in the PR body's
 4. **`Model-hypothesis`** — a new mechanism, causal explanation, framework, prediction,
    coined category, cross-domain analogy, or "the real reason is…" reframe the model
    produced while researching or drafting. It must not silently become a first-person
-   Q-notes position. It can be omitted, written explicitly as an open possibility ("One
-   possibility is…", without implying the author holds it), or surfaced in the PR's
-   `## Candidate hypotheses — not yet yours` section for the author to adopt or reject.
+   Q-notes position: either omit it from the prose entirely, or write it explicitly as
+   an open possibility ("One possibility is…", without implying the author holds it).
+   Either way, it gets an entry in the PR's `## Candidate hypotheses — not yet yours`
+   section for the author to adopt or reject — a hypothesis already hedged into the
+   prose still needs its own `Hn` id there, or there's nothing for the author to adopt
+   by reference.
 
 **Published posts are context, not blanket authorization.** A published post licenses
 terminology, previously adopted premises, historical continuity, and a direct extension the

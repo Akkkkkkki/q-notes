@@ -352,6 +352,26 @@ describe('POST /api/desk/kill', () => {
     expect(gh.prs[0].state).toBe('closed');
     expect(gh.prs[0].comments.at(-1)).toMatch(/Killed \d{4}-\d{2}-\d{2} via Desk: thesis no longer holds/);
   });
+
+  it('refuses to close over an unprocessed Adopt/Reject hypothesis decision', async () => {
+    // Closing the PR removes it from the ship gate's open-PR loop just like merging
+    // does, so an unprocessed adoption would be lost here too if this weren't guarded.
+    gh.prs[0].comments.push('**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/kill', { number: 42 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/feedback/i);
+    expect(gh.prs[0].state).toBe('open');
+  });
+
+  it('closes once a fresh verdict follows the feedback', async () => {
+    gh.prs[0].comments.push(
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Ready to ship**\n- three bullets'
+    );
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/kill', { number: 42 });
+    expect(status).toBe(200);
+    expect(gh.prs[0].state).toBe('closed');
+  });
 });
 
 describe('POST /api/desk/slots — the only src/content writer', () => {

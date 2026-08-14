@@ -174,30 +174,38 @@ export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
   return out;
 }
 
+/**
+ * A One-change, A/B choice, mark, voice flag, or Adopt/Reject hypothesis that hasn't
+ * had a gate pass yet must not be discardable out from under it — merging *or* closing
+ * either one takes the PR out of the ship gate's open-PR loop, so for an Adopt/Reject in
+ * particular either action loses the record permanently (docs/pipeline.md §10), the
+ * same way merging alone would. Shared by shipPr and killPr for that reason. Fails
+ * closed until pendingRequests is 0: unlike `prComments` (used for display, where an
+ * empty result just means a card shows less), a fetch failure here must propagate
+ * rather than read as "no pending feedback" — that would let a transient API error do
+ * exactly what this check exists to prevent. Paginates past 100 comments too, so a
+ * decision buried on a later page isn't invisible to it.
+ */
+async function pendingGuard(env: Env, number: number, verb: 'ship' | 'kill'): Promise<Response | null> {
+  const comments = await prCommentsOrThrow(env, number);
+  const pending = pendingRequests(comments);
+  if (pending > 0) {
+    return json(
+      { error: `${pending} piece(s) of feedback still owed a ship-gate pass — cannot ${verb} yet` },
+      409
+    );
+  }
+  return null;
+}
+
 export async function shipPr(request: Request, env: Env): Promise<Response> {
   const body = await readJson<{ number?: number }>(request);
   if (!body) return json({ error: 'Body must be JSON' }, 400);
   const pr = await contentPrOrNull(env, body.number);
   if (!pr) return json({ error: 'Not an open content PR' }, 400);
 
-  // A One-change, A/B choice, mark, voice flag, or Adopt/Reject hypothesis that
-  // hasn't had a gate pass yet must not be shippable out from under it — for an
-  // Adopt/Reject in particular, merging now closes the PR before the ship gate
-  // ever applies the decision, which is exactly the record loss `research/positions.md`
-  // exists to prevent (docs/pipeline.md §10). Fail closed until pendingRequests is 0:
-  // unlike `prComments` (used for display, where an empty result just means a card
-  // shows less), a fetch failure here must propagate rather than read as "no pending
-  // feedback" — that would let a transient API error do exactly what this check
-  // exists to prevent. Paginates past 100 comments too, so a decision buried on a
-  // later page isn't invisible to it.
-  const comments = await prCommentsOrThrow(env, pr.number);
-  const pending = pendingRequests(comments);
-  if (pending > 0) {
-    return json(
-      { error: `${pending} piece(s) of feedback still owed a ship-gate pass — cannot ship yet` },
-      409
-    );
-  }
+  const blocked = await pendingGuard(env, pr.number, 'ship');
+  if (blocked) return blocked;
 
   const res = await gh(env, 'PUT', `pulls/${pr.number}/merge`, {
     merge_method: 'merge',
@@ -337,6 +345,9 @@ export async function killPr(request: Request, env: Env): Promise<Response> {
   if (!body) return json({ error: 'Body must be JSON' }, 400);
   const pr = await contentPrOrNull(env, body.number);
   if (!pr) return json({ error: 'Not an open content PR' }, 400);
+
+  const blocked = await pendingGuard(env, pr.number, 'kill');
+  if (blocked) return blocked;
 
   const reason = collapse(body.reason ?? '');
   if (reason.length > MAX_COMMENT_LENGTH) {

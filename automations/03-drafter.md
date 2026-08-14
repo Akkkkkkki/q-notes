@@ -92,14 +92,16 @@ contents (or a pointer to the interview file it came from) go in the PR body's
   fact/attribution, never as the author's belief), or `Model-hypothesis` (a new
   mechanism, causal theory, framework, prediction, coined category, or "the real reason
   is..." reframe you produced). A `Model-hypothesis` must never become an unqualified
-  first-person author belief — omit it, write it as an explicit open possibility, or
-  move it to the PR body's `## Candidate hypotheses — not yet yours` section for the
-  author to adopt or reject. A published post licenses terminology, previously adopted
-  premises, continuity, and a direct extension the author explicitly made; it does not
-  license a new causal theory, a new domain application presented as obvious, a new
-  prediction, or a new framework that merely sounds consistent with the archive. If you
-  catch yourself writing a judgment with no source in the author, cut it or recast it as
-  an open question — and declare it in the PR body either way.
+  first-person author belief — either omit it from the prose entirely or write it as an
+  explicit open possibility, and either way give it an `Hn` entry in the PR body's
+  `## Candidate hypotheses — not yet yours` section (below) for the author to adopt or
+  reject; a hedged one in the prose still needs its own `Hn`, or there's nothing for the
+  author to reply `**Adopt hypothesis — Hn**` to. A published post licenses terminology,
+  previously adopted premises, continuity, and a direct extension the author explicitly
+  made; it does not license a new causal theory, a new domain application presented as
+  obvious, a new prediction, or a new framework that merely sounds consistent with the
+  archive. If you catch yourself writing a judgment with no source in the author, cut it
+  or recast it as an open question — and declare it in the PR body either way.
 - Respect the voiceprint's **Never** list, and lean on its signature moves and rhythm
   notes; the goal is a draft the author reads and thinks "I said this," not "this is
   fine."
@@ -180,14 +182,19 @@ contents (or a pointer to the interview file it came from) go in the PR body's
    Kernel** section (the Kernel fragments from Step 0, or a link to the interview file
    they came from); a **Claim ledger** section, one line per load-bearing claim
    (`- <claim> — Q-explicit (interview 2026-07-20)`); a **Candidate hypotheses — not yet
-   yours** section listing every `Model-hypothesis` not written as an open possibility in
-   the prose, numbered `H1.`, `H2.`, ... each with `- Why it emerged:`,
-   `- Would change the piece by:`, and `- Status: not adopted` (empty if there are none —
-   the draft must read correctly with every listed hypothesis absent, and the author
-   replies `**Adopt hypothesis — Hn**` or `**Reject hypothesis — Hn**` on the PR); an
-   **A/B calibration** section (below); and **three title options per language** (the one
-   used plus two alternates), so the author can swap titles at ship time without
-   composing anything.
+   yours** section listing **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`,
+   ... — including one already written into the prose as a hedged open possibility ("One
+   possibility is…"), not only the ones fully omitted from it. A hedged entry needs an Hn
+   the same as an omitted one, or the author has no id to adopt/reject by; say in its
+   `Why it emerged` line whether it's already in the draft or was left out entirely.
+   Each entry carries `- Why it emerged:`, `- Would change the piece by:`, and
+   `- Status: not adopted` (the whole section is empty only when the draft has no
+   unadopted hypothesis at all — including hedged ones — since the draft must read
+   correctly with every listed hypothesis absent; the author replies
+   `**Adopt hypothesis — Hn**` or `**Reject hypothesis — Hn**` on the PR); an **A/B
+   calibration** section (below); and **three title options per language** (the one used
+   plus two alternates), so the author can swap titles at ship time without composing
+   anything.
 
 ## A/B calibration (every draft PR)
 
@@ -223,10 +230,11 @@ question as settled. The Friday ship gate applies the chosen rendering to the PR
 
 ## Candidate hypotheses (same PR, when any Model-hypothesis exists)
 
-Every `Model-hypothesis` (`docs/pipeline.md` §10) that the draft doesn't already carry as
-an explicit open possibility goes here instead of into the prose as an author belief. This
-section must use this exact shape — the Worker parses it the same way it parses A/B
-calibration:
+Every unadopted `Model-hypothesis` (`docs/pipeline.md` §10) gets an entry here — the ones
+you left out of the prose entirely *and* the ones you wrote in as a hedged open
+possibility ("One possibility is…"). A hedged one still needs an `Hn` id here, or the
+author has nothing to reply `**Adopt hypothesis — Hn**` to. This section must use this
+exact shape — the Worker parses it the same way it parses A/B calibration:
 
 ```md
 ## Candidate hypotheses — not yet yours
@@ -235,11 +243,17 @@ H1. <the hypothesis, one line>
    - Why it emerged: <what in the research/drafting produced it>
    - Would change the piece by: <what adopting it would add or shift>
    - Status: not adopted
+
+H2. <a second hypothesis you already wrote in as a hedged possibility>
+   - Why it emerged: <same as above>
+   - Would change the piece by: already in the draft, hedged — adopting drops the hedge
+   - Status: not adopted
 ```
 
-Omit the section entirely when the draft has no unadopted hypotheses. The draft must read
-correctly with every listed hypothesis absent — a hypothesis is bonus material, not scaffolding.
-The author replies `**Adopt hypothesis — H1**` or `**Reject hypothesis — H1**`; the Friday
-ship gate applies the decision (routine 04, step 4) — appending an adopted claim to
+Omit the section entirely only when the draft has no unadopted hypothesis at all —
+including hedged ones. The draft must read correctly with every listed hypothesis absent
+or left hedged — a hypothesis is bonus material, not scaffolding. The author replies
+`**Adopt hypothesis — H1**` or `**Reject hypothesis — H1**`; the Friday ship gate applies
+the decision (routine 04, step 4) — appending an adopted claim to
 `research/positions.md` and promoting it to a plain assertion in both languages, or stripping
 a rejected one with no record left anywhere.
