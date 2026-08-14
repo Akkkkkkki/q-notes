@@ -75,11 +75,19 @@ resolve stuck work without waiting for the author to feel ready.
      also goes to `research/voice.md ## Proposed` under the protocol in step 6.
    - `**读稿标记 — 我不会这么说：**` → step 6; same contract, plus the rule to distill.
    - `**Voice flag — keep/cut:**` and `**Downgrade to note**` → apply as stated.
-   - `**Adopt hypothesis — Hn.**` → append the claim verbatim to `research/positions.md`
-     with the date and this PR number, source-tagged `adopted hypothesis`; promote the
-     draft's hedged rendering of it to a plain author assertion in both languages; and
+   - `**Adopt hypothesis — Hn.**` → commit the append to `research/positions.md`
+     (date, this PR number, source-tagged `adopted hypothesis`) **directly to `main`**,
+     the same way the Desk's A/B and read-aloud records land in `research/voice.md`
+     — never only on the PR branch. This adoption must survive whatever happens to
+     *this* PR: a cadence hold, a downgrade, or a >14-day kill must not cost the
+     record. If the draft already carries a hedged rendering of the hypothesis ("One
+     possibility is…"), promote it to a plain author assertion in both languages; if
+     the hypothesis was fully quarantined (omitted from the prose, listed only in
+     Candidate hypotheses — the drafter is allowed to do this), there is nothing to
+     promote in place, so write the claim in as a new plain assertion at the point in
+     each language version where the surrounding argument already sets it up, then
      mark that hypothesis `Status: adopted` in the PR body. It is now `Q-explicit`
-     material for future drafts.
+     material for future drafts regardless of this PR's own outcome.
    - `**Reject hypothesis — Hn.**` → mark `Status: rejected` in the PR body and strip any
      first-person residue from both language versions. Record nothing in
      `research/positions.md` or `research/voice.md` — a rejected hypothesis never becomes

@@ -534,9 +534,15 @@ or
 ```
 
 The ship gate applies the decision before its next verdict (§4.4). An adopted hypothesis is
-appended to `research/positions.md` and the draft's hedged version is promoted to a plain
-author assertion in both languages; a rejected one is stripped and recorded nowhere. Adopted
-positions become valid `Q-explicit` material for future drafts, and — once actually taken in
+committed to `research/positions.md` **directly on `main`** — the same way A/B and read-aloud
+records land in `research/voice.md` — so the record outlives whatever happens to the PR that
+carried it: a cadence hold, a downgrade, or a >14-day kill must not cost an adoption. If the
+draft carries a hedged version of the claim, promote it to a plain author assertion in both
+languages; if the hypothesis was fully quarantined (omitted from the prose, listed only in
+Candidate hypotheses), write it in as a new assertion instead — there's no hedged sentence to
+promote in that case. A rejected hypothesis is stripped from the draft and recorded nowhere.
+Adopted positions become valid `Q-explicit` material for future drafts regardless of the
+originating PR's own fate, and — once actually taken in
 public in a published piece — candidates for the gardener to propose into
 `research/voice.md ## Stances` (§4.5). `research/voice.md` stays "how Q sounds";
 `research/positions.md` is "what Q has adopted" — keep them separate rather than folding

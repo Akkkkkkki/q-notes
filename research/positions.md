@@ -16,7 +16,10 @@ Rules:
   comment — never on a candidate hypothesis alone. A rejected or never-decided hypothesis is
   never recorded anywhere.
 - The author may edit or delete any entry, anytime; this file commits directly to `main`
-  like `research/voice.md`.
+  like `research/voice.md`. The ship gate commits the append to `main` on its own, the
+  moment it processes an `Adopt hypothesis` comment — never only on the draft's PR
+  branch. An adoption must outlive whatever happens to that PR next: a cadence hold, a
+  downgrade to Note, or a >14-day kill must not cost the record.
 - One line per entry: date, `(adopted hypothesis, PR #N)`, the claim as adopted.
 
 ## Adopted
