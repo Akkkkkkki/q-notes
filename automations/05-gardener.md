@@ -17,6 +17,9 @@ Write `research/retro/YYYY-MM.md` containing, for the past month:
 - Backlog flow: added, drafted, expired, killed.
 - **Origination ratio**: % of published pieces rooted in author input (inbox spark or
   interview answers) vs. pure scout finds. Target ≥ 60% author-rooted.
+- **Hypothesis quarantine**: candidate hypotheses proposed vs. adopted vs. rejected this
+  month, across all draft PRs (`docs/pipeline.md` §10). This is the number that says
+  whether the quarantine is working or just generating noise the author ignores.
 - Verdict against every target in `docs/pipeline.md` §9. If any target has been missed
   three months running, say plainly that the *pipeline design* needs revision and propose
   the single change most likely to fix it. The author is never the diagnosis.
@@ -37,7 +40,11 @@ Re-read the published posts in `src/content/posts/`:
 
 Re-read the month's interview answers, published pieces, the voice-samples corpus
 (`research/voice-samples/`), the A/B choices the author made in draft-PR comments, and
-the read-aloud marks the ship gate processed. The Desk also appends raw dated records
+the read-aloud marks the ship gate processed. Also re-read `research/positions.md`: for
+any adopted position that has now been taken in public in a published piece, propose it as
+a `voice.md ## Stances` line citing the post. Never mine a candidate hypothesis straight
+from a PR body — only an entry the ship gate already recorded there because the author
+adopted it is eligible. The Desk also appends raw dated records
 (`A/B choice` / `read-aloud mark` tags) directly to `voice.md ## Proposed` — those are
 signal, not finished entries: distill recurring raw records that point the same
 direction into one proposed rule and delete the raw records it came from (a raw record

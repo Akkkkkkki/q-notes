@@ -176,13 +176,17 @@ Answer directions (`→ ` lines) are the interviewer's prompts, not the author's
 treat a question as unanswered unless the author actually wrote under it in
 `## Author answers`.
 
+Before any prose, the drafter builds an **Author Kernel** from author-owned material only
+and classifies every load-bearing claim into one of four ownership classes — see §10.
+
 The drafter writes **both language versions in the same PR** (see §6), runs
 `npm run build`, marks the backlog item `Drafted`, and opens a ready (non-draft) PR whose
 body contains: thesis, tier, sources re-checked, what the author should challenge,
 a claim-parity confirmation between the two language versions, a **voice section**
 (the author phrases kept verbatim; any opinion not traceable to author input — a list
-that should be empty), and **three title options per language** so the author can swap
-the title at ship time without writing anything.
+that should be empty), a **claim ledger** and a **candidate hypotheses** section per §10,
+and **three title options per language** so the author can swap the title at ship time
+without writing anything.
 
 ### 4.4 Friday — Ship gate (`automations/04-ship-gate.md`)
 
@@ -204,6 +208,11 @@ The anti-perfectionism enforcer. For every open content PR:
   opinionated claim not traceable to the author's answers, sparks, or published
   positions, get flagged in the verdict as questions ("Says X — yours?"). Voice flags
   shape the author's five minutes; they never block a passing checklist.
+- Run the **ownership check** (§10): any `Model-hypothesis` written as an unqualified
+  author belief with no adoption record gets recast as an open possibility or moved to
+  Candidate hypotheses; a mental-history sentence with no traceable source gets fixed the
+  same way. `**Adopt hypothesis — Hn**` / `**Reject hypothesis — Hn**` comments are author
+  feedback like any other and get applied before the next verdict.
 - If the PR has been open **> 7 days**: cut it down — extract the strongest single idea
   into a Note, re-tier, and re-propose. The system converts stuck essays into shipped notes.
 - If open **> 14 days**: close it, log one line in the backlog item explaining the kill.
@@ -242,6 +251,9 @@ A piece ships when its tier checklist passes — not when it feels finished.
 - [ ] Readable sentences: no long, dense, multi-clause run-ons; one idea per sentence by default, and stacked clauses, parentheticals, or statistics are split into their own sentences.
 - [ ] Human voice: the pre-publish human pass (`research/human-voice.md` §4) ran on both language versions — talk test, contractions in English, rationed pivots/aphorisms, varied paragraph rhythm, no reused opening/closing frames, 中文版不是英文的对齐翻译. The countable half of that pass is enforced by `scripts/content-gate.mjs` (§5 of the same file); its style warnings are advisory, but an unaddressed one needs a reason in the PR body.
 - [ ] Both language versions present and claim-equivalent.
+- [ ] Claim ledger present (§10); no unadopted `Model-hypothesis` stated as the author's
+      first-person belief; no mental-history claim ("I used to think…") without a traceable
+      source.
 - [ ] Build passes.
 
 **Essay** — all of the above, plus:
@@ -417,3 +429,134 @@ Desk (`attention()` in `worker/flow.ts`). Before that check existed, a green-lit
 dropped off the "needs you" list the moment the author tapped the green light — so a dead
 routine and a finished week looked identical from the phone. If that item appears, check
 the scheduler against §8 before debugging anything in this repo.
+
+## 10. Thought ownership
+
+The style work in §5–6 and `research/human-voice.md` keeps the *prose* from reading as
+machine-written. It does nothing to stop a subtler failure: the prose reads as the author,
+but the *thinking* was silently completed by the model. A nearby published position gets
+treated as license to construct a new one; a model-built hypothesis gets written as an
+unqualified first-person belief; the model invents an intellectual autobiography — "I used
+to think X, then I came to believe Y" — that the author never supplied. None of that trips
+the never-list or the "never invent a scene" rule, because it isn't a fabricated scene. It's
+fabricated authorship.
+
+> The model may make the writing clearer. It must not make the author's thinking more
+> complete than the author has earned.
+> 允许 AI 帮忙把想法写清楚，不允许它替作者把没想完的地方想完。
+
+This section governs the drafter (§4.3), the ship gate (§4.4), and the gardener (§4.5).
+
+### The Author Kernel
+
+Before drafting, the drafter builds a small, deliberately unpolished internal Kernel from
+author-owned material only: interview answers, `research/inbox.md` sparks, author PR/Desk
+comments (`One change`, A/B choices, read-aloud marks), adopted entries in
+`research/positions.md`, and published positions the author has confirmed. Research sources
+may support a fact in the Kernel; they never enter `Explicit positions`. The model does not
+smooth the Kernel into a cleaner argument — "I don't know," "I only have a hunch," and an
+unanswered question are first-class content, not gaps to repair. The Kernel is the draft's
+scope boundary: an epistemic boundary in it narrows what the piece attempts, it is not
+satisfied by adding a disclaimer and writing past it anyway.
+
+```md
+## Author Kernel
+
+### Explicit positions
+-
+
+### Concrete material
+-
+
+### Epistemic boundaries
+-
+
+### Unresolved doubts
+-
+
+### Characteristic wording worth preserving
+- "..."
+```
+
+### The claim ledger — four ownership classes
+
+Every load-bearing claim in a draft carries one class, listed in the PR body's
+`## Claim ledger` section:
+
+1. **`Q-explicit`** — the author said it directly: interview answer, inbox spark, author
+   PR/Desk comment, an adopted `research/positions.md` entry, or a published post whose
+   position the author confirmed. May be written as a first-person author assertion.
+2. **`Q-derived`** — a near inference from an explicit position that adds no new value
+   judgment or causal theory (e.g. author: "taste depends on domain" → derived: "consulting
+   and design may contain different mixes of taste and judgment"). Use conservatively: if a
+   reasonable person could accept the parent claim while rejecting the derived one, it is
+   not `Q-derived`.
+3. **`External`** — a factual claim or an explicitly attributed outside argument, sourced.
+   Stated as fact/attribution, never silently converted into the author's belief.
+4. **`Model-hypothesis`** — a new mechanism, causal explanation, framework, prediction,
+   coined category, cross-domain analogy, or "the real reason is…" reframe the model
+   produced while researching or drafting. It must not silently become a first-person
+   Q-notes position. It can be omitted, written explicitly as an open possibility ("One
+   possibility is…", without implying the author holds it), or surfaced in the PR's
+   `## Candidate hypotheses — not yet yours` section for the author to adopt or reject.
+
+**Published posts are context, not blanket authorization.** A published post licenses
+terminology, previously adopted premises, historical continuity, and a direct extension the
+author explicitly made. It does not license a new causal theory, a new domain application
+presented as obvious, a new prediction, or a new framework that merely sounds consistent
+with the archive. (Example: `authorization bug` can be referenced when discussing another
+permission boundary; it does not make every new trust/governance story an authorization
+thesis the author owns.)
+
+### No fabricated intellectual autobiography
+
+"I used to think…", "I've come to think…", "I changed my mind…", "what convinced me
+was…", "the correction came when…", "I was wrong because…" are factual claims about the
+author's mental history, not style choices. They are allowed only when the source material
+actually contains that change-of-mind story (the taste-thread material behind
+`taste-is-a-bet` is a real example). They are never allowed as narrative glue to connect a
+model-built argument. `scripts/content-gate.mjs` flags likely hits as a warning; the ledger
+is what settles whether one is sourced.
+
+### Adoption protocol (v1: PR-comment text, no UI)
+
+The draft must read correctly with every unadopted candidate hypothesis absent — a
+hypothesis is bonus material the article does not depend on. The author replies on the PR:
+
+```md
+**Adopt hypothesis — H1**
+```
+
+or
+
+```md
+**Reject hypothesis — H1**
+```
+
+The ship gate applies the decision before its next verdict (§4.4). An adopted hypothesis is
+appended to `research/positions.md` and the draft's hedged version is promoted to a plain
+author assertion in both languages; a rejected one is stripped and recorded nowhere. Adopted
+positions become valid `Q-explicit` material for future drafts, and — once actually taken in
+public in a published piece — candidates for the gardener to propose into
+`research/voice.md ## Stances` (§4.5). `research/voice.md` stays "how Q sounds";
+`research/positions.md` is "what Q has adopted" — keep them separate rather than folding
+positions into the voiceprint.
+
+### Worked fixtures
+
+**PR #62 shape.** Input: firsthand software experience, a strong line about verification
+theater, an explicit "I don't know hardware" boundary. Expected: software experience may be
+compared against researched EDA facts (`External`); a coined "consequence gate" and
+accountability-as-root-cause are `Model-hypothesis` and go to Candidate hypotheses unless
+adopted; no invented "I used to buy that story" narrative; the hardware boundary narrows
+scope rather than getting a disclaimer and a hardware argument anyway.
+
+**PR #64 shape.** Input: an existing taste/judgment distinction, an outside decisiveness
+argument. Expected: the terminology critique is `Q-explicit` if it traces to the author's
+prior position; "this is mainly a pricing problem" and the 2028 personal-comp falsifier are
+`Model-hypothesis` until adopted — never silently written as the author's first-person
+prediction.
+
+**Real-correction case.** Input explicitly says "I think I got my earlier definition
+wrong." Expected: the change-of-mind language is `Q-explicit` and allowed — the rule targets
+fabrication, not first-person correction the author actually supplied.

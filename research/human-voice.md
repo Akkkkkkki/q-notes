@@ -59,6 +59,15 @@ material to carry and fills the space with competent synthesis. Style rules belo
 but nothing substitutes for the author's stances, phrases, and firsthand details
 actually existing in the voiceprint and interview answers.
 
+**Fabricated intellectual autobiography.** A different failure the tells above don't catch,
+because the prose is clean and the scene isn't invented — the *mental history* is. A real
+draft (PR #62) wrote: "I used to buy that story. What actually forces a gate like this, I've
+come to think..." The interview behind it had strong material — a line about verification
+theater, a client codebase that turned into "a disastrously messy entangled myth," an
+explicit "I don't know hardware" boundary — but no author-supplied "I used to believe X, then
+changed my mind" story. The sentence reads as a human voice; it is synthetic authorship. See
+`docs/pipeline.md` §10 for the ownership model this feeds.
+
 **中文版的对应问题。** 中文版语法干净，但骨架仍是英文：句序、段落节奏、每段结尾的
 金句位置都与英文版一一对应，读起来像高质量译文而不是中文写作。中文的"AI 味"
 本质上就是翻译腔，病根在句子结构，不在用词：万能动词（进行 / 作出）、
@@ -121,7 +130,11 @@ humor), and their rhythm is irregular because it follows thought, not template.
    These must trace to author input, like every opinion. If the interview answers
    contain no such moment, that's an interview gap to flag in the PR body — **never
    invent a scene or anecdote**. A traceable "this is the part I find hard to believe"
-   beats a fabricated client story every time.
+   beats a fabricated client story every time. This extends to mental history: "I used
+   to think...", "I've come to think...", "I changed my mind...", "what convinced me
+   was...", "the correction came when..." are factual claims about the author's past
+   beliefs, not sentence-level style — write them only when the source material
+   actually contains that change-of-mind story (`docs/pipeline.md` §10).
 6. **Casualness budget.** One or two light touches per piece — an aside, a dry joke,
    a parenthetical — where they occur naturally. Zero is stiff; three is trying.
 
@@ -173,6 +186,8 @@ made directly, like other mechanical fixes.
       上去的。
 - [ ] At least one traceable first-person moment (or the gap is flagged in the PR
       body); nothing firsthand is invented.
+- [ ] Every "I used to think" / "I've come to think" / change-of-mind sentence traces to
+      an author-supplied history, not to narrative glue connecting a model-built claim.
 - [ ] One or two natural light touches; none forced.
 
 ## 5. What the linter checks, and what it can't
@@ -195,6 +210,7 @@ published posts so a hit means something real rather than background noise.
 | Nominalisations, stiff connectives | zero | all passed |
 | One name for one thing | a coined term is reused, not just defined | all passed |
 | 长句 / 万能动词 / 翻译腔模板 (§11–13) | see the zh thresholds in the script | 9 hits across 5 zh posts |
+| Mental-history claim ("I used to think...", 我以前认为…) | flag every hit, capped at 3 | 1 post (`taste-is-a-bet`, a real author correction) |
 
 Every one of those is now clear. That pass is the "after" column: 26 style warnings across the
 eighteen published files, down to zero, with every number and source link byte-identical.

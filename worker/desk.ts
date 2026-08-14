@@ -41,6 +41,13 @@ export interface AbQuestion {
   options: Array<{ letter: string; text: string }>;
 }
 
+export interface CandidateHypothesis {
+  /** The H-number as written in the PR body ("H1." -> 1). */
+  n: number;
+  text: string;
+  status: string;
+}
+
 export interface DeskPr {
   number: number;
   title: string;
@@ -55,6 +62,8 @@ export interface DeskPr {
   voice: { spine: string[]; flags: string[] };
   /** A/B calibration questions from the PR body, minus already-answered ones. */
   ab: { questions: AbQuestion[]; answered: number[] };
+  /** Candidate hypotheses from the PR body (docs/pipeline.md §10), plus decided ids. */
+  hypotheses: { candidates: CandidateHypothesis[]; adopted: number[]; rejected: number[] };
   titleOptions: string[];
   /** Current last paragraph per content file, for the last-line slot. */
   lastLines: Array<{ path: string; text: string }>;
@@ -122,6 +131,10 @@ export async function listDesk(env: Env): Promise<Response> {
       previewUrl: extractPreviewUrl(comments),
       voice: { spine: body.spine, flags: body.flags },
       ab: { questions: parseAbQuestions(pr.body ?? ''), answered: answeredAbQuestions(comments) },
+      hypotheses: {
+        candidates: parseHypotheses(pr.body ?? ''),
+        ...decidedHypotheses(comments),
+      },
       titleOptions: body.titleOptions,
       lastLines,
       pending: pendingRequests(comments),
@@ -446,8 +459,9 @@ function latestVerdict(comments: string[]): string | null {
   return null;
 }
 
-/** The Desk comment shapes the ship gate is obliged to act on (routine 04 step 3). */
-const REQUEST_RE = /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note)/;
+/** The Desk comment shapes the ship gate is obliged to act on (routine 04 step 4). */
+const REQUEST_RE =
+  /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note|Adopt hypothesis —|Reject hypothesis —)/;
 
 /**
  * The same phrasings, but anchored to the top of the comment, where routine 04
@@ -546,6 +560,40 @@ export function answeredAbQuestions(comments: string[]): number[] {
     }
   }
   return [...answered];
+}
+
+/**
+ * Candidate hypotheses from the drafter's PR body (routine 03 defines the shape:
+ * `## Candidate hypotheses — not yet yours`, items numbered `H1.`, `H2.`, ..., a
+ * `Status:` line per item defaulting to "not adopted" when absent).
+ */
+export function parseHypotheses(body: string): CandidateHypothesis[] {
+  const section = sectionAfter(body, /candidate hypothes[ei]s/i);
+  if (!section) return [];
+  const hypotheses: CandidateHypothesis[] = [];
+  let current: CandidateHypothesis | null = null;
+  for (const line of section.split('\n')) {
+    const h = line.match(/^\s*H?(\d+)[.)、]\s+(.*)$/i);
+    if (h) {
+      current = { n: Number(h[1]), text: h[2].trim(), status: 'not adopted' };
+      hypotheses.push(current);
+      continue;
+    }
+    const s = line.match(/^\s*(?:[-*]\s*)?status[:：]\s*(.*)$/i);
+    if (s && current) current.status = s[1].trim().toLowerCase();
+  }
+  return hypotheses;
+}
+
+/** Hypothesis ids the author has decided via Desk/PR comments, split adopted vs rejected. */
+export function decidedHypotheses(comments: string[]): { adopted: number[]; rejected: number[] } {
+  const adopted = new Set<number>();
+  const rejected = new Set<number>();
+  for (const c of comments) {
+    for (const m of c.matchAll(/\*\*Adopt hypothesis\s*—\s*H?(\d+)/gi)) adopted.add(Number(m[1]));
+    for (const m of c.matchAll(/\*\*Reject hypothesis\s*—\s*H?(\d+)/gi)) rejected.add(Number(m[1]));
+  }
+  return { adopted: [...adopted], rejected: [...rejected] };
 }
 
 /** Lines of the body from the heading/label matching `pattern` to the next heading. */

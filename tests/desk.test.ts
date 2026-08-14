@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import worker from '../worker/index';
 import {
   parsePrBody,
+  parseHypotheses,
+  decidedHypotheses,
   pendingRequests,
   extractPreviewUrl,
   replaceTitle,
@@ -105,7 +107,7 @@ describe('PR body parsing', () => {
     expect(pendingRequests([verdict, change, ab, mark])).toBe(3);
     // A verdict after the feedback is the gate saying it handled it.
     expect(pendingRequests([change, ab, verdict])).toBe(0);
-    // The cadence hold is a verdict too (routine 04 step 4).
+    // The cadence hold is a verdict too (routine 04 step 5).
     expect(pendingRequests([change, '**Ready — queued** until 2026-08-12.'])).toBe(0);
     // Only the requests count — bot chatter and the author's plain replies don't.
     expect(pendingRequests(['Cloudflare preview: https://x.workers.dev', 'nice one'])).toBe(0);
@@ -127,6 +129,62 @@ describe('PR body parsing', () => {
       'https://pr-42.q-notes.workers.dev/posts/x'
     );
     expect(extractPreviewUrl(['no urls here'])).toBeNull();
+  });
+});
+
+const HYPOTHESIS_BODY = `## Candidate hypotheses — not yet yours
+
+H1. Decisiveness scarcity is mainly a pricing problem.
+   - Why it emerged: the outside article's incentive framing suggested it.
+   - Would change the piece by: adding a payoff-structure thesis.
+   - Status: not adopted
+
+H2. A "consequence gate" generalizes across hardware and software.
+   - Why it emerged: comparing the author's software story to EDA verification.
+   - Would change the piece by: a coined framework and a 2027 prediction.
+   - Status: not adopted
+
+## A/B calibration
+`;
+
+describe('Candidate hypothesis parsing (docs/pipeline.md §10)', () => {
+  it('extracts H-numbered hypotheses with text and status', () => {
+    const hypotheses = parseHypotheses(HYPOTHESIS_BODY);
+    expect(hypotheses).toEqual([
+      { n: 1, text: 'Decisiveness scarcity is mainly a pricing problem.', status: 'not adopted' },
+      { n: 2, text: 'A "consequence gate" generalizes across hardware and software.', status: 'not adopted' },
+    ]);
+  });
+
+  it('defaults status to "not adopted" when the Status line is missing', () => {
+    const body = '## Candidate hypotheses — not yet yours\n\nH1. Some hypothesis.\n   - Why it emerged: research.\n';
+    expect(parseHypotheses(body)).toEqual([{ n: 1, text: 'Some hypothesis.', status: 'not adopted' }]);
+  });
+
+  it('returns an empty list when there is no Candidate hypotheses section', () => {
+    expect(parseHypotheses(PR_BODY)).toEqual([]);
+  });
+
+  it('splits adopted and rejected ids from Desk/PR comments', () => {
+    const comments = [
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Reject hypothesis — H2**\n\n_(via Desk)_',
+    ];
+    expect(decidedHypotheses(comments)).toEqual({ adopted: [1], rejected: [2] });
+    expect(decidedHypotheses([])).toEqual({ adopted: [], rejected: [] });
+  });
+
+  it('counts an Adopt/Reject hypothesis comment as author feedback still owed a gate pass', () => {
+    const verdict = '**Ready to ship**\n- three bullets';
+    const adopt = '**Adopt hypothesis — H1**\n\n_(via Desk)_';
+    const reject = '**Reject hypothesis — H2**\n\n_(via Desk)_';
+
+    expect(pendingRequests([verdict, adopt, reject])).toBe(2);
+    expect(pendingRequests([adopt, verdict])).toBe(0);
+    // Neither decision phrasing matches the verdict patterns, so an Adopt/Reject
+    // comment is never mistaken for the gate's own go-ahead.
+    expect(pendingRequests([adopt])).toBe(1);
+    expect(pendingRequests([reject])).toBe(1);
   });
 });
 
