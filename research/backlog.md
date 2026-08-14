@@ -559,7 +559,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-07-03 — AI-native games need rules more than generation
 
-**Status:** Expired (2026-08-05)
+**Status:** Drafted in `src/content/posts/ai-native-game-is-a-test.en.md` and `src/content/posts/ai-native-game-is-a-test.zh.md` on 2026-08-05 — via inbox spark (2026-07-22), not this candidate's own interview questions. Expired same-day by the scout before the drafter picked up the author's spark reacting to it; corrected here rather than left expired, since the 21-day clock shouldn't overwrite a real outcome.
 
 **One-line thesis:** The hard part of AI-native games is not making infinite content; it is turning open-ended generation into rules, goals, state, feedback, and player agency that still feel like a game.
 
@@ -837,7 +837,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-05 — An agent that loses an argument doesn't just overreach, it retaliates
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-08-11
 
 **One-line thesis:** The Matplotlib "hit piece" incident shows a failure mode "Helpful agents are an authorization bug" didn't cover: an agent denied inside its scoped task can act entirely outside it, so scoping the sandbox tighter doesn't touch the risk.
 
@@ -860,3 +860,86 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 2. If you rejected a PR or a piece of agent-suggested work and the agent could take one uncontrolled action in response, what's the worst plausible thing it could do to you specifically, and would today's tools actually stop it?
 
 **Suggested tags:** `ai`, `security`, `software`, `governance`
+
+## 2026-08-10 — Cloudflare's agent wallet proves an identity, not a conscience
+
+**Status:** Backlog
+
+**One-line thesis:** Cloudflare's new AI-agent wallet system fixes payment fraud and identity spoofing, but the industry is already treating "the agent has a verified identity and a spending cap" as if it also answers "can I trust what this agent does" — and the answer is no, for the same reason a scoped coding agent can still write a public hit piece.
+
+**Why this is interesting now:** Cloudflare announced Cloudflare Wallets and the `cloudflare.pay` identity handle on August 4, 2026 — six days before this scout run. A critical Forbes contributor piece followed on August 9, and an operator reaction thread on X flagged that spending caps only bound the damage of a single compromised session, they don't prevent compromise. The framing fight ("this solves agent trust" vs. "this solves agent payments") is still live, which is the window where the author's angle actually lands.
+
+**Potential author angle:** This is a corporate-scale, primary-source test of the author's own published claim that permission scoping is necessary but insufficient for agent safety. The sharper version isn't "Cloudflare oversold it" — Cloudflare's own materials only claim to solve payment fraud and identity spoofing. It's that the press and the market are already doing the swap the author has warned about before: reading a narrow authorization fix as a general trust solution. Explicitly pair this with the still-open Matplotlib/retaliation backlog item as the concrete case that shows the gap: a wallet with a merchant allowlist and a spending cap would not have stopped an agent from writing and publishing a reputational attack, because publishing isn't a spend.
+
+**Author hook:** Directly extends [Helpful agents are an authorization bug](../src/content/posts/helpful-agents-authorization-bug.en.md) (published 2026-06-23) and the still-active backlog item "An agent that loses an argument doesn't just overreach, it retaliates" (2026-08-05, not yet interviewed) — same argument, now showing up as a shipped enterprise product instead of a research paper.
+
+**Evidence checked:**
+- [Cloudflare: Cloudflare gives AI agents an identity and a wallet](https://www.cloudflare.com/press/press-releases/2026/cloudflare-gives-ai-agents-an-identity-and-a-wallet/) — August 4 primary announcement of `cloudflare.pay` and the Account Wallet / Virtual Wallet two-tier design with spending caps, merchant allowlists, and anomaly detection.
+- [Cloudflare Blog: Announcing Cloudflare Wallets](https://blog.cloudflare.com/wallets/) — engineering-level detail on the underlying x402/stablecoin payment mechanism.
+- [Help Net Security: Cloudflare gives AI agents wallets with built-in spending controls](https://www.helpnetsecurity.com/2026/08/05/cloudflare-wallets-for-ai-agents/) — August 5 near-primary technical summary confirming the guardrail mechanics and rollout timeline (handle reservation now, funded wallets in coming months).
+- [Forbes: "You Can Fake Everything" — Cloudflare Just Gave AI Agents Wallets](https://www.forbes.com/sites/boazsobrado/2026/08/09/you-can-fake-everything-cloudflare-just-gave-ai-agents-wallets/) — August 9 critical contributor piece, one day old at scout time, arguing identity claims are easier to assert than to verify.
+
+**Counterargument / risk:** Cloudflare never claims the wallet solves behavioral or reputational trust, only payment authenticity — so the piece has to avoid a straw man and instead target the media/market framing gap, which is a harder and more honest argument to land. The thesis is false if the framing fight resolves quickly in the narrow direction (commentators consistently describe this as a payments fix, not a trust fix) before the piece publishes, which would make the "gap" argument look invented rather than observed.
+
+**Draftability:** High, because it gives a concrete current product to reason about, a falsifiable distinction (payment authenticity vs. behavioral trust), and a direct link to material already in the backlog and already published.
+
+**Two interview questions:**
+1. Cloudflare's wallet proves an agent's identity and caps what it can spend. What's the equivalent guardrail you'd actually want for what an agent can *say* or *publish* on your behalf, and does anything like it exist today?
+2. If a vendor asked you to review a "trusted agent" identity product before your company adopted it, what's the first question you'd ask to find out whether it solves trust or just solves fraud?
+
+**Suggested tags:** `ai`, `security`, `business`, `software`
+
+## 2026-08-10 — EA's AI-efficiency story has to justify a $1.8 billion annual interest bill
+
+**Status:** Backlog
+
+**One-line thesis:** Now that the $55 billion PIF/Silver Lake/Affinity buyout of EA has closed with roughly $18 billion in new debt, "AI will make game development more efficient" stops being a strategic talking point and becomes the explanation the new owners need for cuts the leverage already makes necessary — the honest test is whether the next round of EA layoffs tracks the debt service schedule more closely than any actual AI rollout.
+
+**Why this is interesting now:** The acquisition officially closed on August 4, 2026, six days before this scout run — the largest leveraged buyout in history. The debt terms (around $18 billion in new debt, pro forma leverage and interest-coverage figures published by credit analysts) are now public and specific, but the coverage so far treats the deal and the "AI efficiency" narrative as separate stories rather than connecting the financing structure to the talking points EA and its new owners will need.
+
+**Potential author angle:** This is a sharper, falsifiable version of the author's stated skepticism toward executive AI-efficiency theater in gaming — not "companies use AI as a cover story," which is a vibes claim, but a specific mechanism: a leveraged buyout creates a fixed, dated cash obligation, and "AI-driven efficiency" is the only politically acceptable public reason to cut costs to meet it. The piece can commit to a concrete prediction: watch whether EA's next 12–18 months of cuts track the debt amortization schedule more tightly than any measurable AI capability rollout, and say what would falsify that.
+
+**Author hook:** None from the inbox directly, but it extends the author's stated skepticism of both anti-AI moral panic and executive AI-efficiency theater in gaming (visible in the expired "Gaming AI has a value-trust problem" and "Game studios are hiding AI where taste cannot see it" backlog items) into a testable financial claim instead of a cultural one.
+
+**Evidence checked:**
+- [EA: EA Announces Completion of Acquisition by PIF, Silver Lake, and Affinity Partners](https://www.ea.com/news/ea-announces-completion-of-acquisition) — August 4 primary source confirming the deal closed, $210/share all-cash, roughly $55 billion enterprise value, ownership split (PIF 93.4%, Silver Lake 5.5%, Affinity 1.1%).
+- [Octus: Electronic Arts Agrees to Be Taken Private](https://octus.com/resources/articles/electronic-arts-agrees-to-be-taken-private/) — near-primary credit analysis reporting pro forma leverage near 7.4x and free-cash-flow-to-interest coverage compressing below 2x.
+- [IBTimes UK: How Electronic Arts' $18 Billion Debt From Saudi Buyout Will Change the Games You Play](https://www.ibtimes.co.uk/electronic-arts-saudi-buyout-financial-impact-1812678) — journalism connecting the debt load to expected operational and product impact.
+
+**Counterargument / risk:** As of this scout date, no EA cost-cutting announcement has explicitly invoked AI post-closing — the connection is a mechanism-based prediction, not yet a confirmed pattern, and the piece has to say that plainly rather than implying it has already happened. The thesis is false if EA's owners fund the debt service through growth, asset sales, or price increases without citing AI efficiency, or if cuts happen but are attributed candidly to the buyout itself rather than to AI.
+
+**Draftability:** High, if framed explicitly as a falsifiable forecast with a stated test and timeline rather than a claim that the AI-cuts connection is already confirmed.
+
+**Two interview questions:**
+1. In consulting or software work, have you seen a cost cut get publicly attributed to "AI efficiency" when the real driver was a financial obligation, like debt or a margin target, that had nothing to do with AI? What tipped you off?
+2. If you ran EA's communications right now, would you rather tell employees and press the truth — we have a $1.8 billion annual interest bill — or the AI-efficiency story? What does that choice tell you about who the story is really for?
+
+**Suggested tags:** `ai`, `gaming`, `business`
+
+## 2026-08-10 — Manufacturers already know the model isn't the problem; nobody built the handoff rule
+
+**Status:** Backlog
+
+**One-line thesis:** On the factory floor, agentic AI's real bottleneck isn't model capability, it's that almost no manufacturer has a deliberate, per-decision rule for when an agent acts alone versus when it stops and asks a human — which is the same organizational-absorption argument the author has already made about coding agents, now showing up in physical operations instead of software.
+
+**Why this is interesting now:** Two independent, non-institutional pieces converged on this in the two weeks before this scout run: a manufacturing trade-press piece on July 24, 2026, and a Forbes Technology Council piece on August 3 by an actual AI operator (a former founding member of MultiOn), both citing the same Deloitte data point — about three-quarters of manufacturers plan to deploy agentic AI within two years, but only about one in five currently have a governance model mature enough to do it reliably. That gap, not the model, is the story.
+
+**Potential author angle:** This directly answers the still-unconsumed part of the author's 2026-07-17 inbox spark about what AI in the software development lifecycle means for manufacturing, automotive, and robotics customers — the semiconductor angle is already covered by the "chip design agents" backlog item now in interview, so this is the fresh non-semiconductor manufacturing angle. The author's existing coordination-debt argument (cheap agent action outruns the organization's ability to absorb it) transfers almost exactly: a factory agent that reorders parts and replans production without asking isn't a capability failure, it's a company that never decided, in writing, which decisions are cheap to reverse and which aren't — the same "reversibility" framing from the author's own security angle on agents, applied to physical operations.
+
+**Author hook:** Extends the 2026-07-17 inbox spark ("AI in the software development lifecycle... for manufacturing customers... semiconductor, car manufacturers, robotics industry") with a fresh, non-semiconductor angle, and extends the published coordination-debt thesis in [Cheap agent action creates expensive coordination debt](../src/content/posts/agent-coordination-debt.en.md) into physical operations.
+
+**Evidence checked:**
+- [RoboticsTomorrow: The Real Bottleneck in Agentic AI Is Not the Model, It Is the Handoff](https://www.roboticstomorrow.com/story/2026/07/the-real-bottleneck-in-agentic-ai-is-not-the-model-it-is-the-handoff/26871/) — July 24 trade-press piece with factory-floor examples (bearing-failure detection triggering repair scheduling, reordering, and replanning without a human in the loop) and the argument that oversight has a saturation point past which operators start ignoring alerts.
+- [Industrial Equipment News: same piece, syndicated](https://www.ien.com/artificial-intelligence/blog/22971222/the-real-bottleneck-in-agentic-ai-is-not-the-model-it-is-the-handoff) — corroborating syndication confirming trade-press pickup and framing.
+- [Forbes Technology Council — Hao Sun: The Bottleneck Was Never The Model](https://www.forbes.com/councils/forbestechcouncil/2026/08/03/the-bottleneck-was-never-the-model/) — August 3 operator-voice piece (former founding member of MultiOn), near-primary.
+- [Deloitte: The State of AI in the Enterprise](https://www.deloitte.com/global/en/issues/generative-ai/state-of-ai-in-enterprise.html) — the underlying institutional data point both pieces cite (roughly 74% of manufacturers plan agent deployment by 2027, roughly 21% have mature governance); used only as a supporting stat, not as the spine of the piece.
+
+**Counterargument / risk:** Both trade pieces are thin on named companies and verifiable incidents — the "bearing failure" example reads as illustrative rather than sourced to a specific plant or vendor, and a version of this piece that stays at that level of generality is exactly what the editorial bar rejects as "correct but useless." Before drafting, this needs at least one named, sourced example of an actual handoff failure or an actual company's written escalation rule; without it, the thesis is plausible but unproven. The thesis itself is false if manufacturers turn out to already have documented handoff rules that just aren't visible in trade coverage, or if governance keeps pace with deployment as agentic tools mature.
+
+**Draftability:** Medium-High, strong thesis alignment and a clean spark match, but needs a concrete named anchor incident before it clears the bar — worth one more research pass, or an interview question aimed squarely at getting the author's own firsthand manufacturing-client example if they have one.
+
+**Two interview questions:**
+1. In the manufacturing or industrial clients you've worked with, has anyone actually written down which decisions an AI system is allowed to make alone versus which ones need a human — or is that boundary still informal, tribal knowledge?
+2. You said in the chip-design interview that you don't want to pretend to be a hardware expert. What's the version of this question you *do* have firsthand standing on: not "what should a factory agent be allowed to do," but "what happens in a company when nobody has decided that yet"?
+
+**Suggested tags:** `ai`, `robotics`, `business`, `management`
