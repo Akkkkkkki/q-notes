@@ -20,6 +20,15 @@ sources:
   - label: "techtimes.com"
     title: "Siemens Hooks Chip Design Agents to Physics Engines to Prevent Tapeout Errors"
     url: "https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm"
+  - label: "prnewswire.com"
+    title: "Synopsys Showcases Comprehensive Autonomous Engineering Workflows from Silicon to Systems"
+    url: "https://www.prnewswire.com/news-releases/synopsys-showcases-comprehensive-autonomous-engineering-workflows-from-silicon-to-systems-developed-with-nvidia-technology-302834791.html"
+  - label: "cadence.com"
+    title: "Agentic AI for Chip and System Design"
+    url: "https://www.cadence.com/en_US/home/ai/ai-for-design.html"
+  - label: "anysilicon.com"
+    title: "The Ultimate Signoff (TapeOut) Checklist"
+    url: "https://anysilicon.com/the-ultimate-signoff-tapeout-checklist/"
   - label: "faa.gov"
     title: "AC 20-115D — Airborne Software Assurance (DO-178C)"
     url: "https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf"
@@ -27,7 +36,7 @@ connections:
   linksTo: ["helpful-agents-authorization-bug"]
 ---
 
-At DAC 2026, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-design agents within days of each other. None of them ships without the same feature: every agent decision has to clear a hard physics-verification check first. Siemens routes agent output through [Calibre and Questa One](https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm) before it can proceed, tools that return a pass-or-fail owed nothing to a model's opinion of its own work.
+At DAC 2026, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-design agents within days of each other, and by each vendor's own account, physics-based verification stands between an agent's decision and the next step. [Siemens](https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm) routes agent output through Calibre and Questa One before it can proceed, a pass-or-fail owed nothing to a model's opinion of its own work. [Synopsys](https://www.prnewswire.com/news-releases/synopsys-showcases-comprehensive-autonomous-engineering-workflows-from-silicon-to-systems-developed-with-nvidia-technology-302834791.html) pairs its own "fully autonomous" verification agent with signoff-grade checks, and [Cadence](https://www.cadence.com/en_US/home/ai/ai-for-design.html) says every agent action is grounded in its physics-based design and verification engines.
 
 The tidy reading is that a bad tapeout is catastrophically expensive and physically irreversible, so hardware gets a gate that software skips. I used to buy that story. What actually forces a gate like this, I've come to think, is whether a specific, named person answers for it, not the cost of reversing the mistake.
 
@@ -37,7 +46,7 @@ I don't know hardware or chip manufacturing, and I'm not pretending otherwise he
 
 A client's codebase turned into a disastrously messy entangled myth within two and a half months of letting AI coding run without real verification. Nobody thought any single change was expensive to reverse. They were mostly right, sentence by sentence. The debt compounded anyway, because "cheap to reverse" and "cheap to have happened at all" are different claims, and nobody owned the gap between them.
 
-A chip company can't get away with that math, not because silicon is special, but because the company has a name on the tapeout bill and a board that will ask about it. A tapeout failure has an owner by construction. Most AI-agent-authored code at a normal software company doesn't. It lands in a PR, gets a skim review, and if it's wrong, the cost shows up months later as a mess nobody can trace back to a decision-maker.
+A chip company can't get away with that math, not because silicon is special, but because a design doesn't ship without clearing a [formal signoff review](https://anysilicon.com/the-ultimate-signoff-tapeout-checklist/), a documented checklist someone puts their name to, and because the company has a name on the tapeout bill besides, with a board that will ask about it. Most AI-agent-authored code at a normal software company clears no equivalent review. It lands in a PR, gets a skim review, and if it's wrong, the cost shows up months later as a mess nobody can trace back to a decision-maker.
 
 Software does have an equivalent consequence gate, just not where the DAC story looks. Aviation software has to clear [DO-178C](https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf): a certifying engineer the FAA has specifically authorized signs off, and the FAA can revoke that authorization. Strip the legal machinery away and it's the same mechanism as Calibre and Questa One, wearing a regulatory costume instead of a technical one.
 

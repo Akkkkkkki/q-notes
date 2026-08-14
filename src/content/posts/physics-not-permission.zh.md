@@ -20,6 +20,15 @@ sources:
   - label: "techtimes.com"
     title: "Siemens Hooks Chip Design Agents to Physics Engines to Prevent Tapeout Errors"
     url: "https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm"
+  - label: "prnewswire.com"
+    title: "Synopsys Showcases Comprehensive Autonomous Engineering Workflows from Silicon to Systems"
+    url: "https://www.prnewswire.com/news-releases/synopsys-showcases-comprehensive-autonomous-engineering-workflows-from-silicon-to-systems-developed-with-nvidia-technology-302834791.html"
+  - label: "cadence.com"
+    title: "Agentic AI for Chip and System Design"
+    url: "https://www.cadence.com/en_US/home/ai/ai-for-design.html"
+  - label: "anysilicon.com"
+    title: "The Ultimate Signoff (TapeOut) Checklist"
+    url: "https://anysilicon.com/the-ultimate-signoff-tapeout-checklist/"
   - label: "faa.gov"
     title: "AC 20-115D — Airborne Software Assurance (DO-178C)"
     url: "https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf"
@@ -29,13 +38,13 @@ connections:
 
 一个客户的代码库，两个半月就变成了一团纠缠不清的烂摊子。原因很简单：AI 写的代码没有真正被把关过。我在咨询工作里亲眼见过这件事，不是听说的。事后拆开看，几乎没有哪一次改动单独拿出来算是"贵到回不了头"，每一次都便宜得很。可债务照样滚起来了，因为"这次改动回滚起来便宜"和"这件事本来就该发生"，根本是两回事，中间那个缺口没人管。
 
-DAC 2026 大会上，Synopsys、Cadence、Siemens 在同一周先后发布"完全自主"的芯片设计智能体，但没有一家敢跳过同一件事：智能体的每一步决定，都要先过一道硬性的物理验证关。[Siemens 把智能体输出接进 Calibre 和 Questa One](https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm)，不过关就不能往下走，这两个工具只认通过或不通过，不管模型自己觉得自己的推理有多合理。
+DAC 2026 大会上，Synopsys、Cadence、Siemens 在同一周先后发布"完全自主"的芯片设计智能体，按各家自己的说法，物理验证都挡在智能体的决定和下一步之间。[Siemens 把智能体输出接进 Calibre 和 Questa One](https://www.techtimes.com/articles/321691/20260727/siemens-hooks-chip-design-agents-physics-engines-prevent-tapeout-errors.htm)，不过关就不能往下走，这两个工具只认通过或不通过，不管模型自己觉得自己的推理有多合理。[Synopsys](https://www.prnewswire.com/news-releases/synopsys-showcases-comprehensive-autonomous-engineering-workflows-from-silicon-to-systems-developed-with-nvidia-technology-302834791.html) 给自己的"完全自主"验证智能体配了签核级别的检查，[Cadence](https://www.cadence.com/en_US/home/ai/ai-for-design.html) 则说每一步智能体动作都建立在它的物理仿真验证引擎之上。
 
 干净的解释是：流片一旦出错，代价大到没法回头，硬件行业被逼着先把关再谈自主；软件没有这种代价，所以能跳过这道关。这个说法我以前信，现在不全信了。真正逼出这道关卡的，我现在觉得，是有没有一个具体的人要为它负责，不是错误能不能被挽回。不妨把这种东西叫「问责关卡」。
 
 先说清楚一件事：硬件、芯片制造，我不懂，这篇文章里也不打算装懂。我能做的，是拿公开报道，去对比我真正看过的、不设防的 AI 编程。
 
-芯片公司做不了"反正便宜，不用管"这种算法，跟硅片特不特殊无关，是流片账单上有公司的名字，董事会一定会问。流片失败天生就有主人。大多数企业里 AI 智能体写的代码没有。它进了一个 PR，被匆匆扫一眼就合并了，出问题往往要等几个月后，变成一团理不清的乱麻，连是哪次改动埋的雷都追不回去，更别说追到人。
+芯片公司做不了"反正便宜，不用管"这种算法，跟硅片特不特殊无关，是设计送去代工厂之前要先过一道[正式的签核审查](https://anysilicon.com/the-ultimate-signoff-tapeout-checklist/)——一份有人签了名的清单，而且流片账单上摆着公司的名字，董事会一定会问。大多数企业里 AI 智能体写的代码，没有对等的审查关卡。它进了一个 PR，被匆匆扫一眼就合并了，出问题往往要等几个月后，变成一团理不清的乱麻，连是哪次改动埋的雷都追不回去，更别说追到人。
 
 软件里其实也有一道差不多的关卡，只是不在 DAC 故事讲的地方。航空软件要过 [DO-178C](https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-115D.pdf) 认证，最后要由一个被联邦航空局专门授权的工程师复核签字，这个授权资格还能被吊销。扒开法律程序看本质，它跟 Calibre、Questa One 是同一套逻辑，只是换了层监管的外衣，不是技术的外衣。
 
