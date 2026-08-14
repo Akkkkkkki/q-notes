@@ -34,6 +34,8 @@ export class MockGitHub {
   repoCommits: Array<{ message: string; date: string }> = [];
   /** Force the next N contents writes to fail with 409 (concurrent-commit simulation). */
   putConflicts = 0;
+  /** Force the next issue-comments GET to fail with 500 (API-outage simulation). */
+  failNextComments = false;
 
   private shas = new Map<string, string>();
   private shaCounter = 0;
@@ -113,7 +115,16 @@ export class MockGitHub {
         pr.comments.push(body.body);
         return new Response(JSON.stringify({ id: pr.comments.length }), { status: 201 });
       }
-      return ok(pr.comments.map((c) => ({ body: c })));
+      if (this.failNextComments) {
+        this.failNextComments = false;
+        return new Response(JSON.stringify({ message: 'simulated outage' }), { status: 500 });
+      }
+      // Real per_page/page slicing, so a caller that paginates past 100 comments
+      // is exercised the same way it would be against the real API.
+      const perPage = Number(url.searchParams.get('per_page') ?? 30);
+      const page = Number(url.searchParams.get('page') ?? 1);
+      const start = (page - 1) * perPage;
+      return ok(pr.comments.slice(start, start + perPage).map((c) => ({ body: c })));
     }
     return notFound();
   };

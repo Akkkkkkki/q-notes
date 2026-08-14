@@ -40,6 +40,42 @@ Answer directions (`→ ` lines under a question) are prompts the interviewer of
 not the author's words — treat a question as unanswered unless the author actually
 wrote something under it in `## Author answers`.
 
+## Step 0 — the Author Kernel
+
+Before writing any prose, build a small, deliberately unpolished **Author Kernel**
+(`docs/pipeline.md` §10) from author-owned material only: interview answers,
+`research/inbox.md` sparks, author PR/Desk comments (`One change`, A/B choices,
+read-aloud marks), adopted entries in `research/positions.md`, and published positions
+the author has confirmed. Research sources may support a fact in the Kernel; they never
+enter `Explicit positions`. Do not improve the Kernel into a cleaner argument —
+"I don't know," "I only have a hunch," and an unanswered question are first-class
+content, not defects to repair. The Kernel is the draft's scope boundary: a stated
+epistemic boundary narrows what the piece attempts; it is not satisfied by adding a
+disclaimer and writing past it anyway.
+
+```md
+## Author Kernel
+
+### Explicit positions
+-
+
+### Concrete material
+-
+
+### Epistemic boundaries
+-
+
+### Unresolved doubts
+-
+
+### Characteristic wording worth preserving
+- "..."
+```
+
+Keep the Kernel with the draft's working notes; it does not need to be polished, but its
+contents (or a pointer to the interview file it came from) go in the PR body's
+`## Author Kernel` section.
+
 ## Drafting rules
 
 - Lead with the tension, thesis in the first two paragraphs, no throat-clearing,
@@ -49,8 +85,22 @@ wrote something under it in `## Author answers`.
   into the draft (the verbatim spine), choosing phrases that carry the piece's actual
   claims, not filler. Never launder a vivid fragment into smooth prose. Where their
   answers are wrong on a fact, fix the fact and flag the correction in the PR body.
-- Every opinion in the draft must trace to the author's answers, sparks, or published
-  posts. If you catch yourself writing a judgment with no source in the author, cut it
+- Classify every load-bearing claim into one of four ownership classes
+  (`docs/pipeline.md` §10): `Q-explicit` (the author said it — write as their assertion),
+  `Q-derived` (a near inference adding no new value judgment or causal theory — use
+  conservatively), `External` (a sourced fact or attributed outside argument — state as
+  fact/attribution, never as the author's belief), or `Model-hypothesis` (a new
+  mechanism, causal theory, framework, prediction, coined category, or "the real reason
+  is..." reframe you produced). A `Model-hypothesis` must never become an unqualified
+  first-person author belief — either omit it from the prose entirely or write it as an
+  explicit open possibility, and either way give it an `Hn` entry in the PR body's
+  `## Candidate hypotheses — not yet yours` section (below) for the author to adopt or
+  reject; a hedged one in the prose still needs its own `Hn`, or there's nothing for the
+  author to reply `**Adopt hypothesis — Hn**` to. A published post licenses terminology,
+  previously adopted premises, continuity, and a direct extension the author explicitly
+  made; it does not license a new causal theory, a new domain application presented as
+  obvious, a new prediction, or a new framework that merely sounds consistent with the
+  archive. If you catch yourself writing a judgment with no source in the author, cut it
   or recast it as an open question — and declare it in the PR body either way.
 - Respect the voiceprint's **Never** list, and lean on its signature moves and rhythm
   notes; the goal is a draft the author reads and thinks "I said this," not "this is
@@ -75,7 +125,13 @@ wrote something under it in `## Author answers`.
   lumpy paragraph rhythm, no framing reused from the last three posts, 中文版不是英文
   的对齐翻译. Include one line in the PR body confirming the pass ran and what it
   changed. A first-person moment must trace to author input; if the material has none,
-  flag the gap in the PR body instead of inventing one.
+  flag the gap in the PR body instead of inventing one. Never write a mental-history
+  claim — "I used to think...", "I've come to think...", "I changed my mind...", "what
+  convinced me was...", "the correction came when...", "I was wrong because..." — unless
+  the author's material actually contains that change-of-mind story (`docs/pipeline.md`
+  §10). This is different from first-person style: the issue is factual ownership of the
+  author's mental history, not sentence shape, and it is not caught by the "never invent
+  a scene" rule above.
 - Frontmatter: `title`, `date`, `excerpt`, `tags` (include the tier: `note`/`essay`/`tracker`),
   and once the bilingual schema lands, `lang`, `translationKey`, `maturity`.
   Default `maturity: seedling` for Notes, `growing` for Essays.
@@ -122,7 +178,20 @@ wrote something under it in `## Author answers`.
    confirmation between the en and zh versions (list the claims once, confirm both
    versions carry them); a **Voice** section listing the verbatim-spine phrases kept and
    any opinion you could not trace to author input (this list should be empty — if it
-   isn't, each entry is phrased as a question for the author, not a claim); an **A/B
+   isn't, each entry is phrased as a question for the author, not a claim); an **Author
+   Kernel** section (the Kernel fragments from Step 0, or a link to the interview file
+   they came from); a **Claim ledger** section, one line per load-bearing claim
+   (`- <claim> — Q-explicit (interview 2026-07-20)`); a **Candidate hypotheses — not yet
+   yours** section listing **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`,
+   ... — including one already written into the prose as a hedged open possibility ("One
+   possibility is…"), not only the ones fully omitted from it. A hedged entry needs an Hn
+   the same as an omitted one, or the author has no id to adopt/reject by; say in its
+   `Why it emerged` line whether it's already in the draft or was left out entirely.
+   Each entry carries `- Why it emerged:`, `- Would change the piece by:`, and
+   `- Status: not adopted` (the whole section is empty only when the draft has no
+   unadopted hypothesis at all — including hedged ones — since the draft must read
+   correctly with every listed hypothesis absent; the author replies
+   `**Adopt hypothesis — Hn**` or `**Reject hypothesis — Hn**` on the PR); an **A/B
    calibration** section (below); and **three title options per language** (the one used
    plus two alternates), so the author can swap titles at ship time without composing
    anything.
@@ -157,4 +226,34 @@ Numbered question lines, lettered options as list items, the drafted version alw
 The author's choices come back as PR comments (`**A/B calibration — Q1: B.**`) and as
 raw dated records the Desk appends to `research/voice.md ## Proposed`; treat an answered
 question as settled. The Friday ship gate applies the chosen rendering to the PR
-(routine 04, step 3) — you apply it only if you make another pass over the draft first.
+(routine 04, step 4) — you apply it only if you make another pass over the draft first.
+
+## Candidate hypotheses (same PR, when any Model-hypothesis exists)
+
+Every unadopted `Model-hypothesis` (`docs/pipeline.md` §10) gets an entry here — the ones
+you left out of the prose entirely *and* the ones you wrote in as a hedged open
+possibility ("One possibility is…"). A hedged one still needs an `Hn` id here, or the
+author has nothing to reply `**Adopt hypothesis — Hn**` to. This section must use this
+exact shape — the Worker parses it the same way it parses A/B calibration:
+
+```md
+## Candidate hypotheses — not yet yours
+
+H1. <the hypothesis, one line>
+   - Why it emerged: <what in the research/drafting produced it>
+   - Would change the piece by: <what adopting it would add or shift>
+   - Status: not adopted
+
+H2. <a second hypothesis you already wrote in as a hedged possibility>
+   - Why it emerged: <same as above>
+   - Would change the piece by: already in the draft, hedged — adopting drops the hedge
+   - Status: not adopted
+```
+
+Omit the section entirely only when the draft has no unadopted hypothesis at all —
+including hedged ones. The draft must read correctly with every listed hypothesis absent
+or left hedged — a hypothesis is bonus material, not scaffolding. The author replies
+`**Adopt hypothesis — H1**` or `**Reject hypothesis — H1**`; the Friday ship gate applies
+the decision (routine 04, step 4) — appending an adopted claim to
+`research/positions.md` and promoting it to a plain assertion in both languages, or stripping
+a rejected one with no record left anywhere.

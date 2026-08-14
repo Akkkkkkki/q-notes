@@ -7,7 +7,9 @@ How the author actually sounds and what they actually believe — the file that 
 Consumers: the **drafter** reads this before writing (verbatim spine, never-list); the
 **ship gate** enforces the never-list and questions untraceable opinions; the
 **interviewer** mines Stances for mirror questions; the **gardener** proposes additions
-monthly under `## Proposed`.
+monthly under `## Proposed`. This file is about how Q sounds; `research/positions.md`
+tracks what Q has adopted (`docs/pipeline.md` §10) — a hypothesis the author adopts on a
+draft PR goes there, not here.
 
 Rules: the author may edit anything, anytime — this file commits directly to `main`.
 Automations only ever *propose* (bottom section) and never promote their own proposals.
@@ -62,6 +64,7 @@ Words, framings, and hedges the author would not use. The ship gate flags these.
 - Template slots reused across posts — the fixed "Here is the prediction: by the end of 20XX..." closer frame, or any opening/closing framing repeated from the last three posts.
 - Rhetorical-question volleys — a run of questions nobody answers; ask at most one unanswered question per post.
 - LLM lexicon: delve, underscore (verb), intricate, crucial, pivotal, robust, landscape, leverage (verb), "it's important to note". 中文对应：值得注意的是、综上所述、进行/作为/基于 等空转词、三句排比、升华句。
+- Fabricated intellectual autobiography — "I used to think...", "I've come to think...", "I changed my mind...", "what convinced me was..." — unless the author's material actually contains that change-of-mind story (`docs/pipeline.md` §10).
 
 <!-- Example: "delve", "in today's fast-paced world", "it's important to note" -->
 <!-- Example: hedging both sides so thoroughly the piece takes no position -->

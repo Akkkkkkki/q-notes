@@ -83,6 +83,19 @@ const EN_LEXICON = [
 // vocabulary and appears four times in the corpus ("leverage ratios", "a real
 // source of leverage"), so matching the bare word would be a false positive.
 const EN_VERB_LEVERAGE = /\b(?:leverages|leveraging|leveraged|to leverage)\b/gi;
+// Fabricated intellectual autobiography (docs/pipeline.md §10, human-voice.md §1/§3.5):
+// a factual claim about the author's own mental history, not a style choice. These
+// match only the mental-history construction, never plain present-tense opinion
+// ("I think X" is untouched) — a real hit still needs the claim ledger to say whether
+// the source material actually contains the change-of-mind story.
+const EN_MENTAL_HISTORY = [
+  /\bI\s+used\s+to\s+(?:think|believe|buy)\b/i,
+  /\bI(?:'ve|\s+have)\s+come\s+to\s+(?:think|believe)\b/i,
+  /\bI\s+changed\s+my\s+mind\b/i,
+  /\bwhat\s+(?:convinced|changed)\s+me\s+was\b/i,
+  /\bthe\s+correction\s+came\b/i,
+  /\bI\s+was\s+wrong\s+because\b/i,
+];
 // STE's "use a verb, not a nominalisation" rule. The article is required on
 // purpose: without it the pattern fires on ordinary prose ("makes judgment
 // cheap"), which is why the corpus scores zero here too.
@@ -132,6 +145,14 @@ const ZH_SCENE = ['团队', '客户', '会议', 'PR', '代码', '报告', '老�
 // English left in running zh prose that usually has a natural Chinese rendering.
 // Kept short on purpose; glossary terms and sanctioned non-translations are exempt.
 const ZH_ENGLISH_RESIDUE = ['dashboard', 'PoC', 'roadmap', 'backlog', 'stakeholder', 'alignment'];
+// Fabricated intellectual autobiography, zh half of the EN_MENTAL_HISTORY check above
+// (docs/pipeline.md §10). Plain present-tense opinion ("我觉得 X") is untouched.
+const ZH_MENTAL_HISTORY = [
+  /我(?:以前|曾经|一开始)(?:以为|认为)/,
+  /后来(?:我)?(?:才)?(?:发现|意识到)/,
+  /改变了我的看法/,
+  /(?:说服|让)我(?:改变看法|想通)的是/,
+];
 // Template sentences that signal the draft is "proving" rather than thinking.
 const ZH_TEMPLATE = [
   { re: /这很重要，因为/, label: '"这很重要，因为…"' },
@@ -414,6 +435,18 @@ for (const file of targets) {
         warn(name, `coined term "${fm.coinedTerm}" appears ${uses}× in the body — define it once, then reuse it or drop it`);
       }
     }
+
+    // 9. Fabricated intellectual autobiography (docs/pipeline.md §10). A factual claim
+    // about the author's mental history, not a style choice — the ledger, not this
+    // script, settles whether the source material actually contains the story.
+    let mentalHits = 0;
+    for (const s of sentences) {
+      if (mentalHits >= EN_MAX_REPORTED) break;
+      if (EN_MENTAL_HISTORY.some((re) => re.test(s))) {
+        mentalHits++;
+        warn(name, `mental-history claim "${s.slice(0, 60)}${s.length > 60 ? '…' : ''}" — must trace to author material (pipeline §10), not narrative glue`);
+      }
+    }
   }
 
   // Chinese style warnings (advisory) — the gate used to be silent on zh, which
@@ -479,6 +512,16 @@ for (const file of targets) {
     const dashes = (prose.match(/——|—/g) || []).length;
     if (dashes > 0 && hanTotal / dashes < ZH_DASH_PER_CHARS) {
       warn(name, `${dashes} dashes in ${hanTotal} Han chars (denser than 1/${ZH_DASH_PER_CHARS}) — 。/，/而/但 often read better in zh`);
+    }
+
+    // 7. Fabricated intellectual autobiography, zh half (docs/pipeline.md §10).
+    let mentalHits = 0;
+    for (const s of sentences) {
+      if (mentalHits >= ZH_MAX_REPORTED) break;
+      if (ZH_MENTAL_HISTORY.some((re) => re.test(s))) {
+        mentalHits++;
+        warn(name, `mental-history claim "${s.slice(0, 24)}…" — must trace to author material (pipeline §10), not narrative glue`);
+      }
     }
   }
 }

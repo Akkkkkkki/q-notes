@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import worker from '../worker/index';
 import {
   parsePrBody,
+  parseHypotheses,
+  decidedHypotheses,
   pendingRequests,
   extractPreviewUrl,
   replaceTitle,
@@ -105,7 +107,7 @@ describe('PR body parsing', () => {
     expect(pendingRequests([verdict, change, ab, mark])).toBe(3);
     // A verdict after the feedback is the gate saying it handled it.
     expect(pendingRequests([change, ab, verdict])).toBe(0);
-    // The cadence hold is a verdict too (routine 04 step 4).
+    // The cadence hold is a verdict too (routine 04 step 5).
     expect(pendingRequests([change, '**Ready — queued** until 2026-08-12.'])).toBe(0);
     // Only the requests count — bot chatter and the author's plain replies don't.
     expect(pendingRequests(['Cloudflare preview: https://x.workers.dev', 'nice one'])).toBe(0);
@@ -127,6 +129,62 @@ describe('PR body parsing', () => {
       'https://pr-42.q-notes.workers.dev/posts/x'
     );
     expect(extractPreviewUrl(['no urls here'])).toBeNull();
+  });
+});
+
+const HYPOTHESIS_BODY = `## Candidate hypotheses — not yet yours
+
+H1. Decisiveness scarcity is mainly a pricing problem.
+   - Why it emerged: the outside article's incentive framing suggested it.
+   - Would change the piece by: adding a payoff-structure thesis.
+   - Status: not adopted
+
+H2. A "consequence gate" generalizes across hardware and software.
+   - Why it emerged: comparing the author's software story to EDA verification.
+   - Would change the piece by: a coined framework and a 2027 prediction.
+   - Status: not adopted
+
+## A/B calibration
+`;
+
+describe('Candidate hypothesis parsing (docs/pipeline.md §10)', () => {
+  it('extracts H-numbered hypotheses with text and status', () => {
+    const hypotheses = parseHypotheses(HYPOTHESIS_BODY);
+    expect(hypotheses).toEqual([
+      { n: 1, text: 'Decisiveness scarcity is mainly a pricing problem.', status: 'not adopted' },
+      { n: 2, text: 'A "consequence gate" generalizes across hardware and software.', status: 'not adopted' },
+    ]);
+  });
+
+  it('defaults status to "not adopted" when the Status line is missing', () => {
+    const body = '## Candidate hypotheses — not yet yours\n\nH1. Some hypothesis.\n   - Why it emerged: research.\n';
+    expect(parseHypotheses(body)).toEqual([{ n: 1, text: 'Some hypothesis.', status: 'not adopted' }]);
+  });
+
+  it('returns an empty list when there is no Candidate hypotheses section', () => {
+    expect(parseHypotheses(PR_BODY)).toEqual([]);
+  });
+
+  it('splits adopted and rejected ids from Desk/PR comments', () => {
+    const comments = [
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Reject hypothesis — H2**\n\n_(via Desk)_',
+    ];
+    expect(decidedHypotheses(comments)).toEqual({ adopted: [1], rejected: [2] });
+    expect(decidedHypotheses([])).toEqual({ adopted: [], rejected: [] });
+  });
+
+  it('counts an Adopt/Reject hypothesis comment as author feedback still owed a gate pass', () => {
+    const verdict = '**Ready to ship**\n- three bullets';
+    const adopt = '**Adopt hypothesis — H1**\n\n_(via Desk)_';
+    const reject = '**Reject hypothesis — H2**\n\n_(via Desk)_';
+
+    expect(pendingRequests([verdict, adopt, reject])).toBe(2);
+    expect(pendingRequests([adopt, verdict])).toBe(0);
+    // Neither decision phrasing matches the verdict patterns, so an Adopt/Reject
+    // comment is never mistaken for the gate's own go-ahead.
+    expect(pendingRequests([adopt])).toBe(1);
+    expect(pendingRequests([reject])).toBe(1);
   });
 });
 
@@ -197,6 +255,51 @@ describe('POST /api/desk/ship', () => {
     gh.prs[0].state = 'closed';
     expect((await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 })).status).toBe(400);
   });
+
+  it('refuses to ship a PR carrying feedback the gate has not applied yet', async () => {
+    gh.prs[0].comments.push('**One change:** more examples\n\n_(via Desk)_');
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/feedback/i);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('refuses to ship over an unprocessed Adopt/Reject hypothesis decision', async () => {
+    // Merging now would close the PR before the ship gate ever appends the decision
+    // to research/positions.md or inserts it into the article — exactly the loss the
+    // adoption protocol exists to prevent (docs/pipeline.md §10).
+    gh.prs[0].comments.push('**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('ships once a fresh verdict follows the feedback', async () => {
+    gh.prs[0].comments.push(
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Ready to ship**\n- three bullets'
+    );
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(200);
+    expect(data.merged).toBe(true);
+  });
+
+  it('sees a pending decision buried past the first page of comment history', async () => {
+    // The verdict lands on page 1; 100 filler comments push the actual decision onto
+    // page 2. If the pending check only read the first page, this would ship clean.
+    const filler = Array.from({ length: 100 }, (_, i) => `filler ${i}`);
+    gh.prs[0].comments.push(...filler, '**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('fails closed instead of shipping when the comment history is unreadable', async () => {
+    gh.failNextComments = true;
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 42 });
+    expect(status).toBe(502);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
 });
 
 describe('POST /api/desk/comment', () => {
@@ -248,6 +351,26 @@ describe('POST /api/desk/kill', () => {
     expect(status).toBe(200);
     expect(gh.prs[0].state).toBe('closed');
     expect(gh.prs[0].comments.at(-1)).toMatch(/Killed \d{4}-\d{2}-\d{2} via Desk: thesis no longer holds/);
+  });
+
+  it('refuses to close over an unprocessed Adopt/Reject hypothesis decision', async () => {
+    // Closing the PR removes it from the ship gate's open-PR loop just like merging
+    // does, so an unprocessed adoption would be lost here too if this weren't guarded.
+    gh.prs[0].comments.push('**Adopt hypothesis — H1**\n\n_(via Desk)_');
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/kill', { number: 42 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/feedback/i);
+    expect(gh.prs[0].state).toBe('open');
+  });
+
+  it('closes once a fresh verdict follows the feedback', async () => {
+    gh.prs[0].comments.push(
+      '**Adopt hypothesis — H1**\n\n_(via Desk)_',
+      '**Ready to ship**\n- three bullets'
+    );
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/kill', { number: 42 });
+    expect(status).toBe(200);
+    expect(gh.prs[0].state).toBe('closed');
   });
 });
 

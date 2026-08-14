@@ -41,6 +41,13 @@ export interface AbQuestion {
   options: Array<{ letter: string; text: string }>;
 }
 
+export interface CandidateHypothesis {
+  /** The H-number as written in the PR body ("H1." -> 1). */
+  n: number;
+  text: string;
+  status: string;
+}
+
 export interface DeskPr {
   number: number;
   title: string;
@@ -55,6 +62,8 @@ export interface DeskPr {
   voice: { spine: string[]; flags: string[] };
   /** A/B calibration questions from the PR body, minus already-answered ones. */
   ab: { questions: AbQuestion[]; answered: number[] };
+  /** Candidate hypotheses from the PR body (docs/pipeline.md §10), plus decided ids. */
+  hypotheses: { candidates: CandidateHypothesis[]; adopted: number[]; rejected: number[] };
   titleOptions: string[];
   /** Current last paragraph per content file, for the last-line slot. */
   lastLines: Array<{ path: string; text: string }>;
@@ -122,6 +131,10 @@ export async function listDesk(env: Env): Promise<Response> {
       previewUrl: extractPreviewUrl(comments),
       voice: { spine: body.spine, flags: body.flags },
       ab: { questions: parseAbQuestions(pr.body ?? ''), answered: answeredAbQuestions(comments) },
+      hypotheses: {
+        candidates: parseHypotheses(pr.body ?? ''),
+        ...decidedHypotheses(comments),
+      },
       titleOptions: body.titleOptions,
       lastLines,
       pending: pendingRequests(comments),
@@ -161,11 +174,47 @@ export async function deskSummaries(env: Env): Promise<DeskSummary[]> {
   return out;
 }
 
+/**
+ * A One-change, A/B choice, mark, voice flag, or Adopt/Reject hypothesis that hasn't
+ * had a gate pass yet must not be discardable out from under it — merging *or* closing
+ * either one takes the PR out of the ship gate's open-PR loop, so for an Adopt/Reject in
+ * particular either action loses the record permanently (docs/pipeline.md §10), the
+ * same way merging alone would. Shared by shipPr and killPr for that reason. Fails
+ * closed until pendingRequests is 0: unlike `prComments` (used for display, where an
+ * empty result just means a card shows less), a fetch failure here must propagate
+ * rather than read as "no pending feedback" — that would let a transient API error do
+ * exactly what this check exists to prevent. Paginates past 100 comments too, so a
+ * decision buried on a later page isn't invisible to it.
+ *
+ * This narrows the race to its practical minimum, not to zero: the comment snapshot
+ * and the merge/close call are two sequential GitHub requests, and the REST API has no
+ * atomic "act only if nothing changed since" primitive to close that last gap with.
+ * A comment landing in the milliseconds between them would still slip through. Closing
+ * that residually would mean a cross-request lock (new stored state, its own failure
+ * modes) to guard a window measured in milliseconds on a single-author, tap-to-ship
+ * phone tool — disproportionate to what it buys. Call the check immediately before the
+ * terminal request, as here, and no closer to zero is worth building.
+ */
+async function pendingGuard(env: Env, number: number, verb: 'ship' | 'kill'): Promise<Response | null> {
+  const comments = await prCommentsOrThrow(env, number);
+  const pending = pendingRequests(comments);
+  if (pending > 0) {
+    return json(
+      { error: `${pending} piece(s) of feedback still owed a ship-gate pass — cannot ${verb} yet` },
+      409
+    );
+  }
+  return null;
+}
+
 export async function shipPr(request: Request, env: Env): Promise<Response> {
   const body = await readJson<{ number?: number }>(request);
   if (!body) return json({ error: 'Body must be JSON' }, 400);
   const pr = await contentPrOrNull(env, body.number);
   if (!pr) return json({ error: 'Not an open content PR' }, 400);
+
+  const blocked = await pendingGuard(env, pr.number, 'ship');
+  if (blocked) return blocked;
 
   const res = await gh(env, 'PUT', `pulls/${pr.number}/merge`, {
     merge_method: 'merge',
@@ -306,6 +355,9 @@ export async function killPr(request: Request, env: Env): Promise<Response> {
   const pr = await contentPrOrNull(env, body.number);
   if (!pr) return json({ error: 'Not an open content PR' }, 400);
 
+  const blocked = await pendingGuard(env, pr.number, 'kill');
+  if (blocked) return blocked;
+
   const reason = collapse(body.reason ?? '');
   if (reason.length > MAX_COMMENT_LENGTH) {
     return json({ error: `reason exceeds ${MAX_COMMENT_LENGTH} characters` }, 400);
@@ -417,6 +469,25 @@ async function prComments(env: Env, number: number): Promise<string[]> {
   return data.map((c) => c.body ?? '');
 }
 
+/**
+ * Full comment history, for the ship-time pending-feedback check only. `prComments`
+ * fails soft (empty list) because it only ever feeds a display — an unreadable
+ * history there just means a card shows less. Here an unreadable history must not
+ * be read as "no pending feedback", so a non-2xx page throws instead, and every
+ * page is fetched rather than just the first 100 comments.
+ */
+async function prCommentsOrThrow(env: Env, number: number): Promise<string[]> {
+  const out: string[] = [];
+  for (let page = 1; ; page++) {
+    const res = await gh(env, 'GET', `issues/${number}/comments?per_page=100&page=${page}`);
+    if (!res.ok) throw new Error(`GitHub comments fetch failed (${res.status})`);
+    const data = (await res.json()) as Array<{ body?: string }>;
+    out.push(...data.map((c) => c.body ?? ''));
+    if (data.length < 100) break;
+  }
+  return out;
+}
+
 async function contentPrOrNull(
   env: Env,
   number: unknown
@@ -446,8 +517,9 @@ function latestVerdict(comments: string[]): string | null {
   return null;
 }
 
-/** The Desk comment shapes the ship gate is obliged to act on (routine 04 step 3). */
-const REQUEST_RE = /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note)/;
+/** The Desk comment shapes the ship gate is obliged to act on (routine 04 step 4). */
+const REQUEST_RE =
+  /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note|Adopt hypothesis —|Reject hypothesis —)/;
 
 /**
  * The same phrasings, but anchored to the top of the comment, where routine 04
@@ -546,6 +618,40 @@ export function answeredAbQuestions(comments: string[]): number[] {
     }
   }
   return [...answered];
+}
+
+/**
+ * Candidate hypotheses from the drafter's PR body (routine 03 defines the shape:
+ * `## Candidate hypotheses — not yet yours`, items numbered `H1.`, `H2.`, ..., a
+ * `Status:` line per item defaulting to "not adopted" when absent).
+ */
+export function parseHypotheses(body: string): CandidateHypothesis[] {
+  const section = sectionAfter(body, /candidate hypothes[ei]s/i);
+  if (!section) return [];
+  const hypotheses: CandidateHypothesis[] = [];
+  let current: CandidateHypothesis | null = null;
+  for (const line of section.split('\n')) {
+    const h = line.match(/^\s*H?(\d+)[.)、]\s+(.*)$/i);
+    if (h) {
+      current = { n: Number(h[1]), text: h[2].trim(), status: 'not adopted' };
+      hypotheses.push(current);
+      continue;
+    }
+    const s = line.match(/^\s*(?:[-*]\s*)?status[:：]\s*(.*)$/i);
+    if (s && current) current.status = s[1].trim().toLowerCase();
+  }
+  return hypotheses;
+}
+
+/** Hypothesis ids the author has decided via Desk/PR comments, split adopted vs rejected. */
+export function decidedHypotheses(comments: string[]): { adopted: number[]; rejected: number[] } {
+  const adopted = new Set<number>();
+  const rejected = new Set<number>();
+  for (const c of comments) {
+    for (const m of c.matchAll(/\*\*Adopt hypothesis\s*—\s*H?(\d+)/gi)) adopted.add(Number(m[1]));
+    for (const m of c.matchAll(/\*\*Reject hypothesis\s*—\s*H?(\d+)/gi)) rejected.add(Number(m[1]));
+  }
+  return { adopted: [...adopted], rejected: [...rejected] };
 }
 
 /** Lines of the body from the heading/label matching `pattern` to the next heading. */

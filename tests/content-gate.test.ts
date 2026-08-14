@@ -226,3 +226,25 @@ describe('中文 万能动词', () => {
     expect(gate('q.zh.md', ZH_FM, '他做出来的东西很好。')).not.toContain('万能动词');
   });
 });
+
+describe('fabricated intellectual autobiography (docs/pipeline.md §10)', () => {
+  it('flags a change-of-mind construction the ledger has to source', () => {
+    const body = "I used to buy that story. What actually forces a gate like this, I've come to think, is accountability.";
+    expect(gate('r.en.md', EN_FM, body)).toContain('mental-history claim');
+  });
+
+  it('does not flag plain present-tense opinion', () => {
+    const body = "I think the gate matters more than the story around it. It's the accountability that forces the behavior.";
+    expect(gate('s.en.md', EN_FM, body)).not.toContain('mental-history claim');
+  });
+
+  it('flags the zh construction', () => {
+    const body = '我以前认为这只是流程问题，后来我才意识到问题出在责任归属上。';
+    expect(gate('t.zh.md', ZH_FM, body)).toContain('mental-history claim');
+  });
+
+  it('does not flag plain zh opinion', () => {
+    const body = '我觉得这主要是责任归属的问题，不是流程本身。';
+    expect(gate('u.zh.md', ZH_FM, body)).not.toContain('mental-history claim');
+  });
+});
