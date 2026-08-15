@@ -147,7 +147,7 @@ describe('interview progressive disclosure', () => {
   });
 
   it('marks only a not-yet-started response nudge-assisted and sends provenance on save', () => {
-    expect(INTERVIEW_PAGE).toContain("if (!independentStarted && !q.answer) provenance = 'nudge-assisted';");
+    expect(INTERVIEW_PAGE).toContain("if (!independentStarted && !q.answer && !ta.value.trim()) provenance = 'nudge-assisted';");
     expect(INTERVIEW_PAGE).toContain("api('/api/answer', { path: brief.path, question: q.n, text, provenance })");
   });
 });
