@@ -45,7 +45,8 @@ Every design decision below exists to close one of these gaps.
    bar. Replace it with explicit per-tier checklists (§5). When the checklist passes, the
    piece ships — improvements happen post-publish, in git history, like code.
 5. **One PR per piece, both languages inside.** A post is not done until both the English
-   and Chinese versions exist. They are reviewed and shipped as a single editorial unit.
+   and Chinese versions exist. They are reviewed and shipped as a single editorial unit,
+   sharing claims and evidence but not a required outline or section order.
 6. **PRs for content only.** Backlog, inbox, interview, and glossary changes commit
    directly to `main`. Human review is reserved for the one thing that needs it:
    the published words.
@@ -182,15 +183,17 @@ treat a question as unanswered unless the author actually wrote under it in
 
 Before any prose, the drafter builds an **Author Kernel** from author-owned material only
 and classifies every load-bearing claim into one of four ownership classes — see §10.
+Each load-bearing claim receives a stable `C1`, `C2`, … Claim Ledger ID before either
+language draft exists.
 
 The drafter writes **both language versions in the same PR** (see §6), runs
 `npm run build`, marks the backlog item `Drafted`, and opens a ready (non-draft) PR whose
 body contains: thesis, tier, sources re-checked, what the author should challenge,
-a claim-parity confirmation between the two language versions, a **voice section**
-(the author phrases kept verbatim; any opinion not traceable to author input — a list
-that should be empty), a **claim ledger** and a **candidate hypotheses** section per §10,
-and **three title options per language** so the author can swap the title at ship time
-without writing anything.
+a **Bilingual parity** table keyed by Claim Ledger IDs, a **voice section** (the author
+phrases kept verbatim; any opinion not traceable to author input — a list that should be
+empty), a **claim ledger** and a **candidate hypotheses** section per §10, and **three
+title options per language** so the author can swap the title at ship time without
+writing anything.
 
 ### 4.4 Friday — Ship gate (`automations/04-ship-gate.md`)
 
@@ -212,6 +215,11 @@ The anti-perfectionism enforcer. For every open content PR:
   opinionated claim not traceable to the author's answers, sparks, or published
   positions, get flagged in the verdict as questions ("Says X — yours?"). Voice flags
   shape the author's five minutes; they never block a passing checklist.
+- Run the **bilingual parity check** (§6) by Claim Ledger ID: required claims, factual
+  meaning, numbers/dates, source support, causal direction, and stance/uncertainty must
+  match. Different section order, headings, paragraphing, claim order, or length are not
+  parity errors. Suspicious 1:1 structure is an advisory translation-shape warning, not a
+  reason to force the pair back into one outline.
 - Run the **ownership check** (§10): any `Model-hypothesis` written as an unqualified
   author belief with no adoption record gets recast as an open possibility or moved to
   Candidate hypotheses; a mental-history sentence with no traceable source gets fixed the
@@ -254,7 +262,7 @@ A piece ships when its tier checklist passes — not when it feels finished.
 - [ ] Plain language: no jargon or clever coinage a smart non-specialist couldn't follow, and no wording that sounds smart but adds no meaning. Deliberately reused keywords and glossary terms are the only exceptions, and they're defined on first use.
 - [ ] Readable sentences: no long, dense, multi-clause run-ons; one idea per sentence by default, and stacked clauses, parentheticals, or statistics are split into their own sentences.
 - [ ] Human voice: the pre-publish human pass (`research/human-voice.md` §4) ran on both language versions — talk test, contractions in English, rationed pivots/aphorisms, varied paragraph rhythm, no reused opening/closing frames, 中文版不是英文的对齐翻译. The countable half of that pass is enforced by `scripts/content-gate.mjs` (§5 of the same file); its style warnings are advisory, but an unaddressed one needs a reason in the PR body.
-- [ ] Both language versions present and claim-equivalent.
+- [ ] Both language versions present and **claim-equivalent by the shared Claim Ledger IDs**; same section order, headings, paragraphing, claim order, or length are not required.
 - [ ] Claim ledger present (§10); no unadopted `Model-hypothesis` stated as the author's
       first-person belief; no mental-history claim ("I used to think…") without a traceable
       source.
@@ -279,19 +287,87 @@ hesitates, the maturity field goes to `seedling` and it ships anyway — that's 
 ### Editorial contract
 
 Every published piece has an English and a Chinese version, written as
-**transcreation, not literal translation**:
+**transcreation, not literal translation**. The shared source of truth is the Claim
+Ledger, not mirrored article architecture.
 
-- **Identical**: the thesis, the structure/section order, every factual claim, every
-  number, every source link, the maturity level.
-- **Adaptable**: idioms, sentence rhythm, rhetorical openings, and titles (each title
-  should be punchy in its own language rather than a translation of the other).
+- **Identical in meaning**: thesis, required claim set, factual claims, numbers/dates,
+  source support, stance/uncertainty, and maturity/public meaning.
+- **Independent by language**: claim order, section structure/order, headings and number
+  of headings, paragraph boundaries, rhetorical entry/close, connective scaffolding,
+  and length. One language may merge sections the other splits, move context later, or
+  omit a heading the other needs.
+- **No hard length ratio**: a natural Chinese version may be materially shorter than the
+  English one because it needs fewer connective phrases, less repeated setup, or fewer
+  headings. Claim coverage, not word-count parity, is the test.
 - **Glossary-governed**: recurring terms (e.g., "agent" → 智能体, "forward-deployed
   engineer", "reward hacking") use the renderings in `research/glossary.md` so the site
   reads consistently over time. The drafter appends newly-decided terms each run.
-- **Direction**: draft first in whichever language the author's interview answers lean
-  toward; transcreate into the other. Mixed-language answers are normal input.
-- **Parity check**: the drafter lists every claim in both versions and confirms parity in
-  the PR body. The ship gate spot-checks it.
+
+### Shared package, independent composition
+
+Before either language becomes prose, freeze one shared package:
+
+- Author Kernel (§10)
+- Claim Ledger (§10), with stable `C1`, `C2`, … IDs and required-language status
+- source links and factual support
+- source-confidence/domain-limit information from the interview material
+- glossary decisions
+- Material Audit when that stage exists for the piece
+
+Draft first in whichever language the author's source material leans toward. Then draft
+the second language **clean-room style from that shared package**, not from the first
+article's sentence order, section order, or headings. Close/hide the first-language prose
+while composing the second; reopen it only after both drafts exist for parity checking.
+
+This is not a quota for difference. If both languages independently arrive at the same
+shape, keep it. But matching structure is never required for parity, and suspicious 1:1
+heading/paragraph/claim alignment is an advisory translation-shape smell worth checking.
+
+### Claim-level parity
+
+Every load-bearing semantic claim has one stable Claim Ledger ID. Parity means:
+
+- every claim marked `Required in: EN + ZH` appears in both versions;
+- every number/date is consistent;
+- each source supports the same factual claim;
+- causal direction does not flip;
+- stance and uncertainty are equivalent;
+- a `Model-hypothesis` does not silently become adopted in one language only.
+
+Parity does **not** mean:
+
+- claim order must match;
+- section headings must correspond 1:1;
+- paragraph boundaries must match;
+- the counterargument must appear in the same location;
+- both files need the same opening or closing device;
+- both files need the same length.
+
+The drafter records the audit in the PR body:
+
+```md
+## Bilingual parity
+
+| ID | Claim | EN | ZH | Notes |
+|---|---|---|---|---|
+| C1 | <short claim> | ✅ | ✅ | zh appears before context |
+| C2 | <short claim> | ✅ | ✅ | en uses a separate paragraph |
+```
+
+The ship gate spot-checks this table against the two files. A missing required claim,
+changed certainty, changed number/date, changed causal direction, or source mismatch is
+a parity failure. Different order/headings/paragraphing/length is not.
+
+### Evidence-bearing vs rhetorical examples
+
+Examples follow their role in the argument:
+
+- If a specific company, study result, number, factual case, or firsthand event is
+  evidence for a load-bearing claim, both languages carry it unless the Claim Ledger
+  explicitly marks it optional/non-load-bearing.
+- If an example is purely rhetorical illustration, each language may use a culturally or
+  linguistically natural equivalent as long as it adds no new factual claim, changes no
+  thesis, and invents no firsthand experience.
 
 ### Content model (Phase 2 implementation, separate PR)
 
@@ -484,8 +560,20 @@ satisfied by adding a disclaimer and writing past it anyway.
 
 ### The claim ledger — four ownership classes
 
-Every load-bearing claim in a draft carries one class, listed in the PR body's
-`## Claim ledger` section:
+Every load-bearing semantic claim in a draft carries one stable ID (`C1`, `C2`, …) and
+one ownership class in the PR body's `## Claim ledger` section. The ID belongs to the
+claim, not to a paragraph or language, so it remains the same when en and zh put that
+claim in different places. Each entry also records where it is required:
+
+```md
+## Claim ledger
+
+C1. <claim> — Q-explicit (interview Q1) — Required in: EN + ZH
+C2. <claim> — External (<source>) — Required in: EN + ZH
+C3. <rhetorical/non-load-bearing item if worth recording> — Q-derived (...) — Required in: optional
+```
+
+The four classes are:
 
 1. **`Q-explicit`** — the author said it directly: interview answer, inbox spark, author
    PR/Desk comment, an adopted `research/positions.md` entry, or a published post whose
@@ -506,6 +594,13 @@ Every load-bearing claim in a draft carries one class, listed in the PR body's
    section for the author to adopt or reject — a hypothesis already hedged into the
    prose still needs its own `Hn` id there, or there's nothing for the author to adopt
    by reference.
+
+For bilingual work, the Claim Ledger is also the **parity source of truth** (§6). A claim
+marked `Required in: EN + ZH` must survive in both files with equivalent meaning,
+certainty, number/date, causal direction, and source support, but it may appear in a
+different section, paragraph, or rhetorical sequence. An evidence-bearing example belongs
+to the claim and stays aligned unless explicitly optional; a purely rhetorical illustration
+may differ by language if it creates no new fact or invented experience.
 
 **Published posts are context, not blanket authorization.** A published post licenses
 terminology, previously adopted premises, historical continuity, and a direct extension the
@@ -562,7 +657,9 @@ theater, an explicit "I don't know hardware" boundary. Expected: software experi
 compared against researched EDA facts (`External`); a coined "consequence gate" and
 accountability-as-root-cause are `Model-hypothesis` and go to Candidate hypotheses unless
 adopted; no invented "I used to buy that story" narrative; the hardware boundary narrows
-scope rather than getting a disclaimer and a hardware argument anyway.
+scope rather than getting a disclaimer and a hardware argument anyway. Under the bilingual
+contract, English may lead with the EDA signal while Chinese leads with the firsthand
+software case; the same required Claim Ledger IDs still appear in both.
 
 **PR #64 shape.** Input: an existing taste/judgment distinction, an outside decisiveness
 argument. Expected: the terminology critique is `Q-explicit` if it traces to the author's
