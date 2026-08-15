@@ -1,11 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import worker from '../worker/index';
 import { parseBrief } from '../worker/interview';
 import { MockGitHub, makeEnv, call } from './mock-github';
 
-/** Phase 2 — Interview: brief parsing, per-question answer commits, close. */
+/** Phase 2 — Interview: brief parsing, progressive disclosure, per-question answer commits, close. */
 
 const BRIEF_PATH = 'research/interviews/2026-06-09-agents-as-clis.md';
+const INTERVIEW_PAGE = readFileSync(new URL('../src/pages/interview.astro', import.meta.url), 'utf8');
 
 const BRIEF = `# Interview: Agents as the new CLIs
 
@@ -52,6 +54,7 @@ describe('parseBrief', () => {
       'Give one concrete example from consulting where this already happened.'
     );
     expect(brief.questions.every((q) => q.answer === null)).toBe(true);
+    expect(brief.questions.every((q) => q.provenance === null)).toBe(true);
   });
 
   it('sorts → directions into choices / pushback / reading without polluting question text', () => {
@@ -110,16 +113,42 @@ describe('parseBrief', () => {
     expect(parseBrief(BRIEF_PATH, undated)).toMatchObject({ ready: true, readyDate: null });
   });
 
-  it('attributes existing answers to their questions', () => {
+  it('attributes existing answers to their questions and treats legacy answers as free', () => {
     const withAnswer = BRIEF + '\n### Q2\n\nthe ERP migration story\n';
     const brief = parseBrief(BRIEF_PATH, withAnswer);
     expect(brief.questions[1].answer).toBe('the ERP migration story');
+    expect(brief.questions[1].provenance).toBe('free');
     expect(brief.questions[0].answer).toBeNull();
+  });
+
+  it('parses nudge-assisted provenance without leaking metadata into the answer', () => {
+    const withAnswer = BRIEF + '\n### Q1\n\n<!-- q-notes: answer-provenance=nudge-assisted -->\n\nmy actual answer\n';
+    const q1 = parseBrief(BRIEF_PATH, withAnswer).questions[0];
+    expect(q1.answer).toBe('my actual answer');
+    expect(q1.provenance).toBe('nudge-assisted');
   });
 
   it('marks closed briefs', () => {
     const closed = BRIEF.replace('Awaiting answers', 'Closed (not this topic, 2026-06-10)');
     expect(parseBrief(BRIEF_PATH, closed).closed).toBe(true);
+  });
+});
+
+describe('interview progressive disclosure', () => {
+  it('puts the answer box before optional hints and hides hints until an explicit nudge', () => {
+    const textareaFirst = INTERVIEW_PAGE.indexOf("body.appendChild(ta);");
+    const nudgeButton = INTERVIEW_PAGE.indexOf("'Need a nudge?'");
+    const hiddenHints = INTERVIEW_PAGE.indexOf('hints.hidden = true;');
+    const revealHints = INTERVIEW_PAGE.indexOf('hints.hidden = false;');
+    expect(textareaFirst).toBeGreaterThan(-1);
+    expect(nudgeButton).toBeGreaterThan(textareaFirst);
+    expect(hiddenHints).toBeGreaterThan(nudgeButton);
+    expect(revealHints).toBeGreaterThan(hiddenHints);
+  });
+
+  it('marks only a not-yet-started response nudge-assisted and sends provenance on save', () => {
+    expect(INTERVIEW_PAGE).toContain("if (!independentStarted && !q.answer) provenance = 'nudge-assisted';");
+    expect(INTERVIEW_PAGE).toContain("api('/api/answer', { path: brief.path, question: q.n, text, provenance })");
   });
 });
 
@@ -147,9 +176,26 @@ describe('POST /api/answer', () => {
     });
     expect(status).toBe(200);
     const content = gh.files.get(BRIEF_PATH)!;
-    expect(content).toMatch(/### Q2\n\nthe ERP migration — client scripted the agent themselves/);
+    expect(content).toMatch(/### Q2\n\n<!-- q-notes: answer-provenance=free -->\n\nthe ERP migration — client scripted the agent themselves/);
     expect(content).toMatch(/\*\*Status:\*\* Answers in progress \(\d{4}-\d{2}-\d{2}\)/);
     expect(gh.commits.at(-1)!.message).toBe('interview: answer Q2 (2026-06-09-agents-as-clis)');
+  });
+
+  it('persists nudge-assisted provenance through the saved markdown and API parser', async () => {
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/answer', {
+      path: BRIEF_PATH,
+      question: 1,
+      text: 'I still disagree with the suggested angle',
+      provenance: 'nudge-assisted',
+    });
+    expect(status).toBe(200);
+    expect(data.provenance).toBe('nudge-assisted');
+    expect(gh.files.get(BRIEF_PATH)).toContain('<!-- q-notes: answer-provenance=nudge-assisted -->');
+    const brief = (await call(worker, makeEnv(), 'GET', '/api/brief')).data.brief;
+    expect(brief.questions[0]).toMatchObject({
+      answer: 'I still disagree with the suggested angle',
+      provenance: 'nudge-assisted',
+    });
   });
 
   it('updates an existing answer in place', async () => {
@@ -183,10 +229,11 @@ describe('POST /api/answer', () => {
     }
   });
 
-  it('rejects invalid question numbers and empty text', async () => {
+  it('rejects invalid question numbers, empty text, and unknown provenance', async () => {
     expect((await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 0, text: 'x' })).status).toBe(400);
     expect((await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 21, text: 'x' })).status).toBe(400);
     expect((await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 1, text: '  ' })).status).toBe(400);
+    expect((await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 1, text: 'x', provenance: 'prompted-by-model' })).status).toBe(400);
   });
 });
 
@@ -222,10 +269,18 @@ describe('POST /api/brief/ready', () => {
     expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Answers in progress \(\d{4}-\d{2}-\d{2}\)/);
   });
 
-  it('does not touch the author answers when flipping ready', async () => {
-    await call(worker, makeEnv(), 'POST', '/api/answer', { path: BRIEF_PATH, question: 1, text: 'my take' });
+  it('does not touch author answers or provenance when flipping ready', async () => {
+    await call(worker, makeEnv(), 'POST', '/api/answer', {
+      path: BRIEF_PATH,
+      question: 1,
+      text: 'my take',
+      provenance: 'nudge-assisted',
+    });
     await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: true });
-    expect(gh.files.get(BRIEF_PATH)).toContain('my take');
+    await call(worker, makeEnv(), 'POST', '/api/brief/ready', { path: BRIEF_PATH, ready: false });
+    const saved = gh.files.get(BRIEF_PATH)!;
+    expect(saved).toContain('my take');
+    expect(saved).toContain('<!-- q-notes: answer-provenance=nudge-assisted -->');
   });
 
   it('rejects paths outside research/interviews', async () => {
