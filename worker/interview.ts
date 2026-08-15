@@ -11,6 +11,9 @@ import { getFile, putFile, listDir, todayIn, json } from './github';
 const INTERVIEWS_DIR = 'research/interviews';
 const BRIEF_FILE = /^(\d{4}-\d{2}-\d{2})-[a-z0-9-]+\.md$/;
 const MAX_ANSWER_LENGTH = 10000;
+const ANSWER_PROVENANCE = /<!-- q-notes: answer-provenance=(free|nudge-assisted) -->/;
+
+export type AnswerProvenance = 'free' | 'nudge-assisted';
 
 /** A "worth a look" reading direction: a title and (optionally) its link. */
 export interface Reading {
@@ -29,6 +32,11 @@ export interface Directions {
   choices: string[];
   pushback: string[];
   reading: Reading[];
+}
+
+interface ParsedAnswer {
+  text: string;
+  provenance: AnswerProvenance;
 }
 
 export interface Brief {
@@ -53,7 +61,12 @@ export interface Brief {
    */
   readyDate: string | null;
   idea: string;
-  questions: Array<{ n: number; text: string; answer: string | null } & Directions>;
+  questions: Array<{
+    n: number;
+    text: string;
+    answer: string | null;
+    provenance: AnswerProvenance | null;
+  } & Directions>;
 }
 
 export async function latestBrief(env: Env): Promise<Brief | null> {
@@ -72,7 +85,7 @@ export async function getBrief(env: Env): Promise<Response> {
 }
 
 export async function saveAnswer(request: Request, env: Env): Promise<Response> {
-  let body: { path?: string; question?: number; text?: string };
+  let body: { path?: string; question?: number; text?: string; provenance?: string };
   try {
     body = await request.json();
   } catch {
@@ -82,9 +95,13 @@ export async function saveAnswer(request: Request, env: Env): Promise<Response> 
   const path = body.path ?? '';
   const n = Number(body.question);
   const text = (body.text ?? '').replace(/\r\n/g, '\n').trim();
+  const provenance = body.provenance ?? 'free';
   if (!isBriefPath(path)) return json({ error: 'Invalid brief path' }, 400);
   if (!Number.isInteger(n) || n < 1 || n > 20) return json({ error: 'Invalid question number' }, 400);
   if (!text) return json({ error: 'text is required' }, 400);
+  if (provenance !== 'free' && provenance !== 'nudge-assisted') {
+    return json({ error: 'Invalid answer provenance' }, 400);
+  }
   if (text.length > MAX_ANSWER_LENGTH) {
     return json({ error: `text exceeds ${MAX_ANSWER_LENGTH} characters` }, 400);
   }
@@ -96,7 +113,7 @@ export async function saveAnswer(request: Request, env: Env): Promise<Response> 
     const file = await getFile(env, path);
     if (!file) return json({ error: 'Brief not found' }, 404);
 
-    let content = upsertAnswer(file.content, n, safeText);
+    let content = upsertAnswer(file.content, n, safeText, provenance);
     content = content.replace(
       /^\*\*Status:\*\*[ \t]*Awaiting answers[ \t]*$/m,
       `**Status:** Answers in progress (${todayIn(env.SPARK_TIMEZONE)})`
@@ -104,7 +121,7 @@ export async function saveAnswer(request: Request, env: Env): Promise<Response> 
 
     const slug = path.split('/').pop()!.replace(/\.md$/, '');
     const result = await putFile(env, path, content, `interview: answer Q${n} (${slug})`, file.sha);
-    if (result.ok) return json({ ok: true, commit: result.commitUrl });
+    if (result.ok) return json({ ok: true, commit: result.commitUrl, provenance });
     if (result.status !== 409) return json({ error: `GitHub API error (${result.status})` }, 502);
   }
   return json({ error: 'Write conflict, please retry' }, 409);
@@ -142,10 +159,9 @@ export async function closeBrief(request: Request, env: Env): Promise<Response> 
 
 /**
  * Author-controlled green light. `ready: true` marks the brief
- * `Ready to draft` so Thursday's drafter builds a full Essay from the
- * answers; `ready: false` reopens it to `Answers in progress`. Nothing here
- * touches the answers themselves — the author stays in control of when a
- * half-finished brief gets drafted.
+ * `Ready to draft`, authorizing the downstream drafter to use the answers;
+ * `ready: false` reopens it to `Answers in progress`. Nothing here touches the
+ * answers themselves or promises a particular article tier.
  */
 export async function setBriefReady(request: Request, env: Env): Promise<Response> {
   let body: { path?: string; ready?: boolean };
@@ -232,12 +248,14 @@ export function parseBrief(path: string, content: string): Brief {
 function pushQuestion(
   questions: Brief['questions'],
   q: { n: number; lines: string[] } & Directions,
-  answers: Map<number, string>
+  answers: Map<number, ParsedAnswer>
 ) {
+  const saved = answers.get(q.n);
   questions.push({
     n: q.n,
     text: q.lines.join(' ').trim(),
-    answer: answers.get(q.n) ?? null,
+    answer: saved?.text ?? null,
+    provenance: saved?.provenance ?? null,
     choices: q.choices,
     pushback: q.pushback,
     reading: q.reading,
@@ -272,29 +290,39 @@ function section(content: string, pattern: RegExp): string {
   return lines.slice(start + 1, end).join('\n');
 }
 
-function parseAnswers(answersSection: string): Map<number, string> {
-  const map = new Map<number, string>();
+function parseAnswers(answersSection: string): Map<number, ParsedAnswer> {
+  const map = new Map<number, ParsedAnswer>();
   const blocks = answersSection.split(/^###\s+Q(\d+)\s*$/m);
   // split() yields [preamble, n1, body1, n2, body2, ...]
   for (let i = 1; i + 1 < blocks.length; i += 2) {
-    map.set(Number(blocks[i]), blocks[i + 1].trim());
+    const raw = blocks[i + 1].trim();
+    const match = raw.match(ANSWER_PROVENANCE);
+    const provenance = (match?.[1] ?? 'free') as AnswerProvenance;
+    const text = raw.replace(ANSWER_PROVENANCE, '').trim();
+    map.set(Number(blocks[i]), { text, provenance });
   }
   return map;
 }
 
 /** Replace the `### Q<n>` block in `## Author answers`, or append one. */
-function upsertAnswer(content: string, n: number, text: string): string {
+function upsertAnswer(
+  content: string,
+  n: number,
+  text: string,
+  provenance: AnswerProvenance
+): string {
   const lines = content.split('\n');
   const sectionStart = lines.findIndex((l) => /^##\s/.test(l) && /author answers/i.test(l));
+  const meta = `<!-- q-notes: answer-provenance=${provenance} -->`;
   if (sectionStart === -1) {
-    return content.trimEnd() + `\n\n## Author answers\n\n### Q${n}\n\n${text}\n`;
+    return content.trimEnd() + `\n\n## Author answers\n\n### Q${n}\n\n${meta}\n\n${text}\n`;
   }
   let sectionEnd = lines.length;
   for (let i = sectionStart + 1; i < lines.length; i++) {
     if (/^##\s/.test(lines[i])) { sectionEnd = i; break; }
   }
 
-  const block = [`### Q${n}`, '', text];
+  const block = [`### Q${n}`, '', meta, '', text];
   let blockStart = -1;
   let blockEnd = sectionEnd;
   for (let i = sectionStart + 1; i < sectionEnd; i++) {

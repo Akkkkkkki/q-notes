@@ -150,17 +150,21 @@ The author answers in 15–30 minutes, in either language, at voice-dump quality
 fragments, mixed English/中文, typos all fine. Answering some now and finishing later is
 expected; **the author owns the green light** and marks the brief `Ready to draft` from
 the phone when they're happy. **The answers are the raw material; a brief that has not
-been marked ready produces a Note at most, never a ghost-written Essay.**
+been marked ready produces a Note at most, never a ghost-written Essay.** Ready means
+permission to use the supplied answers in publishable work; it does not select the Essay
+tier or promise a complete argument.
 
 ### 4.3 Thursday — Drafter (`automations/03-drafter.md`)
 
 The skip-by-default rule is replaced by a **fallback ladder**. The drafter always
-produces the highest rung available:
+produces the highest rung the material honestly supports:
 
 1. **A brief is marked `Status: Ready to draft`** (the author's explicit green light) →
-   draft an Essay whose spine is the author's own answers (their claims, their examples,
-   their phrasing where usable), with scout research as supporting evidence. Re-validate
-   sources before drafting. Only a ready brief earns the full-Essay treatment.
+   the answers are authorized for publishable use. Build the Author Kernel first,
+   re-validate external sources, then choose the smallest honest form supported by the
+   material. A ready brief may support an Essay, but readiness does not override an
+   epistemic/domain boundary, a tentative claim, or an unresolved author-judgment
+   question; those may cap the piece at a Note or remain unresolved.
 2. **A brief has answers but is not marked ready** → the author is still working on it;
    do not build an Essay on answers they haven't signed off, and leave its `Status`
    untouched. Use it only as Note material when nothing better is available or it is near
