@@ -239,9 +239,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         }
 
         nudge.addEventListener('click', () => {
-          // Exposure can shape a response even if no chip is tapped. Only mark
-          // it assisted when the author had not already started independently.
-          if (!independentStarted && !q.answer) provenance = 'nudge-assisted';
+          // Exposure can shape a response even if no chip is tapped. Check the
+          // textarea too because Web Speech updates .value without an input event.
+          if (!independentStarted && !q.answer && !ta.value.trim()) provenance = 'nudge-assisted';
           hints.hidden = false;
           nudgeRow.hidden = true;
           ta.focus();
