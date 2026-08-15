@@ -128,12 +128,22 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
 
     // Reflect the ready state across the footer: the banner, the button label,
-    // and whether tapping it marks ready or reopens for more editing.
+    // and whether tapping it marks ready or reopens for more editing. Ready is
+    // permission to use the material; it does not promise an Essay-sized result.
     function renderReady() {
       const done = brief.questions.filter((q) => q.answer).length;
+      const zh = getUiLang() === 'zh';
       $('ready-banner').hidden = !brief.ready;
-      if (brief.ready) $('ready-banner').textContent = t('answer.readyBanner');
-      $('ready-caption').hidden = brief.ready;
+      if (brief.ready) {
+        $('ready-banner').textContent = zh
+          ? '✓ 已标记可以成稿。周四可以使用这些回答；你记录的边界和不确定性仍会限制文章范围。'
+          : '✓ Marked ready. Thursday can use these answers; your recorded limits and uncertainty still constrain the piece.';
+      }
+      const caption = $('ready-caption');
+      caption.hidden = brief.ready;
+      caption.textContent = zh
+        ? '想答多少答多少。点这里表示这些回答可以用于成稿；文章形式和范围仍由材料决定。'
+        : 'Answer as much or as little as you want. This authorizes drafting from what you supplied; form and scope still follow the material.';
       const btn = $('ready');
       btn.textContent = t(brief.ready ? 'answer.reopen' : 'answer.markReady');
       btn.className = (brief.ready ? 'btn-ghost' : 'btn-soft') + ' btn-block';
