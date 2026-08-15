@@ -13,23 +13,25 @@ playbook), and `research/glossary.md` before drafting.
 
 ## The fallback ladder — never skip, never go silent
 
-Produce the highest rung available:
+Produce the highest rung the material honestly supports:
 
 1. **An interview file is marked `Status: Ready to draft`** (the author's explicit
-   green light) → draft an **Essay** (800–1,500 words) built on those answers: their
-   claims, their examples, their phrasings where usable, sharpened and structured by
-   you. Re-validate every external source before relying on it. Only a ready brief
-   earns the full-essay treatment.
+   green light) → the answers are authorized for publishable use. Re-validate every
+   external source before relying on it, then choose the smallest honest form supported
+   by the Author Kernel below. A ready brief may support an Essay, but readiness does
+   **not** override a `domain-limit`, a tentative claim, an unresolved author-judgment
+   question, or thin firsthand material. Those can cap the piece at a Note / field note
+   or leave a question unresolved rather than being filled by research synthesis.
 2. **An interview file has answers but is *not* marked ready** → the author is still
    in control of it; do **not** build a full Essay on answers they haven't signed off,
    and do **not** change its `Status`. Prefer to leave it for the author to finish and
    mark ready. Use it only as **Note** material (300–700 words) when it is the only
    developable thing available or the brief is near expiry — and say in the PR body
-   that this came from an unsigned-off brief, so a fuller Essay can still follow once
+   that this came from an unsigned-off brief, so a fuller pass can still follow once
    the author marks it ready.
 3. **No usable answers, but `research/inbox.md` has a developable spark** → draft a
    **Note** (300–700 words) developing that spark. One idea, one concrete example, one
-   acknowledged counterpoint.
+   acknowledged counterpoint when a real counterpoint is live.
 4. **None of the above** → draft a **Tracker** or Note connecting a published post's
    claim or prediction to something that happened since.
 5. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
@@ -38,7 +40,24 @@ Produce the highest rung available:
 
 Answer directions (`→ ` lines under a question) are prompts the interviewer offered,
 not the author's words — treat a question as unanswered unless the author actually
-wrote something under it in `## Author answers`.
+wrote something under it in `## Author answers`. Saved answers may carry an internal
+HTML comment immediately under the `### Qn` heading:
+
+```md
+<!-- q-notes: answer-provenance=free -->
+```
+
+or
+
+```md
+<!-- q-notes: answer-provenance=nudge-assisted -->
+```
+
+`free` means the response began before the optional directions were revealed.
+`nudge-assisted` means the author asked to see a direction before beginning. This is
+pipeline metadata, not public metadata. A nudge-assisted answer is still author-owned;
+just do not treat similarity to a revealed suggestion as independent evidence that the
+author had already framed the thought that way.
 
 ## Step 0 — the Author Kernel
 
@@ -49,32 +68,52 @@ read-aloud marks), adopted entries in `research/positions.md`, and published pos
 the author has confirmed. Research sources may support a fact in the Kernel; they never
 enter `Explicit positions`. Do not improve the Kernel into a cleaner argument —
 "I don't know," "I only have a hunch," and an unanswered question are first-class
-content, not defects to repair. The Kernel is the draft's scope boundary: a stated
-epistemic boundary narrows what the piece attempts; it is not satisfied by adding a
-disclaimer and writing past it anyway.
+content, not defects to repair.
+
+For every **load-bearing interview item**, infer one source-confidence tag and preserve
+its answer provenance when available:
+
+- **`firsthand`** — personally observed, experienced, decided, measured, or heard.
+- **`position`** — an author-owned view or recommendation, even when the evidence is
+  partly external.
+- **`tentative`** — a possible explanation, hunch, or inference the author has not
+  settled.
+- **`domain-limit`** — an explicit boundary on expertise, evidence, or willingness to
+  sound authoritative.
+
+Do not ask the author to label every sentence. Infer these from the answer and surface
+only an ambiguity that would materially change scope. `domain-limit` is an action on
+scope, not a disclaimer: outside research may appear as attributed `External` contrast,
+but it does not expand the author's authority or license a broad first-person theory.
+Likewise, an unanswered author-judgment question may stay unresolved; research can add
+facts around it but must not silently answer it on the author's behalf.
+
+The Kernel is the draft's scope boundary. Use the tags in the fragments themselves:
 
 ```md
 ## Author Kernel
 
 ### Explicit positions
--
+- [position] <what the author actually says/believes> — interview Qn (free|nudge-assisted)
 
 ### Concrete material
--
+- [firsthand] <observation / event / decision / number> — interview Qn (free|nudge-assisted)
 
 ### Epistemic boundaries
--
+- [domain-limit] <where expertise/evidence stops> — interview Qn (free|nudge-assisted)
 
 ### Unresolved doubts
--
+- [tentative] <possible explanation / unsettled claim / open question> — interview Qn (free|nudge-assisted)
 
 ### Characteristic wording worth preserving
 - "..."
 ```
 
-Keep the Kernel with the draft's working notes; it does not need to be polished, but its
-contents (or a pointer to the interview file it came from) go in the PR body's
-`## Author Kernel` section.
+A fragment can be omitted from a bucket when absent; do not manufacture one to fill the
+shape. Keep the Kernel with the draft's working notes; it does not need to be polished,
+but its contents (or a pointer to the interview file it came from) go in the PR body's
+`## Author Kernel` section. If a `domain-limit` or unresolved judgment causes you to
+narrow the form/tier, say so explicitly in the PR body.
 
 ## Drafting rules
 
@@ -179,8 +218,9 @@ contents (or a pointer to the interview file it came from) go in the PR body's
    versions carry them); a **Voice** section listing the verbatim-spine phrases kept and
    any opinion you could not trace to author input (this list should be empty — if it
    isn't, each entry is phrased as a question for the author, not a claim); an **Author
-   Kernel** section (the Kernel fragments from Step 0, or a link to the interview file
-   they came from); a **Claim ledger** section, one line per load-bearing claim
+   Kernel** section (the tagged Kernel fragments from Step 0, including interview answer
+   provenance and every material `domain-limit`; say whether any limit reduced the
+   chosen scope/tier); a **Claim ledger** section, one line per load-bearing claim
    (`- <claim> — Q-explicit (interview 2026-07-20)`); a **Candidate hypotheses — not yet
    yours** section listing **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`,
    ... — including one already written into the prose as a hedged open possibility ("One
