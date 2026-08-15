@@ -185,8 +185,8 @@ function attention(
     out.push({
       urgency: days <= 1 ? 'now' : 'soon',
       text: allAnswered
-        ? `Interview “${interview.title}” — all ${interview.total} answered. Tap “Ready to draft” so the drafter builds the full Essay ${by}; until you do, it stays a note at most.`
-        : `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then tap “Ready to draft” when you're happy; that green light is what turns it into a full Essay ${by}.`,
+        ? `Interview “${interview.title}” — all ${interview.total} answered. Tap “Ready to draft” to authorize the drafter to use these answers ${by}; form and scope still follow the material. Until you do, these answers stay Note-only material at most.`
+        : `Interview “${interview.title}” — ${interview.answered} of ${interview.total} answered. Answer what you can, then tap “Ready to draft” when you're happy; that green light authorizes use of what you supplied ${by}, while form and scope still follow the material.`,
       href: '/interview/',
     });
   }

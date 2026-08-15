@@ -295,6 +295,17 @@ describe('GET /api/flow', () => {
     const item = data.needsYou.find((n: any) => n.href === '/interview/');
     expect(item).toBeDefined();
     expect(item.text).toMatch(/Ready to draft/);
+    expect(item.text).toMatch(/form and scope still follow the material/i);
+    expect(item.text).not.toMatch(/full Essay/i);
+  });
+
+  it('does not promise an Essay before all interview questions are answered', async () => {
+    const { data } = await call(worker, makeEnv(), 'GET', '/api/flow');
+    const item = data.needsYou.find((n: any) => n.href === '/interview/');
+    expect(item).toBeDefined();
+    expect(item.text).toMatch(/authorizes use of what you supplied/i);
+    expect(item.text).toMatch(/form and scope still follow the material/i);
+    expect(item.text).not.toMatch(/full Essay/i);
   });
 
   it('drops the interview from needsYou once the brief is marked ready to draft', async () => {
