@@ -1,10 +1,10 @@
 ---
 // Answer — "answer five questions on a commute" (vision §3.2).
 // The week's brief from research/interviews/ as a focused conversation: the
-// idea and a progress bar on top, then one question at a time — choices to
-// react to, a push-back to argue against, and a reading worth a look (the
-// interviewer's optional directions), a mic, and Save. Each answer commits
-// immediately into the file's ## Author answers section.
+// idea and a progress bar on top, then one question at a time. Optional answer
+// directions stay hidden until the author asks for a nudge, so an independent
+// answer gets first shot. Each saved answer records whether it began free or
+// after a nudge, while mic / partial-answer / Ready-reopen behavior stays intact.
 import CompanionLayout from '../layouts/CompanionLayout.astro';
 ---
 
@@ -34,6 +34,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     .q-head .done { margin-left: auto; align-self: center; }
     .q-body { margin-top: 0.9rem; }
 
+    .nudge-row { display: flex; justify-content: flex-start; margin: 0.55rem 0 0.8rem; }
+    .nudge { font-size: 0.78rem; padding: 0.42rem 0.65rem; }
+    .optional-hints { margin-bottom: 0.85rem; }
     .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem; }
     .choice {
       font-size: 0.82rem; color: var(--body); background: transparent; text-align: left;
@@ -93,7 +96,7 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <p class="hint" data-i18n="answer.hint">Skip any question · Thursday's draft uses whatever exists</p>
 
   <script is:inline>
-    const { $, api, el, getToken, setStatus, setMeta, needToken, attachDictation, refreshBadges, t } = QN;
+    const { $, api, el, getToken, getUiLang, setStatus, setMeta, needToken, attachDictation, refreshBadges, t } = QN;
 
     const LINK_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>';
 
@@ -171,52 +174,80 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
 
       const body = el('div', 'q-body');
 
-      // The answer box first, so the direction taps have something to seed.
+      // Independent response first. Optional interviewer directions are not in
+      // the DOM flow above this box and remain hidden until an explicit nudge.
       const ta = el('textarea');
       ta.placeholder = t('answer.cardPlaceholder');
       ta.value = q.answer || '';
       ta.enterKeyHint = 'done';
-
-      // Choices — stances to react to; a tap seeds the box, then you edit or talk over it.
-      if (q.choices && q.choices.length) {
-        const wrap = el('div', 'choices');
-        for (const text of q.choices) {
-          const chip = el('button', 'choice', text);
-          chip.type = 'button';
-          chip.addEventListener('click', () => { seed(ta, text); chip.classList.add('used'); });
-          wrap.appendChild(chip);
-        }
-        body.appendChild(wrap);
-      }
-
-      // Push back — a steelman to argue against.
-      if (q.pushback && q.pushback.length) {
-        const box = el('div', 'pushback');
-        box.appendChild(el('div', 'pushback-label', t('answer.pushLabel')));
-        for (const text of q.pushback) {
-          const b = el('button', 'p-item', '“' + text + '”');
-          b.type = 'button';
-          b.addEventListener('click', () => seed(ta, text));
-          box.appendChild(b);
-        }
-        body.appendChild(box);
-      }
-
-      // Worth a look — the reading direction.
-      for (const r of q.reading || []) {
-        const a = el(r.url ? 'a' : 'div', 'reading');
-        if (r.url) { a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; }
-        const ico = el('span', 'r-ico');
-        ico.innerHTML = LINK_ICON;
-        const rb = el('div');
-        rb.appendChild(el('div', 'r-label', t('answer.readLabel')));
-        rb.appendChild(el('div', 'r-title', r.title));
-        if (r.url) rb.appendChild(el('div', 'r-host', host(r.url)));
-        a.append(ico, rb);
-        body.appendChild(a);
-      }
-
       body.appendChild(ta);
+
+      let provenance = q.provenance || 'free';
+      let independentStarted = Boolean(q.answer || ta.value.trim());
+      ta.addEventListener('input', () => {
+        if (ta.value.trim()) independentStarted = true;
+      });
+
+      const hasHints = (q.choices && q.choices.length) || (q.pushback && q.pushback.length) || (q.reading && q.reading.length);
+      if (hasHints) {
+        const nudgeRow = el('div', 'nudge-row');
+        const nudge = el('button', 'btn-ghost nudge', getUiLang() === 'zh' ? '需要一点提示？' : 'Need a nudge?');
+        nudge.type = 'button';
+        nudgeRow.appendChild(nudge);
+        body.appendChild(nudgeRow);
+
+        const hints = el('div', 'optional-hints');
+        hints.hidden = true;
+
+        // Choices — stances to react to; a tap seeds the box, then you edit or talk over it.
+        if (q.choices && q.choices.length) {
+          const wrap = el('div', 'choices');
+          for (const text of q.choices) {
+            const chip = el('button', 'choice', text);
+            chip.type = 'button';
+            chip.addEventListener('click', () => { seed(ta, text); chip.classList.add('used'); });
+            wrap.appendChild(chip);
+          }
+          hints.appendChild(wrap);
+        }
+
+        // Push back — a steelman to argue against.
+        if (q.pushback && q.pushback.length) {
+          const box = el('div', 'pushback');
+          box.appendChild(el('div', 'pushback-label', t('answer.pushLabel')));
+          for (const text of q.pushback) {
+            const b = el('button', 'p-item', '“' + text + '”');
+            b.type = 'button';
+            b.addEventListener('click', () => seed(ta, text));
+            box.appendChild(b);
+          }
+          hints.appendChild(box);
+        }
+
+        // Worth a look — the reading direction.
+        for (const r of q.reading || []) {
+          const a = el(r.url ? 'a' : 'div', 'reading');
+          if (r.url) { a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; }
+          const ico = el('span', 'r-ico');
+          ico.innerHTML = LINK_ICON;
+          const rb = el('div');
+          rb.appendChild(el('div', 'r-label', t('answer.readLabel')));
+          rb.appendChild(el('div', 'r-title', r.title));
+          if (r.url) rb.appendChild(el('div', 'r-host', host(r.url)));
+          a.append(ico, rb);
+          hints.appendChild(a);
+        }
+
+        nudge.addEventListener('click', () => {
+          // Exposure can shape a response even if no chip is tapped. Only mark
+          // it assisted when the author had not already started independently.
+          if (!independentStarted && !q.answer) provenance = 'nudge-assisted';
+          hints.hidden = false;
+          nudgeRow.hidden = true;
+          ta.focus();
+        });
+        body.appendChild(hints);
+      }
 
       const micRow = el('div', 'q-mic');
       const state = el('span', 'state');
@@ -238,8 +269,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         save.disabled = true;
         state.textContent = t('answer.saving');
         try {
-          await api('/api/answer', { path: brief.path, question: q.n, text });
+          await api('/api/answer', { path: brief.path, question: q.n, text, provenance });
           q.answer = text;
+          q.provenance = provenance;
           card.classList.add('answered');
           done.hidden = false;
           save.textContent = t('answer.update');
