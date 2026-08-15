@@ -130,9 +130,13 @@ narrow the form/tier, say so explicitly in the PR body.
   conservatively), `External` (a sourced fact or attributed outside argument — state as
   fact/attribution, never as the author's belief), or `Model-hypothesis` (a new
   mechanism, causal theory, framework, prediction, coined category, or "the real reason
-  is..." reframe you produced). A `Model-hypothesis` must never become an unqualified
-  first-person author belief — either omit it from the prose entirely or write it as an
-  explicit open possibility, and either way give it an `Hn` entry in the PR body's
+  is..." reframe you produced). Give each load-bearing claim a stable **Claim Ledger ID**
+  (`C1`, `C2`, …) before prose exists. The ID belongs to the semantic claim, not to a
+  paragraph or language, and survives reordering between en and zh. Mark whether the
+  claim is required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
+  A `Model-hypothesis` must never become an unqualified first-person author belief —
+  either omit it from the prose entirely or write it as an explicit open possibility,
+  and either way give it an `Hn` entry in the PR body's
   `## Candidate hypotheses — not yet yours` section (below) for the author to adopt or
   reject; a hedged one in the prose still needs its own `Hn`, or there's nothing for the
   author to reply `**Adopt hypothesis — Hn**` to. A published post licenses terminology,
@@ -177,27 +181,62 @@ narrow the form/tier, say so explicitly in the PR body.
 
 ## Bilingual pass (same PR, always)
 
-- Draft first in the language the author's input leans toward; transcreate into the other.
-- Identical across versions: thesis, section structure, every factual claim, number, and
-  source link. Adaptable: idioms, rhythm, and titles (each title should be strong in its
-  own language, not a translation).
-- Don't let the zh version read as the en version's syntax translated. This matters most
-  at the opening: where the en leads with macro framing or a series recap, the zh should
-  prefer entering from one concrete situation, a problem the reader has likely seen, or a
-  firsthand observation — same claim, number, and sources, different entry and sentence
-  shape. Break the en's long set-up runs into shorter zh sentences. This is a preference,
-  not a quota: don't manufacture doubt or scene-setting where the author's material has none.
-- Use `research/glossary.md` for recurring term renderings; append any new term decisions
-  you made to the glossary in the same PR.
-- File placement depends on whether the Phase 2 bilingual site work (`docs/pipeline.md`
-  §6) has landed — check `src/content.config.ts` for a `lang` field:
-  - **Phase 2 landed**: `src/content/posts/<translationKey>.en.md` and
-    `<translationKey>.zh.md`.
-  - **Not yet**: the collection publishes every file under `src/content/posts/` and
-    builds URLs from the file id, so a `.zh.md` file there would go live in the English
-    list. Keep the English version at the current `src/content/posts/<slug>.md`
-    convention and park the Chinese version at `drafts/zh/<slug>.md` (outside the
-    collection) in the same PR; Phase 2 moves parked files into place.
+The two files share one semantic source package; they do **not** share one required
+outline.
+
+1. **Build the shared package once.** Freeze the Author Kernel, Claim Ledger, source
+   links, source-confidence/domain-limit information, and glossary decisions before
+   either language becomes the template. If a Material Audit exists for the piece, keep
+   it in this package too.
+2. **Draft the first language naturally** in whichever language the author's input leans
+   toward. Let that language decide its own entry point, claim order, headings, paragraph
+   boundaries, and closer.
+3. **Draft the second language clean-room style.** Close/hide the first-language prose
+   while composing. Work from the shared package — Kernel + Claim Ledger + source
+   material + glossary (+ Material Audit when available) — **not** from the first
+   language's sentence order, section order, or headings. The first-language article is
+   available again only for the parity pass after both drafts exist.
+4. **Run parity by Claim Ledger ID.** Every claim marked required in both languages must
+   appear in both with the same factual meaning, number/date, source support, causal
+   direction, and stance/uncertainty. Fix missing or drifted claims without forcing them
+   into the same location.
+
+Identical **in meaning** across versions: thesis, required claim set, factual claims,
+numbers/dates, source support, stance/uncertainty, and maturity/public meaning.
+
+Independent **by language**: claim order, section structure/order, headings and heading
+count, paragraph boundaries, rhetorical entry/close, connective scaffolding, and length.
+One language may combine two sections that the other splits, omit a heading the other
+uses, move context later, or state a claim earlier. A natural Chinese version may be
+materially shorter than English. **Do not impose a word-count or character-count ratio.**
+The question is whether required claims survived, not whether the files occupy similar
+space.
+
+Examples follow the same evidence rule:
+
+- If a company, study result, number, factual case, or firsthand event is evidence for a
+  load-bearing claim, keep that evidence aligned across languages unless the Claim Ledger
+  explicitly marks it optional/non-load-bearing.
+- If an example is purely rhetorical illustration, each language may use a more natural
+  equivalent as long as it adds no new factual claim, changes no thesis, and invents no
+  firsthand experience.
+
+Do not manufacture structural difference for its own sake. If both languages naturally
+choose the same shape, keep it. But suspicious 1:1 heading/paragraph alignment is a
+translation-shape smell to inspect, not a parity requirement.
+
+Use `research/glossary.md` for recurring term renderings; append any new term decisions
+you made to the glossary in the same PR.
+
+File placement depends on whether the Phase 2 bilingual site work (`docs/pipeline.md`
+§6) has landed — check `src/content.config.ts` for a `lang` field:
+- **Phase 2 landed**: `src/content/posts/<translationKey>.en.md` and
+  `<translationKey>.zh.md`.
+- **Not yet**: the collection publishes every file under `src/content/posts/` and
+  builds URLs from the file id, so a `.zh.md` file there would go live in the English
+  list. Keep the English version at the current `src/content/posts/<slug>.md`
+  convention and park the Chinese version at `drafts/zh/<slug>.md` (outside the
+  collection) in the same PR; Phase 2 moves parked files into place.
 
 ## Closing the loop
 
@@ -213,28 +252,52 @@ narrow the form/tier, say so explicitly in the PR body.
 2. Run `npm run build`; fix what breaks.
 3. Open a **ready** pull request. Body must include: tier and thesis; which rung of the
    ladder this came from; sources re-checked; the 2–3 things the author should challenge
-   hardest; any factual corrections made to the author's answers; a claim-parity
-   confirmation between the en and zh versions (list the claims once, confirm both
-   versions carry them); a **Voice** section listing the verbatim-spine phrases kept and
-   any opinion you could not trace to author input (this list should be empty — if it
-   isn't, each entry is phrased as a question for the author, not a claim); an **Author
-   Kernel** section (the tagged Kernel fragments from Step 0, including interview answer
+   hardest; any factual corrections made to the author's answers; a **Bilingual parity**
+   table keyed by the shared Claim Ledger IDs (do not say the two files carry claims "in
+   the same order"); a **Voice** section listing the verbatim-spine phrases kept and any
+   opinion you could not trace to author input (this list should be empty — if it isn't,
+   each entry is phrased as a question for the author, not a claim); an **Author Kernel**
+   section (the tagged Kernel fragments from Step 0, including interview answer
    provenance and every material `domain-limit`; say whether any limit reduced the
-   chosen scope/tier); a **Claim ledger** section, one line per load-bearing claim
-   (`- <claim> — Q-explicit (interview 2026-07-20)`); a **Candidate hypotheses — not yet
-   yours** section listing **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`,
-   ... — including one already written into the prose as a hedged open possibility ("One
-   possibility is…"), not only the ones fully omitted from it. A hedged entry needs an Hn
-   the same as an omitted one, or the author has no id to adopt/reject by; say in its
-   `Why it emerged` line whether it's already in the draft or was left out entirely.
-   Each entry carries `- Why it emerged:`, `- Would change the piece by:`, and
-   `- Status: not adopted` (the whole section is empty only when the draft has no
-   unadopted hypothesis at all — including hedged ones — since the draft must read
-   correctly with every listed hypothesis absent; the author replies
-   `**Adopt hypothesis — Hn**` or `**Reject hypothesis — Hn**` on the PR); an **A/B
-   calibration** section (below); and **three title options per language** (the one used
-   plus two alternates), so the author can swap titles at ship time without composing
-   anything.
+   chosen scope/tier); a **Claim ledger** section, one stable ID per load-bearing claim;
+   a **Candidate hypotheses — not yet yours** section listing **every** unadopted
+   `Model-hypothesis`, numbered `H1.`, `H2.`, ... — including one already written into
+   the prose as a hedged open possibility ("One possibility is…"), not only the ones
+   fully omitted from it. A hedged entry needs an Hn the same as an omitted one, or the
+   author has no id to adopt/reject by; say in its `Why it emerged` line whether it's
+   already in the draft or was left out entirely. Each entry carries
+   `- Why it emerged:`, `- Would change the piece by:`, and `- Status: not adopted` (the
+   whole section is empty only when the draft has no unadopted hypothesis at all —
+   including hedged ones — since the draft must read correctly with every listed
+   hypothesis absent; the author replies `**Adopt hypothesis — Hn**` or
+   `**Reject hypothesis — Hn**` on the PR); an **A/B calibration** section (below); and
+   **three title options per language** (the one used plus two alternates), so the author
+   can swap titles at ship time without composing anything.
+
+Use these exact semantic shapes for the two parity sections (the claim text may be
+shortened for readability, but the IDs must match):
+
+```md
+## Claim ledger
+
+C1. <claim> — Q-explicit (interview Q1) — Required in: EN + ZH
+C2. <claim> — External (<source>) — Required in: EN + ZH
+C3. <rhetorical/non-load-bearing item if worth recording> — Q-derived (...) — Required in: optional
+```
+
+```md
+## Bilingual parity
+
+| ID | Claim | EN | ZH | Notes |
+|---|---|---|---|---|
+| C1 | <short claim> | ✅ | ✅ | zh appears before context |
+| C2 | <short claim> | ✅ | ✅ | en uses a separate paragraph |
+```
+
+The Notes column explains meaningful placement/certainty/source differences when useful;
+it does **not** justify harmless structural divergence. A missing required claim, changed
+certainty, changed number/date, changed causal direction, or source mismatch is a parity
+failure. Different order/headings/paragraphing/length is not.
 
 ## A/B calibration (every draft PR)
 
