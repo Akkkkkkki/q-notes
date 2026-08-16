@@ -12,7 +12,19 @@ resolve stuck work without waiting for the author to feel ready.
 ## For every open content pull request
 
 1. **Run the tier checklist** (Note / Essay / Tracker, per the PR's stated tier).
-   Spot-check the bilingual claim-parity list against both files.
+   Spot-check the PR body's `## Bilingual parity` table against both files **by Claim
+   Ledger ID**, not by outline position. Every claim marked required in both languages
+   must appear in en and zh with the same factual meaning, number/date, source support,
+   causal direction, and stance/uncertainty. Evidence-bearing examples stay aligned
+   unless the ledger marks them optional/non-load-bearing. Do **not** flag different
+   claim order, section order, headings, paragraph boundaries, opening/closing device,
+   or length as parity failures. A rhetorical illustration may differ by language when
+   it adds no new factual claim, changes no thesis, and invents no firsthand experience.
+   If the same heading sequence, paragraph sequence, and claim order line up suspiciously
+   1:1 across languages, raise one advisory translation-shape question instead of asking
+   the drafts to converge: `en/zh structure mirrors 1:1 — did each language choose this
+   path independently?` This warning is advisory only; naturally similar structures are
+   allowed.
 2. **Run the voice check** against `research/voice.md`: flag any never-list hit, and any
    opinionated claim not traceable to the author's interview answers, sparks, or
    published positions. This includes the plain-language never-entries — fancy words,
@@ -25,30 +37,31 @@ resolve stuck work without waiting for the author to feel ready.
    (period, colon, or comma+conjunction in place of a dash; vary the cleft sentences; drop
    the italics) rather than just flagging. Deliberately reused
    keywords and `research/glossary.md` terms are exempt. For bilingual pairs, glance at
-   whether the zh opening is a syntax-mirror of the en opening (same macro set-up or series
-   recap, merely translated); if so, raise it as a one-line question ("zh opens like the en —
-   enter from a concrete scene instead?") rather than rewriting it yourself. Advisory only —
-   like other voice flags, it never blocks a passing checklist. If a plain swap or a sentence
-   split is unambiguous, just make it and push; only surface it as a question when the
-   term might be load-bearing. Spot-check
-   the PR's verbatim-spine list too — three trivial phrases kept for compliance don't
-   count; the kept phrases should carry the piece's claims. Also spot-check the
-   human-voice tells from `research/human-voice.md` §1 and §4 in both languages:
-   uncontracted English throughout, stacked "It is not X. It is Y." pivots, an
-   aphorism closing every section, rhetorical-question volleys, a closer or opener
-   framing reused from recent posts, LLM-lexicon words, and 中文版的翻译腔（欧化
-   句式——万能动词、"在……的情况下"、前置长定语、多余的"被"——加上空转词、排比、
-   升华句、英文式分号冒号、与英文版逐句对齐、硬加的口语词）. Read the content-gate
-   warnings on the PR first — contractions, corrective-pivot count, question volleys,
-   paragraph clustering, sentence-length variation and 万能动词 are counted for you
-   (`research/human-voice.md` §5), so spend your own attention on what the script
-   can't see: the talk test, invented first-person detail, a reused opening frame, and
-   whether the zh version was rewritten or aligned. Same protocol as other
-   voice checks: unambiguous mechanical fixes (a contraction, a deleted 空转词, one
-   pivot flattened into a direct statement) get made and pushed; anything that would
-   change meaning or cut a load-bearing line is raised as a one-line question. Voice
-   flags are rendered as
-   questions in the verdict ("Says X — yours?") and **never block a passing checklist**.
+   whether either version looks composed from the other's syntax or article architecture:
+   a matching opening, heading sequence, paragraph sequence, or claim order is a reason
+   to inspect, not a reason to force difference. If the zh opening is merely the en macro
+   set-up or series recap translated, ask one line such as `zh opens like the en — enter
+   from a concrete scene instead?`; likewise, if the whole pair mirrors 1:1, use the
+   advisory question from step 1. Voice flags never block a passing checklist. If a plain
+   swap or a sentence split is unambiguous, just make it and push; only surface it as a
+   question when the term might be load-bearing. Spot-check the PR's verbatim-spine list
+   too — three trivial phrases kept for compliance don't count; the kept phrases should
+   carry the piece's claims. Also spot-check the human-voice tells from
+   `research/human-voice.md` §1 and §4 in both languages: uncontracted English throughout,
+   stacked "It is not X. It is Y." pivots, an aphorism closing every section,
+   rhetorical-question volleys, a closer or opener framing reused from recent posts,
+   LLM-lexicon words, and 中文版的翻译腔（欧化句式——万能动词、"在……的情况下"、前置长定语、
+   多余的"被"——加上空转词、排比、升华句、英文式分号冒号、与英文版逐句对齐、硬加的口语词）.
+   Read the content-gate warnings on the PR first — contractions, corrective-pivot count,
+   question volleys, paragraph clustering, sentence-length variation and 万能动词 are
+   counted for you (`research/human-voice.md` §5), so spend your own attention on what
+   the script can't see: the talk test, invented first-person detail, a reused opening
+   frame, and whether each language was composed natively rather than aligned to the
+   other. Same protocol as other voice checks: unambiguous mechanical fixes (a
+   contraction, a deleted 空转词, one pivot flattened into a direct statement) get made
+   and pushed; anything that would change meaning or cut a load-bearing line is raised
+   as a one-line question. Voice flags are rendered as questions in the verdict
+   ("Says X — yours?") and **never block a passing checklist**.
 3. **Run the ownership check** (`docs/pipeline.md` §10) against the PR body's Claim
    ledger. Any claim classed `Model-hypothesis` that reads in the prose as an
    unqualified first-person author belief, with no `**Adopt hypothesis**` record for it,
@@ -69,10 +82,12 @@ resolve stuck work without waiting for the author to feel ready.
      new reporting, a different thesis), do the part you can, then say in one line what is
      left and what it needs — an unactioned request must never sit silent under a verdict.
    - `**A/B calibration — Qn: X.**` → the author has chosen a rendering. If the draft uses
-     a different one, swap it in, in both languages where the passage has a counterpart.
-     Treat the `Why:` line as a rule, not a comment: a stated dislike ("avoid the dash
-     here", "too generic") applies to the whole piece, not only the sentence quoted, and
-     also goes to `research/voice.md ## Proposed` under the protocol in step 6.
+     a different one, swap it in where that passage belongs. Change the other language
+     only when semantic claim parity requires it; never force the same sentence or
+     paragraph position merely because one language changed. Treat the `Why:` line as a
+     rule, not a comment: a stated dislike ("avoid the dash here", "too generic") applies
+     to the whole piece, not only the sentence quoted, and also goes to
+     `research/voice.md ## Proposed` under the protocol in step 6.
    - `**读稿标记 — 我不会这么说：**` → step 6; same contract, plus the rule to distill.
    - `**Voice flag — keep/cut:**` and `**Downgrade to note**` → apply as stated.
    - `**Adopt hypothesis — Hn.**` → commit the append to `research/positions.md`
@@ -84,10 +99,10 @@ resolve stuck work without waiting for the author to feel ready.
      possibility is…"), promote it to a plain author assertion in both languages; if
      the hypothesis was fully quarantined (omitted from the prose, listed only in
      Candidate hypotheses — the drafter is allowed to do this), there is nothing to
-     promote in place, so write the claim in as a new plain assertion at the point in
-     each language version where the surrounding argument already sets it up, then
-     mark that hypothesis `Status: adopted` in the PR body. It is now `Q-explicit`
-     material for future drafts regardless of this PR's own outcome.
+     promote in place, so write the claim in as a new plain assertion at the **natural
+     rhetorical point in each language independently**, then mark that hypothesis
+     `Status: adopted` in the PR body. It is now `Q-explicit` material for future drafts
+     regardless of this PR's own outcome.
    - `**Reject hypothesis — Hn.**` → mark `Status: rejected` in the PR body and strip any
      first-person residue from both language versions. Record nothing in
      `research/positions.md` or `research/voice.md` — a rejected hypothesis never becomes
@@ -112,21 +127,22 @@ resolve stuck work without waiting for the author to feel ready.
 6. **Author has marked "我不会这么说" sentences** (in PR comments or a review, on this
    pass or a previous one — Desk marks arrive as a `**读稿标记 — 我不会这么说：**`
    comment with a bulleted sentence list) → each mark converts into a rule and a fix:
-   rewrite the marked sentence in place (staying inside claim parity), and record a
-   one-line entry in `research/voice.md` `## Proposed` with the `read-aloud mark` tag —
-   a specific word the author rejected becomes a Never candidate, a rejected sentence
-   shape becomes a Rhythm candidate. For Desk marks, the raw record is already there
-   (the Desk appends `不会这么说："…"` lines when the author taps) — refine that raw
-   line in place into the generalized rule instead of appending a duplicate. The mark
-   needs no explanation from the author; inferring the rule is your job, and a mark you
-   can't generalize still gets the sentence fixed. These marks are the highest-signal
-   voice feedback the system gets — never let one expire unprocessed. Adopted-hypothesis
-   records (step 4) go to `research/positions.md`, not here — voice.md is how Q sounds,
-   positions.md is what Q has adopted; keep the two stores separate.
-7. **Checklist fails** → fix what is fixable yourself (typos, missing source link, parity
-   gaps, build errors) and push to the PR branch. Only bounce to the author if the gap is
-   substantive (a claim needs their judgment), and say precisely which checklist line
-   fails and what the smallest fix is.
+   rewrite the marked sentence in place (staying inside claim parity, not sentence/section
+   alignment), and record a one-line entry in `research/voice.md` `## Proposed` with the
+   `read-aloud mark` tag — a specific word the author rejected becomes a Never candidate,
+   a rejected sentence shape becomes a Rhythm candidate. For Desk marks, the raw record
+   is already there (the Desk appends `不会这么说："…"` lines when the author taps) —
+   refine that raw line in place into the generalized rule instead of appending a
+   duplicate. The mark needs no explanation from the author; inferring the rule is your
+   job, and a mark you can't generalize still gets the sentence fixed. These marks are the
+   highest-signal voice feedback the system gets — never let one expire unprocessed.
+   Adopted-hypothesis records (step 4) go to `research/positions.md`, not here — voice.md
+   is how Q sounds, positions.md is what Q has adopted; keep the two stores separate.
+7. **Checklist fails** → fix what is fixable yourself (typos, missing source link,
+   **claim-ID parity gaps**, build errors) and push to the PR branch. Only bounce to the
+   author if the gap is substantive (a claim needs their judgment), and say precisely
+   which checklist line fails and what the smallest fix is. Never repair a parity gap by
+   copying the other language's section structure wholesale.
 8. **PR open > 7 days** → downgrade: extract the strongest single idea into a Note
    (both languages), re-tier the frontmatter, trim everything that doesn't serve that one
    idea, push, and comment what you cut and why. A shipped note beats a stuck essay.

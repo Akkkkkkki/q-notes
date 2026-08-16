@@ -38,7 +38,10 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 ## Bilingual contract
 
 - Every published piece has an English and a Chinese version, shipped in the same PR as one editorial unit.
-- The two versions are transcreations, not literal translations: thesis, structure, factual claims, numbers, and source links must be identical; idioms, rhythm, and titles adapt to each language.
+- The two versions are transcreations, not literal translations. They share one Claim Ledger and must preserve the same thesis, required factual claims, numbers/dates, source support, causal direction, stance/uncertainty, and maturity/public meaning.
+- Their rhetorical structure is independent by language: claim order, section order, headings, paragraph boundaries, openings/closers, connective scaffolding, and length may differ. Matching structure is allowed when it is naturally best, but it is never required for parity.
+- Draft the second language from the shared source package (Author Kernel + Claim Ledger + sources/glossary, plus Material Audit when available), not by following the first language's sentence or section order. Run the final parity check by Claim Ledger ID.
+- Evidence-bearing examples stay aligned unless the Claim Ledger marks them optional/non-load-bearing. Purely rhetorical illustrations may adapt by language only when they add no new factual claim, change no thesis, and invent no firsthand experience.
 - Recurring terms use the renderings in `research/glossary.md`; new term decisions are appended there in the same PR.
 - The author's voice may originate in either language or both mixed; draft first in the language the input leans toward.
 
