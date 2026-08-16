@@ -17,7 +17,7 @@ Ready 的 brief 完全可能最后变成 Note、field note、correction、questi
 
 ## 2. Material Audit：先审材料，再选 tier / form / outline
 
-先完成 Author Kernel 和 Claim Ledger，然后在选公开 tier、内部 form、标题和结构之前做 Material Audit。它不是再抄一遍素材清单，而是判断：现有材料到底能承载多完整的论证。
+先完成 Author Kernel 和 Claim Ledger，然后在选公开 tier、内部 form、标题和结构之前做 Material Audit。它不是再抄一遍素材清单，而是判断：现有材料到底能承载多完整的论证；如果是 Tracker，则判断新证据是否已经足以诚实地复盘旧预测。
 
 PR body 使用固定格式：
 
@@ -34,17 +34,18 @@ PR body 使用固定格式：
 - <作者尚未回答的判断、domain-limit、tentative 机制、缺少的研究>
 
 ### Density judgment
-- Supported by this material: <fragment | note | essay>
-- Why: <2–4 句，说明什么材料撑得起这个密度，以及还缺什么>
+- Supported by this material: <fragment | note | essay | tracker>
+- Why: <2–4 句，说明什么材料撑得起这个密度/形式，以及还缺什么>
 ```
 
 不要按 bullet 数量打分。一个很扎实的 firsthand 案例，可能比六条泛泛事实更能撑起文章；十个重复同一主流观点的引用，也不会自动变成 Essay。
 
-三个 density judgment：
+四种 judgment：
 
 - **fragment**：有一个值得保留的纠正、观察、问题或应用，但还不足以在不靠 AI 综合填充的情况下形成独立 Note。可以保留为碎片 / question memo，也可以先补采访或研究再润色。
 - **note**：一个可争论的观点，至少有一个不可替代的具体机制、第一手例子或 research case 支撑，不需要再人工制造“第二幕”。
 - **essay**：有多块互相作用的实质材料。论点有机制；真正存在的反方观点或边界能被认真处理；多个 section 各自都有采访/研究前写不出来的证据或经验。
+- **tracker**：主要任务是复盘一个**已经发布、可证伪的 claim / prediction**，而且当前证据已经足以判断它发生了什么。不能拿 `tracker` 当成薄弱新论点的逃生口，也不能因为新 Note / Essay 里恰好有 prediction 就选 Tracker。
 
 ### 不可替代材料测试
 
@@ -53,6 +54,8 @@ PR body 使用固定格式：
 > 如果模型从没读过这次采访和这次研究，一个能力不错的模型是不是也能写出这一节？
 
 如果答案是“能”，这节大概率只是通用脚手架。只有在现有材料里确实有具体案例、机制、firsthand 细节或真正改变论证的来源时才补进去；否则直接删掉。不要为了保住 outline 去制造材料。
+
+对于 Tracker，把问题改成“如果没有检查这次的新证据，这一节是不是也能写出来？”只复述旧预测的内容属于背景，不算新的 material。
 
 概念、过渡、背景铺垫和泛泛的“这意味着什么”本身不算 material density。
 
@@ -66,19 +69,19 @@ PR body 使用固定格式：
 - **`question-memo`** → 通常是 `note`，也可能只是 fragment / 暂不发布。诚实结尾可以是一个尚未解决的问题。研究可以把已知事实整理清楚，不能替作者下判断。
 - **`application-note`** → `note`。把已经拥有的观点用到一个具体情境，不把这次应用包装成新的普遍理论。
 - **`essay`** → `essay`。只有 Material Audit 判断为 `essay` 才能选。
-- Tracker 仍然用于复盘过去的可证伪预测；不能因为新 Essay 恰好有预测就自动把它变成 Tracker。
+- **`tracker`** → `tracker`。只有当文章主体是在用新证据复盘过去已经发布的可证伪 claim / prediction 时使用。新 Essay 里有一个预测，不会自动让它变成 Tracker。
 
 PR body 固定格式：
 
 ```md
 ## Form decision
-- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay>
+- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay | tracker>
 - Public tier: <note | essay | tracker>
 - Strongest available material: <真正承载这篇内容的材料>
 - Material deliberately not expanded: <刻意不替作者补齐的缺口 / 边界 / 问题>
 ```
 
-`Ready to draft` 绝不能成为选择 `essay` 的理由。
+`Ready to draft` 绝不能成为选择 `essay` 的理由。选择 `tracker` 时必须指出正在复盘的旧 published claim，以及现在为什么已经有足够新证据给出判断。
 
 ## 4. 对 tier 完成条件的修订
 
@@ -101,6 +104,10 @@ counterpoint 是**条件项**。当一个有水平的读者确实会反驳、证
 Essay 包含 Note 的要求，并且材料必须真的足以支撑多个不同 section、机制层面的论证、需要时的当前来源，以及对最强**真实存在**的反方观点 / 边界的处理。
 
 可证伪陈述或 prediction 是**机会型**内容。如果论证自然产生一个，就记录到 frontmatter / tracker 机制里；如果没有，Essay 仍然可以通过。不能因为 checklist 想要 tracker fuel 就硬写一个“到 2027 年会怎样”的预测。
+
+### Tracker
+
+Tracker 继续遵循 `docs/pipeline.md` §5 原有的 Tracker checklist。Form decision 固定为 `tracker` / `tracker`；Material Audit 必须指出正在复盘的 published claim，以及足以判断/修正它的新证据。它不需要为了“显得够完整”去制造 Note / Essay 那种论证密度。
 
 ### 长度
 
@@ -138,7 +145,7 @@ outline 必须在 Material Audit 和 Form decision **之后**：
 
 ship gate 在给出 `Ready to ship` 之前检查 PR 的 `## Material Audit` 与 `## Form decision`。
 
-**form / tier mismatch 会阻止发布。** 如果 audit 只支持 `fragment` 或 `note`，PR 却声明 `essay`，checklist 就没有通过。这不是 voice flag 那样的 advisory。
+**form / tier mismatch 会阻止发布。** 如果 audit 只支持 `fragment` 或 `note`，PR 却声明 `essay`，checklist 就没有通过。如果 audit 是 `tracker`，Chosen form 和 Public tier 都必须是 `tracker`；反过来，如果 PR 声明 `tracker`，audit 必须指出一个之前发布的 claim 和足以复盘它的新证据。这不是 voice flag 那样的 advisory。
 
 修复顺序：
 
