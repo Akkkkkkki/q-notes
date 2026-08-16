@@ -18,10 +18,15 @@ flags remain advisory.
    verdict, require and spot-check the PR body's `## Material Audit` and
    `## Form decision`. The declared form/tier may not exceed the audit's Density
    judgment. If the audit says `fragment` or `note` and the PR declares `essay`, the
-   checklist **fails**; this is not an advisory voice question. Also test every major
-   section against the audit: if a competent model could have written it before reading
-   the interview/research and it carries no irreplaceable material named in the audit,
-   cut it rather than treating generic scaffolding as evidence of Essay density.
+   checklist **fails**; this is not an advisory voice question. If the audit says
+   `tracker`, both `Chosen form` and `Public tier` must be `tracker`; if the PR declares
+   `tracker`, the audit must name the prior published falsifiable claim/prediction and
+   the new evidence sufficient to score or qualify it. Also test every major section
+   against the audit: if a competent model could have written it before reading the
+   interview/research and it carries no irreplaceable material named in the audit, cut
+   it rather than treating generic scaffolding as evidence of Essay density. For a
+   Tracker, apply the equivalent test to the new evidence: restating the old prediction
+   is setup, not new material.
 
    Spot-check the PR body's `## Bilingual parity` table against both files **by Claim
    Ledger ID**, not by outline position. Every claim marked required in both languages
