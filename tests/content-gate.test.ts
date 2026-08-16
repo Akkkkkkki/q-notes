@@ -216,6 +216,26 @@ describe('pre-contract exemption', () => {
   });
 });
 
+describe('word ceiling (docs/pipeline.md §11: length is an output, not a target)', () => {
+  it('does not flag a note well under the typical band', () => {
+    const body = Array.from({ length: 420 }, (_, i) => `word${i}`).join(' ');
+    expect(gate('v.en.md', EN_FM, body)).not.toContain('outside the');
+    expect(gate('v.en.md', EN_FM, body)).not.toContain('ceiling');
+  });
+
+  it('does not flag an essay under its typical band', () => {
+    const fm = EN_FM.replace('["note"]', '["essay"]');
+    const body = Array.from({ length: 760 }, (_, i) => `word${i}`).join(' ') + ' https://example.com';
+    expect(gate('w.en.md', fm, body)).not.toContain('ceiling');
+  });
+
+  it('still flags an essay well over its ceiling', () => {
+    const fm = EN_FM.replace('["note"]', '["essay"]');
+    const body = Array.from({ length: 1700 }, (_, i) => `word${i}`).join(' ') + ' https://example.com';
+    expect(gate('x.en.md', fm, body)).toContain('over the essay ceiling of 1500');
+  });
+});
+
 describe('中文 万能动词', () => {
   it('flags stacked empty verbs', () => {
     const body = '团队进行研究之后，又作出决定，再进行分析，最后加以改进。';

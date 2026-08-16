@@ -38,6 +38,8 @@ npm test             # Companion Worker API test suite (vitest)
 ├── automations/        # Editorial pipeline prompts (scout, interview, drafter, ship gate, gardener)
 ├── docs/
 │   ├── pipeline.md          # Editorial pipeline design - source of truth
+│   ├── material-form.md     # Normative material/form addendum (Issue #67)
+│   ├── material-form.zh.md  # Simplified Chinese companion to material-form.md
 │   ├── pipeline.zh.md       # Simplified Chinese companion to pipeline.md
 │   ├── companion-vision.md  # Vision for a phone-first companion app
 │   └── ops-runbook.md       # Worker secrets: setup, health check, why tokens vanish
@@ -94,10 +96,14 @@ Most posts here come out of a weekly automation loop (scout -> interview -> auth
 braindump -> draft -> ship gate, plus a monthly gardener pass) rather than ad hoc
 writing. The full design — content tiers (note / essay / tracker), the bilingual
 transcreation contract, and per-tier definitions of done — lives in
-[`docs/pipeline.md`](./docs/pipeline.md). [`AGENTS.md`](./AGENTS.md) is the always-on
-summary any agent should read before drafting or editing content, and
-[`docs/companion-vision.md`](./docs/companion-vision.md) sketches a possible phone-first
-companion app for the pipeline's recurring author touchpoints.
+[`docs/pipeline.md`](./docs/pipeline.md). The material-driven form rules in
+[`docs/material-form.md`](./docs/material-form.md) normatively amend the older tier
+wording: Ready-to-draft is authorization, not an Essay selection; Material Audit runs
+before form/tier/outline; length has ceilings rather than minimum fill targets; and the
+ship gate trims/downgrades instead of inventing missing editorial furniture.
+[`AGENTS.md`](./AGENTS.md) is the always-on summary any agent should read before drafting
+or editing content, and [`docs/companion-vision.md`](./docs/companion-vision.md) sketches
+a possible phone-first companion app for the pipeline's recurring author touchpoints.
 
 ## Companion — Today + Capture + Answer + Publish
 
@@ -164,10 +170,13 @@ drafts — while URLs, file formats, and the API keep the pipeline's original na
   when a cold question is the hard part, never an answer put in your mouth. One question
   is open at a time; answered ones collapse with a check.
 - **Ready to draft**: answering is never automatically consumed. Answer some now,
-  finish later, and tap **Ready to draft** when *you* decide — that green light is
-  what turns the brief into a full Essay on Thursday (`POST /api/brief/ready`). Leave
-  it un-marked and the drafter won't build an Essay on answers you didn't sign off;
-  reopen a ready brief any time to keep editing.
+  finish later, and tap **Ready to draft** when *you* decide. That green light authorizes
+  the supplied answers for publishable use; it does **not** select Essay or promise a
+  complete argument. Thursday runs the Material Audit and chooses the smallest honest
+  form the material supports — a Note/field note/question memo may be the right result,
+  and a real Essay still has to earn its density. Leave the brief un-marked and the
+  drafter will not build an Essay on answers you did not sign off; reopen a ready brief
+  any time to keep editing.
 - Skipping a question is just not answering it; **Not this topic** closes the whole
   brief in one tap, freeing Thursday's drafter to use the fallback ladder.
 - **Tuesday push** (optional): a cron checks every Tuesday 08:30 whether the fresh
@@ -240,7 +249,7 @@ The API surface stays small, and every writable path is hard-coded in the Worker
 `.github/workflows/content-gate.yml` runs on every PR. It runs
 `scripts/content-gate.mjs` over the posts the PR adds, changes, or deletes —
 checking the tier tag, the bilingual pair (including orphaning by deletion), and
-that essays carry a source link (plus advisory word-count / em-dash / run-on
+that essays carry a source link (plus advisory over-ceiling / em-dash / run-on
 warnings) — and then a full `npm run build`. Errors block; warnings don't. A PR
 that changes no posts passes cheaply, so it's safe to make this a required check.
 

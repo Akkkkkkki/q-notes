@@ -98,6 +98,25 @@ describe('PR body parsing', () => {
     expect(parsed.flags).toEqual([]);
   });
 
+  it('resolves the tier from Form decision even when Material Audit prose later mentions a different tier word (docs/pipeline.md §11)', () => {
+    // parsePrBody takes the *first* tier-shaped match in the body. The drafter
+    // template (automations/03-drafter.md) deliberately puts "## Form decision"
+    // before "## Material Audit" so its authoritative "Public tier: note" wins
+    // over any stray "essay tier" language the audit's own reasoning might use.
+    const body = `## Form decision
+- Chosen form: field-note
+- Public tier: note
+- Strongest available material: the firsthand verification-theater story
+- Material deliberately not expanded: the accountability hypothesis
+
+## Material Audit
+- Supported by this material: note
+- Why: the density feels closer to essay tier on research alone, but the
+  firsthand material is narrow, so a note is the honest call
+`;
+    expect(parsePrBody(body).tier).toBe('note');
+  });
+
   it('counts author feedback sent after the last verdict as still owed a gate pass', () => {
     const verdict = '**Ready to ship**\n- three bullets';
     const change = '**One change:** more examples\n\n_(via Desk)_';
