@@ -65,7 +65,7 @@ than because it occurred naturally. Once a rule like "vary the paragraph lengths
 two casual touches" is read as a quota to fill, the model writes *to* the quota — which
 produces its own tell, just as detectable as the uniform prose it was meant to fix. §3 rules
 3 and 6 exist as diagnostics for exactly this reason: they describe what to notice, not what
-to insert (`docs/pipeline.md` §11).
+to insert (`docs/material-form.md` §5).
 
 **Fabricated intellectual autobiography.** A different failure the tells above don't catch,
 because the prose is clean and the scene isn't invented — the *mental history* is. A real
@@ -132,7 +132,7 @@ humor), and their rhythm is irregular because it follows thought, not template.
    paragraph or a manufactured long one; a rhythm break that exists only to pass the
    diagnostic is itself a tell (§1, "Manufactured burstiness").
 4. **No template slots.** A prediction is recorded only when the argument naturally
-   produces a falsifiable one (`docs/pipeline.md` §11) — never manufactured to fill an
+   produces a falsifiable one (`docs/material-form.md` §4) — never manufactured to fill an
    Essay slot. When one belongs, the framing sentence must differ from the last three
    posts. Same for openings.
 5. **Person on the page — never faked.** Each piece should carry at least one
