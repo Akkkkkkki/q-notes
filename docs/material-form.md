@@ -17,7 +17,7 @@ A ready brief can honestly become a Note, field note, correction, question memo,
 
 ## 2. Material Audit — before tier, form, or outline
 
-After building the Author Kernel and Claim Ledger, but **before** choosing a public tier, internal form, headings, or outline, perform this judgment pass. This is not another inventory. It asks how much argument the existing material can honestly carry.
+After building the Author Kernel and Claim Ledger, but **before** choosing a public tier, internal form, headings, or outline, perform this judgment pass. This is not another inventory. It asks how much argument the existing material can honestly carry — or, for a Tracker, whether there is enough new evidence to score the old claim honestly.
 
 Use this exact PR-body shape:
 
@@ -34,17 +34,18 @@ Use this exact PR-body shape:
 - <unanswered author judgment, domain-limit, tentative mechanism, missing reporting>
 
 ### Density judgment
-- Supported by this material: <fragment | note | essay>
-- Why: <2–4 sentences naming the material that earns that density and what is still missing>
+- Supported by this material: <fragment | note | essay | tracker>
+- Why: <2–4 sentences naming the material that earns that density/form and what is still missing>
 ```
 
 Do not score by number of bullets. One unusually rich firsthand case can support more than six generic facts. Ten citations that all restate the same consensus still do not create an Essay.
 
-The three density judgments mean:
+The four judgments mean:
 
 - **fragment** — a sharp correction, observation, question, or application exists, but there is not yet enough owned/evidenced material to carry a standalone argued Note without synthesis padding. Keep it as a fragment/question memo, or research/interview more before polish.
 - **note** — one arguable point is supported by at least one irreplaceable concrete mechanism, firsthand example, or research case. It can stand without inventing a second act.
 - **essay** — several distinct, load-bearing pieces of material interact: the thesis has a mechanism, the strongest live objection or boundary can be engaged, and multiple sections would each contain evidence/experience that could not have been written before this material existed.
+- **tracker** — the primary task is to score or qualify a **previously published falsifiable claim/prediction**, and current evidence is sufficient to say what happened. `tracker` is not an escape hatch for a thin new thesis and is not selected merely because a new Note/Essay contains a prediction.
 
 ### The irreplaceable-material test
 
@@ -53,6 +54,8 @@ For every proposed major section ask:
 > Could a competent model have written this section before reading the interview answers and the research used for this piece?
 
 If yes, the section is generic scaffolding. Add a concrete case/mechanism/firsthand detail/source that changes the argument **only if that material already exists**. Otherwise cut the section. Do not manufacture material to save the outline.
+
+For a Tracker, replace “before reading the interview” with “before checking the new evidence”: a section that only restates the original prediction is setup, not new material.
 
 Concepts, transitions, scene-setting, and generic "what this means" prose do not count as density by themselves.
 
@@ -66,19 +69,19 @@ Pick the smallest form that fits the audit. These are internal reasoning scaffol
 - **`question-memo`** → usually `note` or fragment/no piece. The honest endpoint is an unresolved question. Research can map the known facts but cannot answer the author's judgment for them.
 - **`application-note`** → `note`. Applies an already-owned idea to a concrete situation without pretending that the application proves a new general theory.
 - **`essay`** → `essay`. Earned only when the Material Audit says `essay`.
-- **Tracker** remains the public form for scoring a prior falsifiable prediction; it is not selected just because a new Essay happens to contain a prediction.
+- **`tracker`** → `tracker`. Used only when the piece's main job is to score/qualify a prior falsifiable published claim against new evidence. A prediction inside a new Essay does not turn that Essay into a Tracker.
 
 Record the choice exactly:
 
 ```md
 ## Form decision
-- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay>
+- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay | tracker>
 - Public tier: <note | essay | tracker>
 - Strongest available material: <what actually carries the piece>
 - Material deliberately not expanded: <gap/boundary/question the draft leaves alone>
 ```
 
-`Ready to draft` must never appear as the reason for choosing `essay`.
+`Ready to draft` must never appear as the reason for choosing `essay`. A `tracker` decision must point to the prior published claim being scored and the new evidence that makes a verdict possible.
 
 ## 4. Tier completion rules amended by material fit
 
@@ -101,6 +104,10 @@ A counterpoint is **conditional**, not a slot. Include one when a strong informe
 An Essay includes the Note requirements and also needs enough material for multiple genuinely distinct sections, a mechanism-level argument, current sources where needed, and honest treatment of the strongest **live** objection/boundary.
 
 A falsifiable statement or prediction is **opportunistic**. If the argument naturally produces one, record it in frontmatter / tracker machinery. If not, the Essay can still pass. Never generate a 2027 prediction because the checklist expects tracker fuel.
+
+### Tracker
+
+A Tracker follows the existing Tracker checklist in `docs/pipeline.md` §5. Its form decision is `tracker` / `tracker`, and its audit must identify the prior published claim plus the new evidence that is sufficient to score or qualify it. It does not need Note/Essay-style argument density merely to look substantial.
 
 ### Length
 
@@ -138,7 +145,7 @@ An unresolved ending is valid. "We do not know yet" is valid when that is what t
 
 The ship gate checks the PR's `## Material Audit` and `## Form decision` before declaring `Ready to ship`.
 
-**A form/tier mismatch is blocking.** If the audit says `fragment` or `note` but the PR declares `essay`, the checklist has not passed. This is not merely a voice/advisory flag.
+**A form/tier mismatch is blocking.** If the audit says `fragment` or `note` but the PR declares `essay`, the checklist has not passed. If the audit says `tracker`, the chosen form and public tier must both be `tracker`; if the PR declares `tracker`, the audit must identify a prior published claim and current evidence sufficient to score it. This is not merely a voice/advisory flag.
 
 The remedy order is:
 
