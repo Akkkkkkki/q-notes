@@ -36,7 +36,8 @@ Produce the highest rung the material honestly supports:
    mechanism, and an acknowledged counterpoint only when a real counterpoint is live;
    never add words to reach a minimum band.
 4. **None of the above** → draft a **Tracker** or Note connecting a published post's
-   claim or prediction to something that happened since.
+   claim or prediction to something that happened since. A Tracker is valid only when
+   its primary job is to score/qualify that prior falsifiable claim against new evidence.
 5. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
    newest interview file (or `research/backlog.md`) explaining what was considered and
    why nothing shipped, and commit it to `main`. This rung should be rare.
@@ -122,8 +123,9 @@ narrow the form/tier, say so explicitly in the PR body.
 
 **Do this before choosing a public tier, internal form, headings, or outline.** Use the
 shared Author Kernel, Claim Ledger, and re-validated research to judge how much argument
-the existing material can honestly carry. Follow `docs/material-form.md` exactly and
-keep both sections in the PR body:
+the existing material can honestly carry — or, for a Tracker, whether the new evidence
+is sufficient to score the old claim. Follow `docs/material-form.md` exactly and keep
+both sections in the PR body:
 
 ```md
 ## Material Audit
@@ -138,27 +140,31 @@ keep both sections in the PR body:
 - <unanswered author judgment, domain-limit, tentative mechanism, missing reporting>
 
 ### Density judgment
-- Supported by this material: <fragment | note | essay>
-- Why: <2–4 sentences naming what earns that density and what remains missing>
+- Supported by this material: <fragment | note | essay | tracker>
+- Why: <2–4 sentences naming what earns that density/form and what remains missing>
 ```
 
 Then choose the smallest internal form that fits the audit:
 
 ```md
 ## Form decision
-- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay>
+- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay | tracker>
 - Public tier: <note | essay | tracker>
 - Strongest available material: <what actually carries the piece>
 - Material deliberately not expanded: <gap/boundary/question the draft leaves alone>
 ```
 
 `Ready to draft` is never a reason to choose `essay`. A form/tier may not exceed the
-Density judgment. For each proposed major section, ask: **could a competent model have
-written this section before reading this interview and this research?** If yes, it is
-generic scaffolding. Add concrete material only when it already exists; otherwise cut
-the section. Do not manufacture a prediction, counterargument, second act, example, or
-conclusion to preserve an outline. If the audit says `fragment`, either do the specific
-additional research/interview the gap actually needs or ship no piece yet.
+Density judgment. `tracker` / `tracker` is allowed only when the audit names a prior
+published falsifiable claim and new evidence sufficient to score or qualify it. For each
+proposed major section, ask: **could a competent model have written this section before
+reading this interview and this research?** If yes, it is generic scaffolding. For a
+Tracker, ask the equivalent question about the new evidence: a section that only restates
+the old prediction is setup, not new material. Add concrete material only when it already
+exists; otherwise cut the section. Do not manufacture a prediction, counterargument,
+second act, example, or conclusion to preserve an outline. If the audit says `fragment`,
+either do the specific additional research/interview the gap actually needs or ship no
+piece yet.
 
 Only after the audit and form decision are fixed should you create the outline.
 
