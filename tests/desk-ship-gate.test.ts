@@ -90,6 +90,21 @@ describe('Desk ship endpoint requires a head-bound ship-gate Ready verdict', () 
     expect(gh.prs[0].merged).toBeFalsy();
   });
 
+  it('uses GitHub merge SHA precondition if the branch moves after the final guard read', async () => {
+    gh.prs[0].comments.push('**Ready to ship**\n- current-head approval');
+    const baseFetch = gh.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url);
+      if (url.pathname.endsWith('/pulls/77/merge')) gh.prs[0].head!.sha = 'raced-head';
+      return baseFetch(input, init);
+    });
+
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/changed|approval/i);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
   it('does not let a later Ready-looking comment hide feedback after approval', async () => {
     gh.prs[0].comments.push(
       '**Ready to ship**\n- approved',
