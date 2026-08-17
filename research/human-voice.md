@@ -59,6 +59,14 @@ material to carry and fills the space with competent synthesis. Style rules belo
 but nothing substitutes for the author's stances, phrases, and firsthand details
 actually existing in the voiceprint and interview answers.
 
+**Manufactured burstiness.** The inverse failure of uniform rhythm: a deliberately planted
+two-word paragraph, a scheduled dry joke, an aside inserted to satisfy a rhythm count rather
+than because it occurred naturally. Once a rule like "vary the paragraph lengths" or "one or
+two casual touches" is read as a quota to fill, the model writes *to* the quota — which
+produces its own tell, just as detectable as the uniform prose it was meant to fix. §3 rules
+3 and 6 exist as diagnostics for exactly this reason: they describe what to notice, not what
+to insert (`docs/material-form.md` §5).
+
 **Fabricated intellectual autobiography.** A different failure the tells above don't catch,
 because the prose is clean and the scene isn't invented — the *mental history* is. A real
 draft (PR #62) wrote: "I used to buy that story. What actually forces a gate like this, I've
@@ -117,13 +125,16 @@ humor), and their rhythm is irregular because it follows thought, not template.
    post. Aphorism/mic-drop closers: at most one per section, and at least two sections
    should end on plain information instead. Unanswered rhetorical questions: at most
    one per post.
-3. **Vary the rhythm on purpose.** At least one one-sentence paragraph, at least one
-   genuinely long paragraph, sentence lengths that don't cluster. If every section has
-   the same internal shape, restructure one.
-4. **No template slots.** Predictions stay where the tier calls for one (the Essay
-   checklist requires a falsifiable statement; Notes and Trackers don't — never add a
-   prediction just to fill the slot), but the framing sentence must differ from the
-   last three posts. Same for openings.
+3. **Rhythm is a diagnostic, not a quota.** Watch for paragraph lengths clustering,
+   sentence lengths that don't vary, or every section sharing the same internal shape —
+   that's uniform, machine-like rhythm, and the fix is to restructure the offending
+   section. It is not a checklist to satisfy by inserting a planted one-sentence
+   paragraph or a manufactured long one; a rhythm break that exists only to pass the
+   diagnostic is itself a tell (§1, "Manufactured burstiness").
+4. **No template slots.** A prediction is recorded only when the argument naturally
+   produces a falsifiable one (`docs/material-form.md` §4) — never manufactured to fill an
+   Essay slot. When one belongs, the framing sentence must differ from the last three
+   posts. Same for openings.
 5. **Person on the page — never faked.** Each piece should carry at least one
    first-person moment: a firsthand detail, an earned doubt ("我不确定这个判断完全对，
    但……"), a reaction to the evidence ("what surprised me in this paper was...").
@@ -135,8 +146,10 @@ humor), and their rhythm is irregular because it follows thought, not template.
    was...", "the correction came when..." are factual claims about the author's past
    beliefs, not sentence-level style — write them only when the source material
    actually contains that change-of-mind story (`docs/pipeline.md` §10).
-6. **Casualness budget.** One or two light touches per piece — an aside, a dry joke,
-   a parenthetical — where they occur naturally. Zero is stiff; three is trying.
+6. **Casualness is noticed, not scheduled.** A light touch — an aside, a dry joke, a
+   parenthetical — reads well where it occurs naturally; a piece with none can read
+   stiff. But do not insert one to hit a count. A planted joke is worse than a missing
+   one — it's the same manufactured-burstiness tell as a scheduled short paragraph (§1).
 
 ### English
 
@@ -176,8 +189,8 @@ made directly, like other mechanical fixes.
 - [ ] Read the piece aloud once; rewrite anything you wouldn't say to a friend.
 - [ ] Corrective pivots ≤ 1; unanswered rhetorical questions ≤ 1; at least two
       sections end on plain information, not an aphorism.
-- [ ] Rhythm is lumpy: paragraph lengths vary; one long paragraph and one very short
-      one exist; no two adjacent sections share the same internal shape.
+- [ ] Rhythm reads as lumpy, not uniform — no two adjacent sections share the same
+      internal shape, and no variation was manufactured just to check this box.
 - [ ] Opening and closing don't reuse the framing of the last three posts.
 - [ ] EN: contractions used by default; no LLM-lexicon words.
 - [ ] 中文：不是英文句子的对齐翻译；句子是中文骨架——无"在……的情况下"式介词架、
@@ -188,7 +201,7 @@ made directly, like other mechanical fixes.
       body); nothing firsthand is invented.
 - [ ] Every "I used to think" / "I've come to think" / change-of-mind sentence traces to
       an author-supplied history, not to narrative glue connecting a model-built claim.
-- [ ] One or two natural light touches; none forced.
+- [ ] Light touches, if any, occur naturally; none inserted to hit a count.
 
 ## 5. What the linter checks, and what it can't
 

@@ -20,6 +20,11 @@ Write `research/retro/YYYY-MM.md` containing, for the past month:
 - **Hypothesis quarantine**: candidate hypotheses proposed vs. adopted vs. rejected this
   month, across all draft PRs (`docs/pipeline.md` §10). This is the number that says
   whether the quarantine is working or just generating noise the author ignores.
+- **Form fit**: pieces published this month by declared internal form and public tier
+  (`docs/material-form.md`); author `Downgrade to note` comments and gate 7-day
+  downgrades, split by whether the drafter had declared `essay`. A high rate of late
+  Essay → Note downgrades means the drafter is still over-tiering upstream, not that the
+  author is fussy — say so plainly if the rate is not trending down.
 - Verdict against every target in `docs/pipeline.md` §9. If any target has been missed
   three months running, say plainly that the *pipeline design* needs revision and propose
   the single change most likely to fix it. The author is never the diagnosis.

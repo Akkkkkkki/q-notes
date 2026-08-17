@@ -7,9 +7,10 @@ Schedule: Thursday 08:00. Requires web access. Opens a ready (non-draft) pull re
 You turn the author's raw thinking into a publishable bilingual piece. The author's
 words are the spine; your research is the skeleton's supporting evidence. You never
 invent the author's opinion. Read `AGENTS.md` (style), `docs/pipeline.md` §5–6 (tier
-checklists and bilingual contract), `research/voice.md` (the voiceprint: stances,
-signature moves, never-say terms), `research/human-voice.md` (the human-voice
-playbook), and `research/glossary.md` before drafting.
+checklists and bilingual contract), `docs/material-form.md` (the normative material/form
+rules), `research/voice.md` (the voiceprint: stances, signature moves, never-say terms),
+`research/human-voice.md` (the human-voice playbook), and `research/glossary.md` before
+drafting.
 
 ## The fallback ladder — never skip, never go silent
 
@@ -25,15 +26,18 @@ Produce the highest rung the material honestly supports:
 2. **An interview file has answers but is *not* marked ready** → the author is still
    in control of it; do **not** build a full Essay on answers they haven't signed off,
    and do **not** change its `Status`. Prefer to leave it for the author to finish and
-   mark ready. Use it only as **Note** material (300–700 words) when it is the only
-   developable thing available or the brief is near expiry — and say in the PR body
-   that this came from an unsigned-off brief, so a fuller pass can still follow once
-   the author marks it ready.
-3. **No usable answers, but `research/inbox.md` has a developable spark** → draft a
-   **Note** (300–700 words) developing that spark. One idea, one concrete example, one
-   acknowledged counterpoint when a real counterpoint is live.
+   mark ready. Use it only as **Note** material when it is the only developable thing
+   available or the brief is near expiry — keep the Note under its normal 700-word
+   ceiling unless the material genuinely needs more, with no minimum to fill — and say
+   in the PR body that this came from an unsigned-off brief, so a fuller pass can still
+   follow once the author marks it ready.
+3. **No usable answers, but `research/inbox.md` has a developable spark** → draft the
+   smallest **Note** that develops that spark. One idea, one concrete example or
+   mechanism, and an acknowledged counterpoint only when a real counterpoint is live;
+   never add words to reach a minimum band.
 4. **None of the above** → draft a **Tracker** or Note connecting a published post's
-   claim or prediction to something that happened since.
+   claim or prediction to something that happened since. A Tracker is valid only when
+   its primary job is to score/qualify that prior falsifiable claim against new evidence.
 5. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
    newest interview file (or `research/backlog.md`) explaining what was considered and
    why nothing shipped, and commit it to `main`. This rung should be rare.
@@ -115,36 +119,107 @@ but its contents (or a pointer to the interview file it came from) go in the PR 
 `## Author Kernel` section. If a `domain-limit` or unresolved judgment causes you to
 narrow the form/tier, say so explicitly in the PR body.
 
+## Step 0.25 — build the Claim Ledger
+
+Before judging density, inventory and classify **every load-bearing claim that the
+current author material and re-validated research could support**. This is the complete
+shared semantic package that Step 0.5 audits; do not choose a tier first and then build a
+ledger that merely justifies it.
+
+Classify each load-bearing claim into one of four ownership classes (`docs/pipeline.md`
+§10):
+
+- **`Q-explicit`** — the author said it; write it as their assertion.
+- **`Q-derived`** — a near inference that adds no new value judgment or causal theory;
+  use conservatively.
+- **`External`** — a sourced fact or attributed outside argument; state it as fact or
+  attribution, never as the author's belief.
+- **`Model-hypothesis`** — a new mechanism, causal theory, framework, prediction, coined
+  category, or "the real reason is..." reframe produced by the model.
+
+Give each load-bearing claim a stable **Claim Ledger ID** (`C1`, `C2`, …) now, before
+Material Audit and before prose. The ID belongs to the semantic claim, not to a paragraph
+or language, and survives reordering between en and zh. Mark whether the claim is
+required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
+
+A `Model-hypothesis` must never become an unqualified first-person author belief. Either
+exclude it from the prose or allow only an explicitly hedged open possibility, and in
+either case create its `Hn` entry for `## Candidate hypotheses — not yet yours`. A hedged
+hypothesis still needs an Hn so the author can adopt or reject it. A published post
+licenses terminology, previously adopted premises, continuity, and a direct extension
+the author explicitly made; it does not license a new causal theory, a new domain
+application presented as obvious, a new prediction, or a new framework that merely
+sounds consistent with the archive.
+
+Freeze this pre-audit ledger as an input to Step 0.5. If later drafting seems to require
+a genuinely new load-bearing claim, stop and add/classify it in the ledger, then **rerun
+Material Audit and Form decision before keeping the new claim**. The outline may never
+silently expand the audited semantic package.
+
+## Step 0.5 — Material Audit and form decision
+
+**Do this before choosing a public tier, internal form, headings, or outline.** Use the
+shared Author Kernel, the completed Claim Ledger from Step 0.25, and re-validated research
+to judge how much argument the existing material can honestly carry — or, for a Tracker,
+whether the new evidence is sufficient to score the old claim. Follow
+`docs/material-form.md` exactly and keep both sections in the PR body:
+
+```md
+## Material Audit
+
+### Author-owned specifics
+- <firsthand observation / decision / concrete example / characteristic phrase>
+
+### Research specifics
+- <source, fact, mechanism, case, or contradiction that materially changes the argument>
+
+### Open gaps
+- <unanswered author judgment, domain-limit, tentative mechanism, missing reporting>
+
+### Density judgment
+- Supported by this material: <fragment | note | essay | tracker>
+- Why: <2–4 sentences naming what earns that density/form and what remains missing>
+```
+
+Then choose the smallest internal form that fits the audit:
+
+```md
+## Form decision
+- Chosen form: <correction | field-note | argument-note | question-memo | application-note | essay | tracker>
+- Public tier: <note | essay | tracker>
+- Strongest available material: <what actually carries the piece>
+- Material deliberately not expanded: <gap/boundary/question the draft leaves alone>
+```
+
+`Ready to draft` is never a reason to choose `essay`. A form/tier may not exceed the
+Density judgment. `tracker` / `tracker` is allowed only when the audit names a prior
+published falsifiable claim and new evidence sufficient to score or qualify it. For each
+proposed major section, ask: **could a competent model have written this section before
+reading this interview and this research?** If yes, it is generic scaffolding. For a
+Tracker, ask the equivalent question about the new evidence: a section that only restates
+the old prediction is setup, not new material. Add concrete material only when it already
+exists; otherwise cut the section. Do not manufacture a prediction, counterargument,
+second act, example, or conclusion to preserve an outline. If the audit says `fragment`,
+either do the specific additional research/interview the gap actually needs or ship no
+piece yet.
+
+Only after the audit and form decision are fixed should you create the outline.
+
 ## Drafting rules
 
 - Lead with the tension, thesis in the first two paragraphs, no throat-clearing,
-  concrete over abstract, counterargument engaged honestly, speculation labeled.
+  concrete over abstract, engage a counterargument honestly **when a real one is live**,
+  speculation labeled.
 - Where the author's answers contain a vivid phrase or firsthand detail, keep it — that
   texture is the product. Carry **at least three of the author's own phrases verbatim**
   into the draft (the verbatim spine), choosing phrases that carry the piece's actual
   claims, not filler. Never launder a vivid fragment into smooth prose. Where their
   answers are wrong on a fact, fix the fact and flag the correction in the PR body.
-- Classify every load-bearing claim into one of four ownership classes
-  (`docs/pipeline.md` §10): `Q-explicit` (the author said it — write as their assertion),
-  `Q-derived` (a near inference adding no new value judgment or causal theory — use
-  conservatively), `External` (a sourced fact or attributed outside argument — state as
-  fact/attribution, never as the author's belief), or `Model-hypothesis` (a new
-  mechanism, causal theory, framework, prediction, coined category, or "the real reason
-  is..." reframe you produced). Give each load-bearing claim a stable **Claim Ledger ID**
-  (`C1`, `C2`, …) before prose exists. The ID belongs to the semantic claim, not to a
-  paragraph or language, and survives reordering between en and zh. Mark whether the
-  claim is required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
-  A `Model-hypothesis` must never become an unqualified first-person author belief —
-  either omit it from the prose entirely or write it as an explicit open possibility,
-  and either way give it an `Hn` entry in the PR body's
-  `## Candidate hypotheses — not yet yours` section (below) for the author to adopt or
-  reject; a hedged one in the prose still needs its own `Hn`, or there's nothing for the
-  author to reply `**Adopt hypothesis — Hn**` to. A published post licenses terminology,
-  previously adopted premises, continuity, and a direct extension the author explicitly
-  made; it does not license a new causal theory, a new domain application presented as
-  obvious, a new prediction, or a new framework that merely sounds consistent with the
-  archive. If you catch yourself writing a judgment with no source in the author, cut it
-  or recast it as an open question — and declare it in the PR body either way.
+- Draft only from the Claim Ledger frozen before the audit. Do not introduce a new
+  load-bearing mechanism, causal theory, framework, prediction, coined category, or
+  author judgment as connective prose. If one genuinely becomes necessary, add and
+  classify it in Step 0.25, then rerun Step 0.5 before continuing. Every unadopted
+  `Model-hypothesis` remains hedged or omitted and keeps its `Hn` quarantine entry.
 - Respect the voiceprint's **Never** list, and lean on its signature moves and rhythm
   notes; the goal is a draft the author reads and thinks "I said this," not "this is
   fine."
@@ -165,13 +240,14 @@ narrow the form/tier, say so explicitly in the PR body.
   complete, run the pre-publish checklist in `research/human-voice.md` §4 on each
   version as a named revision step: the talk test (would you say this sentence to a
   smart friend?), contractions by default in English, rationed pivots and aphorisms,
-  lumpy paragraph rhythm, no framing reused from the last three posts, 中文版不是英文
-  的对齐翻译. Include one line in the PR body confirming the pass ran and what it
-  changed. A first-person moment must trace to author input; if the material has none,
-  flag the gap in the PR body instead of inventing one. Never write a mental-history
-  claim — "I used to think...", "I've come to think...", "I changed my mind...", "what
-  convinced me was...", "the correction came when...", "I was wrong because..." — unless
-  the author's material actually contains that change-of-mind story (`docs/pipeline.md`
+  diagnose suspiciously uniform rhythm without manufacturing a short/long paragraph or
+  casual touch, no framing reused from the last three posts, 中文版不是英文的对齐翻译.
+  Include one line in the PR body confirming the pass ran and what it changed. A
+  first-person moment must trace to author input; if the material has none, flag the gap
+  in the PR body instead of inventing one. Never write a mental-history claim — "I used
+  to think...", "I've come to think...", "I changed my mind...", "what convinced me
+  was...", "the correction came when...", "I was wrong because..." — unless the
+  author's material actually contains that change-of-mind story (`docs/pipeline.md`
   §10). This is different from first-person style: the issue is factual ownership of the
   author's mental history, not sentence shape, and it is not caught by the "never invent
   a scene" rule above.
@@ -184,18 +260,17 @@ narrow the form/tier, say so explicitly in the PR body.
 The two files share one semantic source package; they do **not** share one required
 outline.
 
-1. **Build the shared package once.** Freeze the Author Kernel, Claim Ledger, source
-   links, source-confidence/domain-limit information, and glossary decisions before
-   either language becomes the template. If a Material Audit exists for the piece, keep
-   it in this package too.
+1. **Build the shared package once.** Freeze the Author Kernel, Claim Ledger, Material
+   Audit, Form decision, source links, source-confidence/domain-limit information, and
+   glossary decisions before either language becomes the template.
 2. **Draft the first language naturally** in whichever language the author's input leans
    toward. Let that language decide its own entry point, claim order, headings, paragraph
    boundaries, and closer.
 3. **Draft the second language clean-room style.** Close/hide the first-language prose
-   while composing. Work from the shared package — Kernel + Claim Ledger + source
-   material + glossary (+ Material Audit when available) — **not** from the first
-   language's sentence order, section order, or headings. The first-language article is
-   available again only for the parity pass after both drafts exist.
+   while composing. Work from the shared package — Kernel + Claim Ledger + Material Audit
+   + sources + glossary — **not** from the first language's sentence order, section
+   order, or headings. The first-language article is available again only for the parity
+   pass after both drafts exist.
 4. **Run parity by Claim Ledger ID.** Every claim marked required in both languages must
    appear in both with the same factual meaning, number/date, source support, causal
    direction, and stance/uncertainty. Fix missing or drifted claims without forcing them
@@ -252,20 +327,21 @@ File placement depends on whether the Phase 2 bilingual site work (`docs/pipelin
 2. Run `npm run build`; fix what breaks.
 3. Open a **ready** pull request. Body must include: tier and thesis; which rung of the
    ladder this came from; sources re-checked; the 2–3 things the author should challenge
-   hardest; any factual corrections made to the author's answers; a **Bilingual parity**
-   table keyed by the shared Claim Ledger IDs (do not say the two files carry claims "in
-   the same order"); a **Voice** section listing the verbatim-spine phrases kept and any
-   opinion you could not trace to author input (this list should be empty — if it isn't,
-   each entry is phrased as a question for the author, not a claim); an **Author Kernel**
-   section (the tagged Kernel fragments from Step 0, including interview answer
-   provenance and every material `domain-limit`; say whether any limit reduced the
-   chosen scope/tier); a **Claim ledger** section, one stable ID per load-bearing claim;
-   a **Candidate hypotheses — not yet yours** section listing **every** unadopted
-   `Model-hypothesis`, numbered `H1.`, `H2.`, ... — including one already written into
-   the prose as a hedged open possibility ("One possibility is…"), not only the ones
-   fully omitted from it. A hedged entry needs an Hn the same as an omitted one, or the
-   author has no id to adopt/reject by; say in its `Why it emerged` line whether it's
-   already in the draft or was left out entirely. Each entry carries
+   hardest; any factual corrections made to the author's answers; the exact
+   **`## Material Audit`** and **`## Form decision`** from Step 0.5; a **Bilingual
+   parity** table keyed by the shared Claim Ledger IDs (do not say the two files carry
+   claims "in the same order"); a **Voice** section listing the verbatim-spine phrases
+   kept and any opinion you could not trace to author input (this list should be empty —
+   if it isn't, each entry is phrased as a question for the author, not a claim); an
+   **Author Kernel** section (the tagged Kernel fragments from Step 0, including
+   interview answer provenance and every material `domain-limit`; say whether any limit
+   reduced the chosen scope/tier); a **Claim ledger** section, one stable ID per
+   load-bearing claim; a **Candidate hypotheses — not yet yours** section listing
+   **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`, ... — including one
+   already written into the prose as a hedged open possibility ("One possibility is…"),
+   not only the ones fully omitted from it. A hedged entry needs an Hn the same as an
+   omitted one, or the author has no id to adopt/reject by; say in its `Why it emerged`
+   line whether it's already in the draft or was left out entirely. Each entry carries
    `- Why it emerged:`, `- Would change the piece by:`, and `- Status: not adopted` (the
    whole section is empty only when the draft has no unadopted hypothesis at all —
    including hedged ones — since the draft must read correctly with every listed

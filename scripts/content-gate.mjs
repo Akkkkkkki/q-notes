@@ -39,7 +39,11 @@ const LEGACY_POSTS = new Map([
 ]);
 const isLegacy = (name, fm) =>
   LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
-const WORD_BANDS = { note: [300, 700], essay: [800, 1500] }; // tracker: any
+// Ceilings only (docs/pipeline.md §11: length is an output, not a target — a piece
+// under the typical band is never warned, since the material may honestly be smaller
+// than the band suggests; a piece over it still gets flagged as likely padded or
+// genuinely dense enough to need a justification in the PR body).
+const WORD_CEILINGS = { note: 700, essay: 1500 }; // tracker: any
 const EM_DASH_PER_WORDS = 150; // flag denser than ~1 em dash / 150 words
 const RUN_ON_WORDS = 60; // flag a single sentence longer than this
 
@@ -288,9 +292,9 @@ for (const file of targets) {
   // English-only style warnings (advisory).
   if (fm.lang === 'en') {
     const words = body.trim().split(/\s+/).filter(Boolean);
-    const band = tier ? WORD_BANDS[tier] : null;
-    if (band && (words.length < band[0] || words.length > band[1])) {
-      warn(name, `${words.length} words is outside the ${tier} band ${band[0]}–${band[1]}`);
+    const ceiling = tier ? WORD_CEILINGS[tier] : null;
+    if (ceiling && words.length > ceiling) {
+      warn(name, `${words.length} words is over the ${tier} ceiling of ${ceiling} — edit it down or justify the length in the PR body`);
     }
     const dashes = (body.match(/—/g) || []).length;
     if (dashes > 0 && words.length / dashes < EM_DASH_PER_WORDS) {

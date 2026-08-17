@@ -566,7 +566,9 @@ export function extractPreviewUrl(comments: string[]): string | null {
 
 /**
  * Pull the Desk's card data out of the drafter's PR body (routine 03 defines
- * the sections; this parser stays tolerant of phrasing drift).
+ * the sections; this parser stays tolerant of phrasing drift). New material-form
+ * PRs have one authoritative source for tier: `## Form decision` → `Public tier`.
+ * Legacy bodies still fall back to the older loose tier match.
  */
 export function parsePrBody(body: string): {
   tier: string | null;
@@ -574,7 +576,14 @@ export function parsePrBody(body: string): {
   flags: string[];
   titleOptions: string[];
 } {
-  const tier = body.match(/\btier\b[^a-z]{0,10}(note|essay|tracker)/i)?.[1].toLowerCase() ?? null;
+  const formDecision = sectionAfter(body, /form decision/i);
+  const explicitTier = formDecision
+    .match(/^\s*(?:[-*]\s*)?Public tier\s*:\s*(note|essay|tracker)\b/im)?.[1]
+    .toLowerCase();
+  const tier =
+    explicitTier ??
+    body.match(/\btier\b[^a-z]{0,10}(note|essay|tracker)/i)?.[1].toLowerCase() ??
+    null;
 
   const spine = bullets(sectionAfter(body, /verbatim[- ]spine|your words|phrases kept/i));
   const flags = bullets(sectionAfter(body, /untraceable|could not trace|not trace/i)).filter(

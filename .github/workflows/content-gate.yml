@@ -1,12 +1,12 @@
 name: Content gate
 
-# Vets every PR before it can merge. Two checks: the structural gate
-# (scripts/content-gate.mjs — tier tag, bilingual pair, essay sources) and a
-# full build (frontmatter schema + site builds). Runs on every PR with no
-# `paths` filter on purpose: a path-filtered workflow that gets skipped leaves
-# its check stuck in Pending, which would permanently block any non-content PR
-# once this is a required status check. The gate script no-ops when a PR changes
-# no posts, so non-content PRs pass cheaply.
+# Vets every PR before it can merge. Three checks: the structural gate
+# (scripts/content-gate.mjs — tier tag, bilingual pair, essay sources), the
+# regression suite, and a full build (frontmatter schema + site builds). Runs
+# on every PR with no `paths` filter on purpose: a path-filtered workflow that
+# gets skipped leaves its check stuck in Pending, which would permanently block
+# any non-content PR once this is a required status check. The gate script
+# no-ops when a PR changes no posts, so non-content PRs pass cheaply.
 on:
   pull_request:
 
@@ -26,5 +26,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: node scripts/content-gate.mjs
+      - name: Regression tests
+        run: npm test -- --run
       - name: Build (schema + full site)
         run: npm run build
