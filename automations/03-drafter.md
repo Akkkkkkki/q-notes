@@ -12,6 +12,13 @@ rules), `research/voice.md` (the voiceprint: stances, signature moves, never-say
 `research/human-voice.md` (the human-voice playbook), and `research/glossary.md` before
 drafting.
 
+**Phase-0 strict-v1 provenance override (#98/#97): until #97 is fully implemented and the
+canonical docs are consolidated, published article bodies are archive/context only and
+never authorize a current `Q-explicit` position by themselves. This rule overrides any
+broader legacy wording in `docs/pipeline.md` §10. Current author positions may be
+authorized only by current author interview/capture/input, explicitly adopted entries in
+`research/positions.md`, or explicitly promoted entries in `research/voice.md ## Stances`.**
+
 ## The fallback ladder — never skip, never go silent
 
 Produce the highest rung the material honestly supports:
@@ -66,13 +73,18 @@ author had already framed the thought that way.
 ## Step 0 — the Author Kernel
 
 Before writing any prose, build a small, deliberately unpolished **Author Kernel**
-(`docs/pipeline.md` §10) from author-owned material only: interview answers,
-`research/inbox.md` sparks, author PR/Desk comments (`One change`, A/B choices,
-read-aloud marks), adopted entries in `research/positions.md`, and published positions
-the author has confirmed. Research sources may support a fact in the Kernel; they never
-enter `Explicit positions`. Do not improve the Kernel into a cleaner argument —
-"I don't know," "I only have a hunch," and an unanswered question are first-class
-content, not defects to repair.
+(`docs/pipeline.md` §10) from current author-owned material only: interview answers,
+`research/inbox.md` sparks/captures, author PR/Desk comments (`One change`, A/B choices,
+read-aloud marks), adopted entries in `research/positions.md`, and explicitly promoted
+entries in `research/voice.md ## Stances`. Research sources may support a fact in the
+Kernel; they never enter `Explicit positions`. **Published article bodies never enter
+`Explicit positions` under strict-v1, even if the article was previously treated as an
+author-confirmed position.** They may be read for history, self-novelty, terminology, or
+source discovery only. If a substantive claim exists only in an old article body, it is
+context or a fresh `Model-hypothesis` unless current author input, `positions.md`, or a
+promoted Stance independently authorizes it. Do not improve the Kernel into a cleaner
+argument — "I don't know," "I only have a hunch," and an unanswered question are
+first-class content, not defects to repair.
 
 For every **load-bearing interview item**, infer one source-confidence tag and preserve
 its answer provenance when available:
@@ -127,9 +139,11 @@ shared semantic package that Step 0.5 audits; do not choose a tier first and the
 ledger that merely justifies it.
 
 Classify each load-bearing claim into one of four ownership classes (`docs/pipeline.md`
-§10):
+§10), applying the strict-v1 provenance override above:
 
-- **`Q-explicit`** — the author said it; write it as their assertion.
+- **`Q-explicit`** — the author said/adopted it in current author input,
+  `research/positions.md`, or a promoted `research/voice.md ## Stances` entry; write it
+  as their assertion.
 - **`Q-derived`** — a near inference that adds no new value judgment or causal theory;
   use conservatively.
 - **`External`** — a sourced fact or attributed outside argument; state it as fact or
@@ -145,11 +159,12 @@ required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
 A `Model-hypothesis` must never become an unqualified first-person author belief. Either
 exclude it from the prose or allow only an explicitly hedged open possibility, and in
 either case create its `Hn` entry for `## Candidate hypotheses — not yet yours`. A hedged
-hypothesis still needs an Hn so the author can adopt or reject it. A published post
-licenses terminology, previously adopted premises, continuity, and a direct extension
-the author explicitly made; it does not license a new causal theory, a new domain
-application presented as obvious, a new prediction, or a new framework that merely
-sounds consistent with the archive.
+hypothesis still needs an Hn so the author can adopt or reject it. A published post may
+supply historical/contextual continuity, terminology, self-novelty comparison, or links
+to sources that must be re-validated. **It does not authorize a current premise merely
+because it shipped.** If a prior premise matters to the new article, it must also trace to
+current author input, an adopted `positions.md` entry, or a promoted Stance; otherwise
+classify the reuse as context or a fresh `Model-hypothesis`.
 
 Freeze this pre-audit ledger as an input to Step 0.5. If later drafting seems to require
 a genuinely new load-bearing claim, stop and add/classify it in the ledger, then **rerun
