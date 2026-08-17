@@ -35,6 +35,13 @@ const MAX_SPARK_LINES = 20;
 const SPARK_KINDS = ['spark', 'question', 'quote', 'link'] as const;
 type SparkKind = (typeof SPARK_KINDS)[number];
 
+// Mirror the Desk's content-PR boundary before applying the extra #100
+// readiness guard. The actual merge path rechecks this in worker/desk.ts; this
+// preflight exists only so invalid/code/oversized PRs keep their established
+// 400 behavior instead of being misreported as editorial-readiness failures.
+const DESK_CONTENT_PREFIXES = ['src/content/', 'drafts/', 'research/', 'public/images/'];
+const DESK_MAX_PR_FILES = 100;
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -150,6 +157,26 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
   const number = Number(body.number);
   if (!Number.isInteger(number) || number < 1) return null;
 
+  // Preserve the Desk's existing invalid/code/closed-PR behavior. This is a
+  // preflight only; shipPr repeats the authoritative content-PR validation
+  // immediately before merge.
+  const prRes = await gh(env, 'GET', `pulls/${number}`);
+  if (!prRes.ok) return null;
+  const pr = (await prRes.json()) as { state?: string };
+  if (pr.state !== 'open') return null;
+
+  const filesRes = await gh(env, 'GET', `pulls/${number}/files?per_page=${DESK_MAX_PR_FILES}`);
+  if (!filesRes.ok) return json({ error: `GitHub PR files failed (${filesRes.status})` }, 502);
+  const files = (await filesRes.json()) as Array<{ filename?: string }>;
+  const isContentPr =
+    files.length > 0 &&
+    files.length < DESK_MAX_PR_FILES &&
+    files.every(
+      ({ filename = '' }) =>
+        !filename.includes('..') && DESK_CONTENT_PREFIXES.some((prefix) => filename.startsWith(prefix))
+    );
+  if (!isContentPr) return null;
+
   let latest: string | null = null;
   for (let page = 1; ; page++) {
     const res = await gh(env, 'GET', `issues/${number}/comments?per_page=100&page=${page}`);
@@ -162,8 +189,11 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
     if (comments.length < 100) break;
   }
 
-  if (!latest || !/^[\s>#*_]*ready to ship\b/i.test(latest) &&
-      !/^[\s>#*_]*ready\s*[—–-]\s*queued\b/i.test(latest)) {
+  if (
+    !latest ||
+    (!/^[\s>#*_]*ready to ship\b/i.test(latest) &&
+      !/^[\s>#*_]*ready\s*[—–-]\s*queued\b/i.test(latest))
+  ) {
     return json(
       { error: 'No current ship-gate Ready verdict — editorial critic / ship gate must clear this PR first' },
       409
