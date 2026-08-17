@@ -24,6 +24,27 @@ build/parity/mechanical checks remain outside the prose critic.
 
 ## For every open content pull request
 
+### Machine-readable verdict marker
+
+Every Routine 04 **verdict comment**, whether shippable or blocking, must contain exactly
+one marker bound to the PR head **after all edits made in that pass**:
+
+```html
+<!-- q-notes: ship-gate head=<full PR head SHA> verdict=ready|queued|blocked -->
+```
+
+Use `verdict=ready` only with `Ready to ship`, `verdict=queued` only with
+`Ready — queued`, and `verdict=blocked` for `Needs your call`, `Checklist fails`, a
+downgrade/blocking verdict, or any other non-shippable outcome.
+
+The marker is runtime authorization, not decoration. Never copy a SHA from an older
+verdict. If the PR head changes after the comment — including a ship-time title or final
+paragraph edit — the authorization is stale. Routine 04 must re-check that exact head
+(and Routine 03b must also rerun first when the edit is semantic) before a new Ready
+marker may be posted. The Desk merge endpoint accepts only the latest repository-owner
+marker for the current head; ordinary prose that happens to say “Ready to ship” is not an
+approval token.
+
 ### 1. Process the author's feedback first
 
 The Desk posts the author's calls as PR comments with fixed shapes. Every one is a change
@@ -157,8 +178,11 @@ Only after steps 1–5 pass, including a current applicable critic `KEEP`:
 
 - Check cadence: the site publishes **at most one post per 7 days**. If a post merged to
   `main` within the last 7 days, verdict is **`Ready — queued`**; say the date the window
-  clears. The author can override.
-- Otherwise comment **`Ready to ship`** with exactly the useful phone-sized payload:
+  clears and include `<!-- q-notes: ship-gate head=<current full SHA> verdict=queued -->`.
+  The author can override.
+- Otherwise comment **`Ready to ship`** and include
+  `<!-- q-notes: ship-gate head=<current full SHA> verdict=ready -->`, with exactly the
+  useful phone-sized payload:
   - thesis;
   - the one thing worth a second look;
   - maturity level;
@@ -200,13 +224,15 @@ For form/material failure, prefer subtraction in this order:
 4. if genuinely necessary material is missing, ask one precise author/research question.
 
 A scope/tier change is semantic, so after making it the PR must return through Routine
-03b and receive a fresh `KEEP` before this gate can say Ready.
+03b and receive a fresh `KEEP` before this gate can say Ready. Any blocking verdict comment
+must include `<!-- q-notes: ship-gate head=<current full SHA> verdict=blocked -->`.
 
 ### 9. Aging rules
 
 - **PR open > 7 days** → downgrade to the strongest single-idea Note in both languages,
   re-tier, trim everything that does not serve it, push, and comment what changed. Then
-  require a fresh editorial-critic pass. A shipped Note beats a stuck Essay.
+  require a fresh editorial-critic pass. A shipped Note beats a stuck Essay. The resulting
+  non-shippable verdict carries `verdict=blocked` until the fresh pass clears it.
 - **PR open > 14 days** → close it. Add `Killed YYYY-MM-DD: <reason>` to the source
   backlog item. Killed is valid; zombie is not.
 
