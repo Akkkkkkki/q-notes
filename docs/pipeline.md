@@ -8,6 +8,10 @@ This document is the source of truth. The runnable prompts for each stage live i
 [`automations/`](../automations/). The old `.codex/automations/` prompts are superseded by
 this pipeline and should be unscheduled once the new routines are live.
 
+`docs/material-form.md` is the normative material/form addendum. `docs/editorial-critic.md`
+is the focused contract for the independent scope/novelty review between drafting and
+shipping.
+
 > 中文版：[`docs/pipeline.zh.md`](./pipeline.zh.md)（对照译本；如有冲突以本文为准）。
 
 ---
@@ -56,6 +60,10 @@ Every design decision below exists to close one of these gaps.
    any opinion it cannot trace to author input; the ship gate flags voice violations as
    questions, never as blockers. Easy must never come to mean generic. (Full design:
    [`docs/companion-vision.md`](./companion-vision.md) §4.)
+8. **Scope is reviewed independently from shipping.** The drafter is optimized to make a
+   piece; the ship gate is optimized to prevent perfectionism and stuck work. Between
+   them, Routine 03b independently asks whether the current thesis/scope/evidence actually
+   earned the shape. Only an applicable critic `KEEP` advances to Routine 04.
 
 ## 3. Content tiers
 
@@ -111,9 +119,11 @@ Everything else is automated.
             ▼                                                          │
   Tue–Thu  AUTHOR BRAINDUMP (15–30 min, voice-dump quality, any language)
             │                                                          │
-  Thu  DRAFTER ──► PR with en + zh versions (or fallback ladder)       │
+  Thu 08  DRAFTER ──► PR with en + zh versions (or fallback ladder)    │
             │                                                          │
-  Fri  SHIP GATE ──► checklist verdict + 5-min author approval         │
+  Thu 16  EDITORIAL CRITIC ──► KEEP/CUT/DOWNGRADE/SPLIT/SKIP           │
+            │                                                          │
+  Fri  SHIP GATE ──► mechanical/checklist verdict + 5-min approval     │
             │                                                          │
   Monthly  GARDENER ──► stats, expiry, archive mining ─────────────────┘
 ```
@@ -195,43 +205,85 @@ empty), a **claim ledger** and a **candidate hypotheses** section per §10, and 
 title options per language** so the author can swap the title at ship time without
 writing anything.
 
+### 4.3b Thursday — Editorial critic (`automations/03b-editorial-critic.md`)
+
+An independent pass runs after the draft PR exists and before the Friday ship gate. Its
+job is not to polish prose or maximize throughput. It asks whether the piece has actually
+earned its current thesis, scope, evidence strength, and form — or whether a competent
+model completed the available material into a more satisfying article than the author and
+evidence support.
+
+The critic consumes the PR's Author Kernel, Claim Ledger, Material Audit and Form decision,
+both language drafts, and relevant recent Q-notes for self-novelty comparison. Under the
+strict-v1 provenance rule, archive bodies can be read as history/self-novelty context but
+do not authorize a current `Q-explicit` premise.
+
+The PR-facing result is deliberately compact and singular:
+
+```md
+## Editorial critic
+
+<!-- q-notes: editorial-critic head=<full PR head SHA> -->
+
+### Verdict
+KEEP | CUT | DOWNGRADE | SPLIT | SKIP
+
+### Strongest single idea
+<one sentence>
+
+### Blocking reasoning failures
+- <only thesis/scope/ownership/evidence/form failures>
+
+### Required scope cuts / splits
+- <what leaves and why>
+
+### Optional warnings
+- <only when useful>
+```
+
+Only `KEEP` advances to the ship gate. `CUT`, `DOWNGRADE`, `SPLIT`, and `SKIP` are valid
+editorial outcomes, not failed runs. The critic may apply an unambiguous **subtractive**
+repair after posting its initial verdict, but it must never invent replacement theory or
+new author judgment; after any semantic repair it posts a fresh pass on the new head.
+
+The marker binds the verdict to the semantic draft reviewed. A later thesis, Claim Ledger,
+evidence, form/tier, major-section, substantive title, hypothesis-adoption, prediction, or
+other reasoning change requires a fresh pass. Pure typo/format/link/build or
+claim-preserving voice fixes do not force another expensive model pass; Routine 04 must
+verify that no semantic scope changed before carrying a `KEEP` forward.
+
+`docs/editorial-critic.md` is the focused canonical contract. As #87–#97 land, their
+signals feed this **same** critic internally. They do not create a family of competing
+PR-facing audit sections; #68 remains the integration owner.
+
 ### 4.4 Friday — Ship gate (`automations/04-ship-gate.md`)
 
-The anti-perfectionism enforcer. For every open content PR:
+The anti-perfectionism and mechanical-readiness enforcer. For every open content PR:
 
 - **Work in the author's feedback before anything else.** Every Desk action that isn't
-  Ship or Kill lands as a PR comment — `One change`, an A/B choice and its `Why:` line,
-  a read-aloud mark, a voice keep/cut — and each is a change request on *that* PR. The
-  gate applies them, pushes, and only then re-runs the checklist and posts a verdict. A
-  "Ready to ship" over unapplied feedback is the failure this rule exists to prevent:
-  from the phone, the verdict *is* the go-ahead, so a stale one turns "please change
-  this" into a published draft that ignores it. Nothing else in the pipeline reads these
-  comments — the drafter builds next week's piece, not this one — so the request that the
-  gate skips is a request that never happens.
-- Run the tier's definition-of-done checklist (§5). If it passes, comment a verdict:
-  **"Ready to ship"** plus a 3-bullet summary, so the author's approval takes five
-  minutes on a phone.
-- Run the **voice check** against `research/voice.md`: never-list hits, and any
-  opinionated claim not traceable to the author's answers, sparks, or published
-  positions, get flagged in the verdict as questions ("Says X — yours?"). Voice flags
-  shape the author's five minutes; they never block a passing checklist.
-- Run the **bilingual parity check** (§6) by Claim Ledger ID: required claims, factual
-  meaning, numbers/dates, source support, causal direction, and stance/uncertainty must
-  match. Different section order, headings, paragraphing, claim order, or length are not
-  parity errors. Suspicious 1:1 structure is an advisory translation-shape warning, not a
-  reason to force the pair back into one outline.
-- Run the **ownership check** (§10): any `Model-hypothesis` written as an unqualified
-  author belief with no adoption record gets recast as an open possibility or moved to
-  Candidate hypotheses; a mental-history sentence with no traceable source gets fixed the
-  same way. `**Adopt hypothesis — Hn**` / `**Reject hypothesis — Hn**` comments are author
-  feedback like any other and get applied before the next verdict.
-- If the PR has been open **> 7 days**: cut it down — extract the strongest single idea
-  into a Note, re-tier, and re-propose. The system converts stuck essays into shipped notes.
-- If open **> 14 days**: close it, log one line in the backlog item explaining the kill.
-  Killed is a valid outcome; zombie is not.
+  Ship or Kill is a change request on that PR. Apply it before any new verdict.
+- **Require the latest applicable editorial-critic verdict to be `KEEP`.** If there is no
+  critic result, or the latest applicable result is `CUT`, `DOWNGRADE`, `SPLIT`, or
+  `SKIP`, the gate cannot say Ready. If semantic edits happened after a `KEEP`, send the
+  PR through Routine 03b again rather than re-judging scope inside Routine 04.
+- Run the tier's definition-of-done checklist (§5), with `docs/material-form.md` as the
+  normative material/form amendment.
+- Run the **voice check** against `research/voice.md`; ordinary voice/style flags are
+  questions/advisory and never replace the critic's scope judgment.
+- Run the **bilingual parity check** (§6) by Claim Ledger ID. Different section order,
+  headings, paragraphing, claim order, or length are not parity errors.
+- Run the **ownership check** (§10). Any `Model-hypothesis` stated as author belief without
+  adoption gets recast/removed and quarantined. If that changes semantic scope, require a
+  fresh critic pass.
+- If the PR has been open **> 7 days**, cut it down to the strongest single-idea Note,
+  then send that revised semantic draft through the critic again.
+- If open **> 14 days**, close it and log the kill. Killed is a valid outcome; zombie is
+  not.
 
-The author's only recurring obligations are the Tuesday braindump and the Friday
-five-minute approval. Both are phone-sized.
+When all checks pass, the gate posts `Ready to ship` (or `Ready — queued` under cadence)
+plus a phone-sized summary. It does **not** repeat the editorial critic's analysis. The
+author's recurring obligations remain the Tuesday braindump and Friday five-minute
+approval.
 
 ### 4.5 Monthly — Gardener (`automations/05-gardener.md`)
 
@@ -241,19 +293,22 @@ First of the month:
   notification): published per tier per language, median days from draft to publish,
   items expired/killed, % of published pieces originating from author sparks or interview
   answers vs. pure scout finds.
-- **Archive mining**: re-read the author's published posts, find predictions now testable
-  (e.g., the consulting series' "EM promotion-rate compression by 2027" test) and external
-  events that confirm/contradict published theses → propose Tracker candidates. This is
-  how the site develops *continuity of thought* instead of a stream of unrelated takes.
-- **Voiceprint maintenance**: propose 1–3 additions to `research/voice.md` under its
-  `Proposed` heading — a stance now taken in public, a signature phrasing worth keeping,
-  a new never-say — mined from the month's interview answers and published pieces.
-  Propose only; promotion is the author's, by editing the file.
-- **Hygiene**: glossary consistency check, dead-link scan, backlog pruning.
+- **Editorial-critic calibration**: initial/final `KEEP/CUT/DOWNGRADE/SPLIT/SKIP` mix,
+  author reversals, late `too generic / need real examples / make it a note` rescues after
+  critic `KEEP`, stale critic passes caught by the ship gate, and pure framework
+  applications redirected to application Notes/Trackers/skips. These are calibration
+  signals, not quotas to optimize.
+- **Archive mining**: re-read published posts, find predictions now testable and events
+  that confirm/contradict published theses → propose Tracker candidates.
+- **Voiceprint maintenance**: propose 1–3 additions to `research/voice.md` from the
+  month's interview answers, published pieces, A/B choices, and read-aloud marks.
+- **Hygiene**: glossary consistency, dead links, backlog pruning, and malformed/duplicate
+  editorial-critic contract checks.
 
 ## 5. Definitions of done
 
-A piece ships when its tier checklist passes — not when it feels finished.
+A piece ships when its tier checklist passes **and** the current semantic draft has an
+applicable editorial-critic `KEEP` — not when it feels finished.
 
 **Note**
 - [ ] One arguable claim a reader could repeat in one sentence.
@@ -266,17 +321,21 @@ A piece ships when its tier checklist passes — not when it feels finished.
 - [ ] Claim ledger present (§10); no unadopted `Model-hypothesis` stated as the author's
       first-person belief; no mental-history claim ("I used to think…") without a traceable
       source.
+- [ ] Applicable editorial-critic verdict is `KEEP` for the current semantic draft.
 - [ ] Build passes.
 
 **Essay** — all of the above, plus:
 - [ ] Opens with the tension; thesis stated in the first two paragraphs.
 - [ ] Factual claims that depend on current events have linked sources, re-validated at draft time.
-- [ ] The strongest counterargument is engaged, not strawmanned.
-- [ ] Contains at least one falsifiable statement or prediction (tracker fuel).
+- [ ] The strongest live counterargument/boundary is engaged when one exists, not manufactured as a slot.
 - [ ] Speculation is labeled as speculation.
 
 **Tracker** — scores the original prediction honestly (right / wrong / too early), links the
 original post, and states what was learned. Both languages. That's the whole bar.
+
+The material/form addendum is normative where the older tier wording differs: Note
+counterpoints are conditional, Essay predictions are opportunistic, and historic length
+bands are ceilings/descriptions rather than minimums.
 
 Explicitly **not** on any checklist: "the author has reread it five times," "every
 paragraph is polished," "covers all angles." If a checklist passes and the author still
@@ -424,66 +483,64 @@ scheduled cloud routine (Claude Code cloud sessions, Claude Desktop automations,
 Action invoking an agent, or any scheduler that can run an agent with repo + web access).
 
 **This is the step that is easy to skip and impossible to notice.** Writing the prompt
-files is not scheduling them. The pipeline once sat for days with a green-lit brief and no
-drafter because all five routines existed only as markdown in `automations/` — every
-"pipeline run" up to then had actually been a human running the prompt by hand. If the
-table below has no counterpart in your scheduler, the pipeline is not running.
+files is not scheduling them. If the table below has no counterpart in your scheduler,
+the pipeline is not running.
 
 | Routine | Schedule (author's local time) | Cron (UTC) | Needs web | Needs notify | Writes |
 |---|---|---|---|---|---|
 | 01 Topic scout | Mon 08:00 | `0 0 * * 1` | yes | no | commit to `main` |
 | 02 Interview brief | Tue 08:00 | `0 0 * * 2` | light | **yes** | commit to `main` |
 | 03 Drafter | Thu 08:00 | `0 0 * * 4` | yes | no | PR |
+| 03b Editorial critic | Thu 16:00 | `0 8 * * 4` | as needed | no | PR critic comment / narrow subtractive edit |
 | 04 Ship gate | Fri 08:00 | `0 0 * * 5` | no | **yes** | PR comments / edits |
 | 05 Gardener | 1st of month 09:00 | `0 1 1 * *` | light | yes | commit + notification |
 
 The cron column assumes the author's `Asia/Shanghai` (UTC+8), where 08:00 local is 00:00
-UTC on the *same* day — no day-of-week shift. It matches the Worker's own crons in
-`wrangler.jsonc` (`30 0 * * 2` = Tuesday 08:30 Shanghai). Recompute both columns if the
-author's timezone changes.
+UTC on the *same* day. Recompute both columns if the author's timezone changes.
 
 Point each routine at the prompt file rather than pasting its text, so edits to
-`automations/**` take effect without touching the scheduler:
+`automations/**` take effect without touching the scheduler. For example:
 
 > Work in the `Akkkkkkki/q-notes` repository. Read `AGENTS.md`, `docs/pipeline.md`, and
 > `automations/03-drafter.md`, then carry out that routine exactly as written for today's
 > date. Never end the run silently — if no artifact is possible, commit the run report the
 > prompt requires.
 
+Use the same pattern for 03b, pointing it to `automations/03b-editorial-critic.md` and
+`docs/editorial-critic.md`.
+
 Each firing should start a **fresh session**: the prompts are standalone and a routine that
 accumulates conversation history will drift. Create exactly one routine per stage and list
-your scheduler's routines afterwards to confirm — a duplicated drafter is the failure mode
-called out at the end of this section.
+your scheduler's routines afterwards to confirm.
 
-**Check the first real firing of each routine**, and don't assume a created routine is a
-working one. A scheduled session may start with a narrower toolset than the session that
-created it, and 03 and 04 in particular need repo write plus pull-request access to do
-anything at all. The tell is a run that ends with a report saying it couldn't open a PR,
-which is the "never end silently" rule doing its job — read those reports. Creating the
-routine and verifying its first run are two separate steps, and skipping the second is a
-quieter version of the same mistake as never scheduling it.
+**Check the first real firing of each routine.** Scheduled sessions may start with narrower
+tool permissions. Routines 03, 03b, and 04 need repository + PR access; 03 and 03b may
+need web access for current evidence/archive comparison. A run that reports it could not
+comment or edit is not a silent success.
 
-Connector requirements: GitHub (all), web search/browse (scout, drafter), one
-notification channel the author actually checks — email or phone push — for the
-interviewer, ship gate, and gardener. A calendar connector blocking a weekly 30-minute
-"author hour" (Tue or Wed) is optional but recommended.
+Connector requirements: GitHub (all), web search/browse (scout, drafter, editorial critic
+when source/archive validation requires it), one notification channel the author actually
+checks for interviewer, ship gate, and gardener. A calendar connector for a weekly author
+hour is optional.
 
-Start order: enable 01 + 02 first week; add 03 + 04 the second week once one interview
-has answers; add 05 after the first month. The old `.codex` routines are retired (see
-`.codex/automations/RETIRED.md`); unschedule them in your scheduler so only `01–05` run.
-Running a second drafter in parallel is what let unreviewed posts reach the site.
+Start order: enable 01 + 02 first week; add 03 + 03b + 04 the second week once one
+interview has answers; add 05 after the first month. The old `.codex` routines are retired
+(see `.codex/automations/RETIRED.md`); unschedule them so only the canonical 01, 02, 03,
+03b, 04, and 05 routines run.
 
 ### Hard gate: Content gate CI
 
-The ship gate (routine 04) is the *editorial* review, but it is a prompt — it can be
-skipped. `.github/workflows/content-gate.yml` is the *mechanical* gate that cannot:
-on every PR it runs `scripts/content-gate.mjs` (tier tag present, bilingual pair on
-disk including orphaning by deletion, essays carry a source link, plus advisory
-word-count / em-dash / run-on warnings) and a full `npm run build`. Make it a **required
-status check** in branch protection on `main` so no content PR can merge until it passes.
-The workflow runs on every PR with no `paths` filter — a skipped path-filtered check
-stays Pending and would block non-content PRs once required — and the gate vets only the
-posts a PR changes, so non-content PRs pass cheaply and legacy posts are never re-litigated.
+The editorial critic and ship gate are prompt-based reviews, so CI remains the mechanical
+gate that cannot be skipped. `.github/workflows/content-gate.yml` runs
+`scripts/content-gate.mjs` (tier tag, bilingual pair/orphaning, source-link requirements,
+plus advisory word-count/em-dash/run-on warnings) and a full `npm run build` on every PR.
+Make it a **required status check** in branch protection on `main`.
+
+The workflow runs on every PR with no `paths` filter; the content gate vets only posts a
+PR changes, so non-content PRs pass cheaply and legacy posts are not re-litigated.
+
+CI does not replace the model-based 03b critic. Conversely, the critic must not report
+build/parity/mechanical failures as its blocking reasoning failures.
 
 ## 9. Health metrics
 
@@ -498,17 +555,20 @@ pipeline design (not the author) gets revised:
 | Pieces rooted in author input (inbox spark or interview answers) | ≥ 60% |
 | Backlog items older than 21 days | 0 (auto-expired) |
 | Drafter runs producing nothing (no artifact, no report) | 0 |
+| Model-hypothesis accidentally presented as Q position | 0 |
+| Stale critic KEEP allowed through semantic change | 0 |
 
-The fourth metric is the one that distinguishes this site from an aggregation feed.
-If it drops, the fix is more interviewing and archive mining, not more scouting.
+Critic verdict mix is **not** a target. Track `KEEP/CUT/DOWNGRADE/SPLIT/SKIP`, author
+reversals, and late author `too generic / need real examples / make it a note` feedback to
+calibrate whether the critic is useful. Do not optimize for more warnings or shorter work.
 
-The last metric has a live counterpart, because a monthly report is too slow to catch a
-scheduler that has stopped: the Flow surface raises a **`now`** item on the Today tab when
-a brief marked `Ready to draft` has sat through a Thursday drafter slot with nothing on the
-Desk (`attention()` in `worker/flow.ts`). Before that check existed, a green-lit brief
-dropped off the "needs you" list the moment the author tapped the green light — so a dead
-routine and a finished week looked identical from the phone. If that item appears, check
-the scheduler against §8 before debugging anything in this repo.
+The author-input metric is what distinguishes this site from an aggregation feed. If it
+drops, the fix is more interviewing and archive mining, not more scouting.
+
+The drafter-run metric has a live counterpart because a monthly report is too slow to
+catch a stopped scheduler: the Flow surface raises a `now` item when a brief marked
+`Ready to draft` has sat through a Thursday drafter slot with nothing on the Desk. If it
+appears, check the scheduler against §8 before debugging content.
 
 ## 10. Thought ownership
 
@@ -525,19 +585,23 @@ fabricated authorship.
 > complete than the author has earned.
 > 允许 AI 帮忙把想法写清楚，不允许它替作者把没想完的地方想完。
 
-This section governs the drafter (§4.3), the ship gate (§4.4), and the gardener (§4.5).
+This section governs the drafter (§4.3), editorial critic (§4.3b), ship gate (§4.4), and
+gardener (§4.5).
 
 ### The Author Kernel
 
 Before drafting, the drafter builds a small, deliberately unpolished internal Kernel from
 author-owned material only: interview answers, `research/inbox.md` sparks, author PR/Desk
 comments (`One change`, A/B choices, read-aloud marks), adopted entries in
-`research/positions.md`, and published positions the author has confirmed. Research sources
-may support a fact in the Kernel; they never enter `Explicit positions`. The model does not
-smooth the Kernel into a cleaner argument — "I don't know," "I only have a hunch," and an
-unanswered question are first-class content, not gaps to repair. The Kernel is the draft's
-scope boundary: an epistemic boundary in it narrows what the piece attempts, it is not
-satisfied by adding a disclaimer and writing past it anyway.
+`research/positions.md`, and explicitly promoted `research/voice.md ## Stances`. Research
+sources may support a fact in the Kernel; they never enter `Explicit positions`. Under the
+strict-v1 #98/#97 containment rule, published article bodies are history/context only and
+do not enter `Explicit positions` by themselves.
+
+The model does not smooth the Kernel into a cleaner argument — "I don't know," "I only
+have a hunch," and an unanswered question are first-class content, not gaps to repair.
+The Kernel is the draft's scope boundary: an epistemic boundary narrows what the piece
+attempts; it is not satisfied by adding a disclaimer and writing past it.
 
 ```md
 ## Author Kernel
@@ -562,8 +626,8 @@ satisfied by adding a disclaimer and writing past it anyway.
 
 Every load-bearing semantic claim in a draft carries one stable ID (`C1`, `C2`, …) and
 one ownership class in the PR body's `## Claim ledger` section. The ID belongs to the
-claim, not to a paragraph or language, so it remains the same when en and zh put that
-claim in different places. Each entry also records where it is required:
+claim, not a paragraph or language, so it remains the same when en and zh put the claim
+in different places. Each entry also records where it is required:
 
 ```md
 ## Claim ledger
@@ -575,55 +639,44 @@ C3. <rhetorical/non-load-bearing item if worth recording> — Q-derived (...) �
 
 The four classes are:
 
-1. **`Q-explicit`** — the author said it directly: interview answer, inbox spark, author
-   PR/Desk comment, an adopted `research/positions.md` entry, or a published post whose
-   position the author confirmed. May be written as a first-person author assertion.
+1. **`Q-explicit`** — the author said/adopted it in current author input, an adopted
+   `research/positions.md` entry, or a promoted `research/voice.md ## Stances` entry. May
+   be written as a first-person author assertion.
 2. **`Q-derived`** — a near inference from an explicit position that adds no new value
-   judgment or causal theory (e.g. author: "taste depends on domain" → derived: "consulting
-   and design may contain different mixes of taste and judgment"). Use conservatively: if a
-   reasonable person could accept the parent claim while rejecting the derived one, it is
-   not `Q-derived`.
-3. **`External`** — a factual claim or an explicitly attributed outside argument, sourced.
+   judgment or causal theory. Use conservatively: if a reasonable person could accept the
+   parent claim while rejecting the derived one, it is not `Q-derived`.
+3. **`External`** — a factual claim or explicitly attributed outside argument, sourced.
    Stated as fact/attribution, never silently converted into the author's belief.
 4. **`Model-hypothesis`** — a new mechanism, causal explanation, framework, prediction,
    coined category, cross-domain analogy, or "the real reason is…" reframe the model
    produced while researching or drafting. It must not silently become a first-person
-   Q-notes position: either omit it from the prose entirely, or write it explicitly as
-   an open possibility ("One possibility is…", without implying the author holds it).
-   Either way, it gets an entry in the PR's `## Candidate hypotheses — not yet yours`
-   section for the author to adopt or reject — a hypothesis already hedged into the
-   prose still needs its own `Hn` id there, or there's nothing for the author to adopt
-   by reference.
+   Q-notes position. Omit it or write it as an explicit open possibility; either way it
+   gets an `Hn` entry in `## Candidate hypotheses — not yet yours` for author adoption or
+   rejection.
 
 For bilingual work, the Claim Ledger is also the **parity source of truth** (§6). A claim
 marked `Required in: EN + ZH` must survive in both files with equivalent meaning,
 certainty, number/date, causal direction, and source support, but it may appear in a
-different section, paragraph, or rhetorical sequence. An evidence-bearing example belongs
-to the claim and stays aligned unless explicitly optional; a purely rhetorical illustration
-may differ by language if it creates no new fact or invented experience.
+different section, paragraph, or rhetorical sequence.
 
-**Published posts are context, not blanket authorization.** A published post licenses
-terminology, previously adopted premises, historical continuity, and a direct extension the
-author explicitly made. It does not license a new causal theory, a new domain application
-presented as obvious, a new prediction, or a new framework that merely sounds consistent
-with the archive. (Example: `authorization bug` can be referenced when discussing another
-permission boundary; it does not make every new trust/governance story an authorization
-thesis the author owns.)
+**Published posts are context, not current-position authorization under strict-v1.** They
+may supply historical continuity, self-novelty comparison, terminology, or source links
+that are re-verified. A substantive premise found only in an old article body is context
+or a fresh `Model-hypothesis` unless current author input, `positions.md`, or a promoted
+Stance independently authorizes it.
 
 ### No fabricated intellectual autobiography
 
 "I used to think…", "I've come to think…", "I changed my mind…", "what convinced me
 was…", "the correction came when…", "I was wrong because…" are factual claims about the
-author's mental history, not style choices. They are allowed only when the source material
-actually contains that change-of-mind story (the taste-thread material behind
-`taste-is-a-bet` is a real example). They are never allowed as narrative glue to connect a
-model-built argument. `scripts/content-gate.mjs` flags likely hits as a warning; the ledger
-is what settles whether one is sourced.
+author's mental history, not style choices. They are allowed only when source material
+actually contains that change-of-mind story. They are never narrative glue for a
+model-built argument.
 
 ### Adoption protocol (v1: PR-comment text, no UI)
 
-The draft must read correctly with every unadopted candidate hypothesis absent — a
-hypothesis is bonus material the article does not depend on. The author replies on the PR:
+The draft must read correctly with every unadopted candidate hypothesis absent. The
+author replies on the PR:
 
 ```md
 **Adopt hypothesis — H1**
@@ -635,38 +688,32 @@ or
 **Reject hypothesis — H1**
 ```
 
-The ship gate applies the decision before its next verdict (§4.4). An adopted hypothesis is
-committed to `research/positions.md` **directly on `main`** — the same way A/B and read-aloud
-records land in `research/voice.md` — so the record outlives whatever happens to the PR that
-carried it: a cadence hold, a downgrade, or a >14-day kill must not cost an adoption. If the
-draft carries a hedged version of the claim, promote it to a plain author assertion in both
-languages; if the hypothesis was fully quarantined (omitted from the prose, listed only in
-Candidate hypotheses), write it in as a new assertion instead — there's no hedged sentence to
-promote in that case. A rejected hypothesis is stripped from the draft and recorded nowhere.
-Adopted positions become valid `Q-explicit` material for future drafts regardless of the
-originating PR's own fate, and — once actually taken in
-public in a published piece — candidates for the gardener to propose into
-`research/voice.md ## Stances` (§4.5). `research/voice.md` stays "how Q sounds";
-`research/positions.md` is "what Q has adopted" — keep them separate rather than folding
-positions into the voiceprint.
+The ship gate applies the decision before its next verdict (§4.4). An adopted hypothesis
+is committed to `research/positions.md` **directly on `main`**, so it survives the PR's
+later fate. If the draft carries a hedged version, promote it to a plain author assertion
+in both languages; if fully quarantined, add the adopted assertion at the natural point in
+each language independently. A rejected hypothesis is stripped and recorded nowhere.
+
+Because adoption can change semantic scope, the ship gate then evaluates whether a fresh
+editorial-critic pass is required before Ready. Adopted positions become valid
+`Q-explicit` material for future drafts and, once actually taken in public, candidates for
+the gardener to propose into `research/voice.md ## Stances`. `voice.md` remains how Q
+sounds; `positions.md` is what Q has adopted.
 
 ### Worked fixtures
 
 **PR #62 shape.** Input: firsthand software experience, a strong line about verification
-theater, an explicit "I don't know hardware" boundary. Expected: software experience may be
-compared against researched EDA facts (`External`); a coined "consequence gate" and
-accountability-as-root-cause are `Model-hypothesis` and go to Candidate hypotheses unless
-adopted; no invented "I used to buy that story" narrative; the hardware boundary narrows
-scope rather than getting a disclaimer and a hardware argument anyway. Under the bilingual
-contract, English may lead with the EDA signal while Chinese leads with the firsthand
-software case; the same required Claim Ledger IDs still appear in both.
+theater, an explicit "I don't know hardware" boundary. Expected ownership: researched EDA
+facts are `External`; coined `consequence gate` and accountability-as-root-cause are
+`Model-hypothesis` unless adopted. Expected critic: `DOWNGRADE` or aggressive `CUT`, not a
+fully completed cross-domain theory.
 
-**PR #64 shape.** Input: an existing taste/judgment distinction, an outside decisiveness
-argument. Expected: the terminology critique is `Q-explicit` if it traces to the author's
-prior position; "this is mainly a pricing problem" and the 2028 personal-comp falsifier are
-`Model-hypothesis` until adopted — never silently written as the author's first-person
-prediction.
+**PR #64 shape.** Input: an existing taste/judgment distinction and outside decisiveness
+argument. Expected ownership: pricing-as-root-cause and a 2028 personal-comp falsifier are
+`Model-hypothesis` until adopted. Expected critic: keep the earned distinction; cut/split
+the speculative pricing/compensation third act unless separately earned.
 
 **Real-correction case.** Input explicitly says "I think I got my earlier definition
-wrong." Expected: the change-of-mind language is `Q-explicit` and allowed — the rule targets
-fabrication, not first-person correction the author actually supplied.
+wrong." Expected: change-of-mind language is `Q-explicit` and allowed. The editorial
+critic counts a genuine correction/deepening as self-novelty rather than punishing reuse
+of the old terminology.
