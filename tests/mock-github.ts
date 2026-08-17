@@ -35,18 +35,23 @@ export interface MockPr {
  * Routine 04 now emits a machine-readable head-bound marker with every verdict,
  * so stamp those trusted owner-authored fixture strings at insertion time. Tests
  * that need exact raw/spoofed GitHub comments use `{ body, login }` objects.
+ *
+ * Keep this as a plain Array with only its instance `push` wrapped. Subclassing
+ * Array breaks `slice`/`map` species construction and turns unrelated mock API
+ * reads into 502s.
  */
-class MockComments extends Array<MockCommentValue> {
-  constructor(private readonly headSha: () => string, initial: MockCommentValue[] = []) {
-    super();
-    Object.setPrototypeOf(this, new.target.prototype);
-    this.push(...initial);
-  }
-
-  override push(...items: MockCommentValue[]): number {
-    const head = this.headSha();
-    return super.push(...items.map((item) => (typeof item === 'string' ? stampGateFixture(item, head) : item)));
-  }
+function makeMockComments(
+  headSha: () => string,
+  initial: MockCommentValue[] = []
+): MockCommentValue[] {
+  const comments: MockCommentValue[] = [];
+  const rawPush = Array.prototype.push.bind(comments) as (...items: MockCommentValue[]) => number;
+  comments.push = (...items: MockCommentValue[]) => {
+    const head = headSha();
+    return rawPush(...items.map((item) => (typeof item === 'string' ? stampGateFixture(item, head) : item)));
+  };
+  comments.push(...initial);
+  return comments;
 }
 
 function stampGateFixture(body: string, head: string): string {
@@ -97,7 +102,7 @@ export class MockGitHub {
       ...pr,
     } as MockPr;
     const initial = [...(pr.comments ?? [])];
-    seeded.comments = new MockComments(() => seeded.head?.sha ?? seeded.head?.ref ?? '', initial);
+    seeded.comments = makeMockComments(() => seeded.head?.sha ?? seeded.head?.ref ?? '', initial);
     this.prs.push(seeded);
   }
 
