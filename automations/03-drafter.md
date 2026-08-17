@@ -119,13 +119,50 @@ but its contents (or a pointer to the interview file it came from) go in the PR 
 `## Author Kernel` section. If a `domain-limit` or unresolved judgment causes you to
 narrow the form/tier, say so explicitly in the PR body.
 
+## Step 0.25 — build the Claim Ledger
+
+Before judging density, inventory and classify **every load-bearing claim that the
+current author material and re-validated research could support**. This is the complete
+shared semantic package that Step 0.5 audits; do not choose a tier first and then build a
+ledger that merely justifies it.
+
+Classify each load-bearing claim into one of four ownership classes (`docs/pipeline.md`
+§10):
+
+- **`Q-explicit`** — the author said it; write it as their assertion.
+- **`Q-derived`** — a near inference that adds no new value judgment or causal theory;
+  use conservatively.
+- **`External`** — a sourced fact or attributed outside argument; state it as fact or
+  attribution, never as the author's belief.
+- **`Model-hypothesis`** — a new mechanism, causal theory, framework, prediction, coined
+  category, or "the real reason is..." reframe produced by the model.
+
+Give each load-bearing claim a stable **Claim Ledger ID** (`C1`, `C2`, …) now, before
+Material Audit and before prose. The ID belongs to the semantic claim, not to a paragraph
+or language, and survives reordering between en and zh. Mark whether the claim is
+required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
+
+A `Model-hypothesis` must never become an unqualified first-person author belief. Either
+exclude it from the prose or allow only an explicitly hedged open possibility, and in
+either case create its `Hn` entry for `## Candidate hypotheses — not yet yours`. A hedged
+hypothesis still needs an Hn so the author can adopt or reject it. A published post
+licenses terminology, previously adopted premises, continuity, and a direct extension
+the author explicitly made; it does not license a new causal theory, a new domain
+application presented as obvious, a new prediction, or a new framework that merely
+sounds consistent with the archive.
+
+Freeze this pre-audit ledger as an input to Step 0.5. If later drafting seems to require
+a genuinely new load-bearing claim, stop and add/classify it in the ledger, then **rerun
+Material Audit and Form decision before keeping the new claim**. The outline may never
+silently expand the audited semantic package.
+
 ## Step 0.5 — Material Audit and form decision
 
 **Do this before choosing a public tier, internal form, headings, or outline.** Use the
-shared Author Kernel, Claim Ledger, and re-validated research to judge how much argument
-the existing material can honestly carry — or, for a Tracker, whether the new evidence
-is sufficient to score the old claim. Follow `docs/material-form.md` exactly and keep
-both sections in the PR body:
+shared Author Kernel, the completed Claim Ledger from Step 0.25, and re-validated research
+to judge how much argument the existing material can honestly carry — or, for a Tracker,
+whether the new evidence is sufficient to score the old claim. Follow
+`docs/material-form.md` exactly and keep both sections in the PR body:
 
 ```md
 ## Material Audit
@@ -178,27 +215,11 @@ Only after the audit and form decision are fixed should you create the outline.
   into the draft (the verbatim spine), choosing phrases that carry the piece's actual
   claims, not filler. Never launder a vivid fragment into smooth prose. Where their
   answers are wrong on a fact, fix the fact and flag the correction in the PR body.
-- Classify every load-bearing claim into one of four ownership classes
-  (`docs/pipeline.md` §10): `Q-explicit` (the author said it — write as their assertion),
-  `Q-derived` (a near inference adding no new value judgment or causal theory — use
-  conservatively), `External` (a sourced fact or attributed outside argument — state as
-  fact/attribution, never as the author's belief), or `Model-hypothesis` (a new
-  mechanism, causal theory, framework, prediction, coined category, or "the real reason
-  is..." reframe you produced). Give each load-bearing claim a stable **Claim Ledger ID**
-  (`C1`, `C2`, …) before prose exists. The ID belongs to the semantic claim, not to a
-  paragraph or language, and survives reordering between en and zh. Mark whether the
-  claim is required in `EN + ZH`, optional/non-load-bearing, or excluded until adopted.
-  A `Model-hypothesis` must never become an unqualified first-person author belief —
-  either omit it from the prose entirely or write it as an explicit open possibility,
-  and either way give it an `Hn` entry in the PR body's
-  `## Candidate hypotheses — not yet yours` section (below) for the author to adopt or
-  reject; a hedged one in the prose still needs its own `Hn`, or there's nothing for the
-  author to reply `**Adopt hypothesis — Hn**` to. A published post licenses terminology,
-  previously adopted premises, continuity, and a direct extension the author explicitly
-  made; it does not license a new causal theory, a new domain application presented as
-  obvious, a new prediction, or a new framework that merely sounds consistent with the
-  archive. If you catch yourself writing a judgment with no source in the author, cut it
-  or recast it as an open question — and declare it in the PR body either way.
+- Draft only from the Claim Ledger frozen before the audit. Do not introduce a new
+  load-bearing mechanism, causal theory, framework, prediction, coined category, or
+  author judgment as connective prose. If one genuinely becomes necessary, add and
+  classify it in Step 0.25, then rerun Step 0.5 before continuing. Every unadopted
+  `Model-hypothesis` remains hedged or omitted and keeps its `Hn` quarantine entry.
 - Respect the voiceprint's **Never** list, and lean on its signature moves and rhythm
   notes; the goal is a draft the author reads and thinks "I said this," not "this is
   fine."
