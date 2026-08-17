@@ -32,7 +32,7 @@ describe('editorial critic integration contract', () => {
 
   it('requires an applicable KEEP before the ship gate can say Ready', () => {
     expect(shipGate).toContain('Require a current editorial-critic KEEP');
-    expect(shipGate).toContain('latest applicable verdict must be **`KEEP`**');
+    expect(shipGate).toMatch(/latest applicable\s+verdict must be \*\*`KEEP`\*\*/);
     expect(shipGate).toContain('No critic comment → stop');
     expect(shipGate).toContain('CUT`, `DOWNGRADE`, `SPLIT`, or `SKIP`');
   });
