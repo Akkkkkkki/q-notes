@@ -4,8 +4,11 @@ import { MockGitHub, makeEnv, call, REPO } from './mock-github';
 
 /** Runtime backstop for the #68 editorial-critic → ship-gate contract. */
 
-describe('Desk ship endpoint requires a ship-gate Ready verdict', () => {
+describe('Desk ship endpoint requires a head-bound ship-gate Ready verdict', () => {
   let gh: MockGitHub;
+  const head = 'draft/critic-gated-note';
+  const marker = (sha: string, verdict: 'ready' | 'queued' | 'blocked') =>
+    `<!-- q-notes: ship-gate head=${sha} verdict=${verdict} -->`;
 
   beforeEach(() => {
     gh = new MockGitHub();
@@ -13,7 +16,7 @@ describe('Desk ship endpoint requires a ship-gate Ready verdict', () => {
       number: 77,
       title: 'Draft: critic-gated note',
       body: '## Form decision\n- Public tier: note\n',
-      head: { ref: 'draft/critic-gated-note', repo: { full_name: REPO } },
+      head: { ref: head, repo: { full_name: REPO } },
       files: ['src/content/posts/critic-gated-note.en.md', 'src/content/posts/critic-gated-note.zh.md'],
       comments: [],
     });
@@ -23,11 +26,38 @@ describe('Desk ship endpoint requires a ship-gate Ready verdict', () => {
   it('fails closed when no ship-gate verdict exists', async () => {
     const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
     expect(status).toBe(409);
-    expect(data.error).toMatch(/ship-gate Ready verdict/i);
+    expect(data.error).toMatch(/head-bound ship-gate Ready verdict/i);
     expect(gh.prs[0].merged).toBeFalsy();
   });
 
-  it('refuses an older Ready when the latest gate verdict is blocking', async () => {
+  it('does not accept a plain-text Ready-looking owner comment', async () => {
+    gh.prs[0].comments.push({ body: '**Ready to ship?** Looks good to me.', login: 'owner' });
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('does not accept a correctly shaped marker from another commenter', async () => {
+    gh.prs[0].comments.push({
+      body: `**Ready to ship**\n\n${marker(head, 'ready')}`,
+      login: 'intruder',
+    });
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('refuses a Ready marker bound to an older PR head', async () => {
+    gh.prs[0].comments.push({
+      body: `**Ready to ship**\n\n${marker('old-head', 'ready')}`,
+      login: 'owner',
+    });
+    const { status } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('refuses an older Ready when the latest gate marker is blocking', async () => {
     gh.prs[0].comments.push(
       '**Ready to ship**\n- old pass',
       '**Checklist fails**\n- critic KEEP is stale'
@@ -37,18 +67,39 @@ describe('Desk ship endpoint requires a ship-gate Ready verdict', () => {
     expect(gh.prs[0].merged).toBeFalsy();
   });
 
-  it('allows merge after the latest gate verdict is Ready', async () => {
+  it('allows merge after the latest owner gate marker is Ready for the current head', async () => {
     gh.prs[0].comments.push('**Ready to ship**\n- critic KEEP checked\n- mechanical checks pass');
     const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
     expect(status).toBe(200);
     expect(data.merged).toBe(true);
   });
 
-  it('allows an explicit cadence override from a queued Ready verdict', async () => {
+  it('allows an explicit cadence override from a current-head queued verdict', async () => {
     gh.prs[0].comments.push('**Ready — queued** until 2026-08-25.');
     const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
     expect(status).toBe(200);
     expect(data.merged).toBe(true);
+  });
+
+  it('invalidates approval when the PR head changes after the verdict', async () => {
+    gh.prs[0].comments.push('**Ready to ship**\n- approved before ship-time edit');
+    gh.prs[0].head!.sha = 'head-after-slot-edit';
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/head-bound|changed after/i);
+    expect(gh.prs[0].merged).toBeFalsy();
+  });
+
+  it('does not let a later Ready-looking comment hide feedback after approval', async () => {
+    gh.prs[0].comments.push(
+      '**Ready to ship**\n- approved',
+      '**One change:** make the ending less broad\n\n_(via Desk)_',
+      { body: '**Ready to ship?** asking, not approving', login: 'owner' }
+    );
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/desk/ship', { number: 77 });
+    expect(status).toBe(409);
+    expect(data.error).toMatch(/feedback/i);
+    expect(gh.prs[0].merged).toBeFalsy();
   });
 
   it('checks the complete comment history, not only the first page', async () => {
