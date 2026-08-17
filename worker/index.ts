@@ -111,9 +111,9 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await getFlow(env);
       case 'POST /api/desk/ship': {
         // Runtime backstop for the #68 critic → ship contract. Routine 04 owns
-        // the semantic decision and may write a Ready verdict only after an
-        // applicable critic KEEP; the phone/API must not be able to bypass that
-        // stage by calling the merge endpoint directly.
+        // the semantic decision and emits a head-bound machine-readable verdict;
+        // the phone/API must not be able to bypass that stage with a plain-text
+        // comment or by editing the draft after approval.
         const blocked = await readyShipGuard(request.clone(), env);
         if (blocked) return blocked;
         return await shipPr(request, env);
@@ -138,14 +138,23 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
   }
 }
 
-const SHIP_GATE_VERDICT_OPENING_RE =
-  /^[\s>#*_]*(ready to ship|ready\s*[—–-]\s*queued|needs your call|checklist fails|downgraded)/i;
+const SHIP_GATE_MARKER_RE =
+  /<!--\s*q-notes:\s*ship-gate\s+head=([^\s]+)\s+verdict=(ready|queued|blocked)\s*-->/i;
+const DESK_REQUEST_RE =
+  /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note|Adopt hypothesis —|Reject hypothesis —)/;
 
 /**
- * Last-resort merge guard for Desk. The ship gate remains the single owner of
- * critic freshness and semantic readiness; this endpoint only verifies that
- * the latest gate verdict actually permits shipping. It deliberately reads the
- * complete issue-comment history and fails closed if GitHub cannot provide it.
+ * Last-resort merge guard for Desk. Routine 04 remains the single owner of
+ * critic freshness and semantic readiness. The Worker verifies only the
+ * machine-readable authorization it emits:
+ *
+ *   <!-- q-notes: ship-gate head=<PR head SHA> verdict=ready|queued|blocked -->
+ *
+ * The latest owner-authored marker must be ready/queued for the current head.
+ * Any Desk feedback after that marker blocks too, so an ordinary comment that
+ * happens to say "Ready to ship" cannot reset the feedback clock. We re-read
+ * the PR head after comment inspection so ship-time slot commits invalidate the
+ * old authorization before the merge path is entered.
  */
 async function readyShipGuard(request: Request, env: Env): Promise<Response | null> {
   let body: { number?: number };
@@ -162,8 +171,12 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
   // immediately before merge.
   const prRes = await gh(env, 'GET', `pulls/${number}`);
   if (!prRes.ok) return null;
-  const pr = (await prRes.json()) as { state?: string };
+  const pr = (await prRes.json()) as { state?: string; head?: { sha?: string } };
   if (pr.state !== 'open') return null;
+  const approvedHead = pr.head?.sha ?? '';
+  if (!approvedHead) {
+    return json({ error: 'PR head SHA unavailable — cannot verify ship-gate approval' }, 502);
+  }
 
   const filesRes = await gh(env, 'GET', `pulls/${number}/files?per_page=${DESK_MAX_PR_FILES}`);
   if (!filesRes.ok) return json({ error: `GitHub PR files failed (${filesRes.status})` }, 502);
@@ -177,28 +190,65 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
     );
   if (!isContentPr) return null;
 
-  let latest: string | null = null;
+  const owner = (env.GITHUB_REPO.split('/')[0] ?? '').toLowerCase();
+  const history: Array<{ body: string; login: string }> = [];
   for (let page = 1; ; page++) {
     const res = await gh(env, 'GET', `issues/${number}/comments?per_page=100&page=${page}`);
     if (!res.ok) return json({ error: `GitHub comments fetch failed (${res.status})` }, 502);
-    const comments = (await res.json()) as Array<{ body?: string }>;
-    for (const comment of comments) {
-      const text = comment.body ?? '';
-      if (SHIP_GATE_VERDICT_OPENING_RE.test(text)) latest = text;
-    }
+    const comments = (await res.json()) as Array<{
+      body?: string;
+      user?: { login?: string };
+    }>;
+    history.push(
+      ...comments.map((comment) => ({
+        body: comment.body ?? '',
+        login: (comment.user?.login ?? '').toLowerCase(),
+      }))
+    );
     if (comments.length < 100) break;
   }
 
-  if (
-    !latest ||
-    (!/^[\s>#*_]*ready to ship\b/i.test(latest) &&
-      !/^[\s>#*_]*ready\s*[—–-]\s*queued\b/i.test(latest))
-  ) {
+  let latest:
+    | { index: number; head: string; verdict: 'ready' | 'queued' | 'blocked' }
+    | null = null;
+  for (let i = 0; i < history.length; i++) {
+    if (history[i].login !== owner) continue;
+    const match = history[i].body.match(SHIP_GATE_MARKER_RE);
+    if (!match) continue;
+    latest = {
+      index: i,
+      head: match[1],
+      verdict: match[2].toLowerCase() as 'ready' | 'queued' | 'blocked',
+    };
+  }
+
+  if (!latest || latest.head !== approvedHead || !['ready', 'queued'].includes(latest.verdict)) {
     return json(
-      { error: 'No current ship-gate Ready verdict — editorial critic / ship gate must clear this PR first' },
+      { error: 'No current head-bound ship-gate Ready verdict — editor must clear this exact draft first' },
       409
     );
   }
+
+  const pendingAfterApproval = history
+    .slice(latest.index + 1)
+    .filter((comment) => DESK_REQUEST_RE.test(comment.body)).length;
+  if (pendingAfterApproval > 0) {
+    return json(
+      { error: `${pendingAfterApproval} piece(s) of feedback arrived after ship-gate approval — editor must re-check` },
+      409
+    );
+  }
+
+  // A slot edit or any other branch commit after the verdict changes head.sha.
+  // Re-read immediately before handing off to shipPr so the normal Publish flow
+  // cannot apply title/last-line changes and then reuse the old authorization.
+  const currentRes = await gh(env, 'GET', `pulls/${number}`);
+  if (!currentRes.ok) return json({ error: `GitHub PR fetch failed (${currentRes.status})` }, 502);
+  const current = (await currentRes.json()) as { state?: string; head?: { sha?: string } };
+  if (current.state !== 'open' || current.head?.sha !== approvedHead) {
+    return json({ error: 'PR changed after ship-gate approval — run the editor again before publishing' }, 409);
+  }
+
   return null;
 }
 
