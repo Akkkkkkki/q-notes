@@ -37,6 +37,15 @@ describe('editorial critic integration contract', () => {
     expect(shipGate).toContain('CUT`, `DOWNGRADE`, `SPLIT`, or `SKIP`');
   });
 
+  it('binds every ship-gate verdict to the exact PR head after its edits', () => {
+    expect(shipGate).toContain(
+      'q-notes: ship-gate head=<full PR head SHA> verdict=ready|queued|blocked'
+    );
+    expect(shipGate).toContain('after all edits made in that pass');
+    expect(shipGate).toContain('ship-time title or final');
+    expect(shipGate).toContain('ordinary prose that happens to say “Ready to ship” is not an');
+  });
+
   it('invalidates stale semantic approvals without re-running for purely mechanical edits', () => {
     expect(critic).toContain('## Freshness contract');
     expect(critic).toContain('A fresh critic pass is required after changes to any of these');

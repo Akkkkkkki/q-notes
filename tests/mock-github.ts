@@ -9,6 +9,14 @@ import type { Env } from '../worker/types';
 export const API_BASE = 'https://gh.test';
 export const REPO = 'owner/repo';
 
+export interface MockComment {
+  body: string;
+  /** Defaults to the repository owner. Use another login for spoof/untrusted-comment tests. */
+  login?: string;
+}
+
+type MockCommentValue = string | MockComment;
+
 export interface MockPr {
   number: number;
   state: 'open' | 'closed';
@@ -18,8 +26,43 @@ export interface MockPr {
   created_at?: string;
   head?: { ref: string; sha?: string; repo: { full_name: string } | null };
   files: string[];
-  comments: string[];
+  comments: MockCommentValue[];
   merged?: boolean;
+}
+
+/**
+ * Most older Desk tests use terse string fixtures for Routine-04 verdicts.
+ * Routine 04 now emits a machine-readable head-bound marker with every verdict,
+ * so stamp those trusted owner-authored fixture strings at insertion time. Tests
+ * that need exact raw/spoofed GitHub comments use `{ body, login }` objects.
+ *
+ * Keep this as a plain Array with only its instance `push` wrapped. Subclassing
+ * Array breaks `slice`/`map` species construction and turns unrelated mock API
+ * reads into 502s.
+ */
+function makeMockComments(
+  headSha: () => string,
+  initial: MockCommentValue[] = []
+): MockCommentValue[] {
+  const comments: MockCommentValue[] = [];
+  const rawPush = Array.prototype.push.bind(comments) as (...items: MockCommentValue[]) => number;
+  comments.push = (...items: MockCommentValue[]) => {
+    const head = headSha();
+    return rawPush(...items.map((item) => (typeof item === 'string' ? stampGateFixture(item, head) : item)));
+  };
+  comments.push(...initial);
+  return comments;
+}
+
+function stampGateFixture(body: string, head: string): string {
+  if (/q-notes:\s*ship-gate/i.test(body) || !head) return body;
+  let verdict: 'ready' | 'queued' | 'blocked' | null = null;
+  if (/^[\s>#*_]*ready to ship\b/i.test(body)) verdict = 'ready';
+  else if (/^[\s>#*_]*ready\s*[—–-]\s*queued\b/i.test(body)) verdict = 'queued';
+  else if (/^[\s>#*_]*(?:needs your call|checklist fails|downgraded)\b/i.test(body)) verdict = 'blocked';
+  return verdict
+    ? `${body}\n\n<!-- q-notes: ship-gate head=${head} verdict=${verdict} -->`
+    : body;
 }
 
 export class MockGitHub {
@@ -47,7 +90,7 @@ export class MockGitHub {
   }
 
   seedPr(pr: Partial<MockPr> & { number: number }) {
-    this.prs.push({
+    const seeded: MockPr = {
       state: 'open',
       title: `PR #${pr.number}`,
       body: null,
@@ -57,7 +100,10 @@ export class MockGitHub {
       files: [],
       comments: [],
       ...pr,
-    });
+    } as MockPr;
+    const initial = [...(pr.comments ?? [])];
+    seeded.comments = makeMockComments(() => seeded.head?.sha ?? seeded.head?.ref ?? '', initial);
+    this.prs.push(seeded);
   }
 
   fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -95,6 +141,8 @@ export class MockGitHub {
     if ((m = path.match(/^pulls\/(\d+)\/merge$/)) && method === 'PUT') {
       const pr = this.pr(Number(m[1]));
       if (!pr || pr.state !== 'open') return new Response('{}', { status: 405 });
+      const currentHead = pr.head?.sha ?? pr.head?.ref;
+      if (body?.sha && body.sha !== currentHead) return new Response('{}', { status: 409 });
       pr.merged = true;
       pr.state = 'closed';
       return ok({ merged: true, sha: this.nextSha() });
@@ -124,7 +172,14 @@ export class MockGitHub {
       const perPage = Number(url.searchParams.get('per_page') ?? 30);
       const page = Number(url.searchParams.get('page') ?? 1);
       const start = (page - 1) * perPage;
-      return ok(pr.comments.slice(start, start + perPage).map((c) => ({ body: c })));
+      return ok(
+        pr.comments.slice(start, start + perPage).map((comment) => {
+          if (typeof comment === 'string') {
+            return { body: comment, user: { login: 'owner' } };
+          }
+          return { body: comment.body, user: { login: comment.login ?? 'owner' } };
+        })
+      );
     }
     return notFound();
   };
@@ -132,16 +187,22 @@ export class MockGitHub {
   private contents(method: string, filePath: string, url: URL, body?: any): Response {
     if (method === 'GET') {
       const ref = url.searchParams.get('ref');
-      const key = ref ? `${ref}:${filePath}` : filePath;
-      const store = ref ? this.branchFiles : this.files;
+      let resolvedRef = ref;
+      if (ref && !this.branchFiles.has(`${ref}:${filePath}`)) {
+        const pr = this.prs.find((candidate) => candidate.head?.sha === ref);
+        if (pr?.head?.ref) resolvedRef = pr.head.ref;
+      }
+      const key = resolvedRef ? `${resolvedRef}:${filePath}` : filePath;
+      const store = resolvedRef ? this.branchFiles : this.files;
       const content = store.get(key);
       if (content !== undefined) {
         return ok({ content: Buffer.from(content, 'utf8').toString('base64'), sha: this.shas.get(key) });
       }
       // Directory listing.
+      const prefix = (resolvedRef ? `${resolvedRef}:` : '') + filePath + '/';
       const entries = [...store.keys()]
-        .filter((k) => k.startsWith((ref ? `${ref}:` : '') + filePath + '/'))
-        .map((k) => k.slice(((ref ? `${ref}:` : '') + filePath + '/').length))
+        .filter((k) => k.startsWith(prefix))
+        .map((k) => k.slice(prefix.length))
         .filter((rest) => rest && !rest.includes('/'))
         .map((name) => ({ name, type: 'file' }));
       return entries.length ? ok(entries) : notFound();
@@ -160,8 +221,14 @@ export class MockGitHub {
       }
       store.set(key, Buffer.from(body.content, 'base64').toString('utf8'));
       this.shas.set(key, this.nextSha());
+      const commitSha = this.nextSha();
+      if (branch) {
+        for (const pr of this.prs) {
+          if (pr.head?.ref === branch) pr.head.sha = commitSha;
+        }
+      }
       this.commits.push({ path: filePath, message: body.message, branch });
-      return ok({ commit: { html_url: `${API_BASE}/commit/${this.shas.get(key)}` } });
+      return ok({ commit: { html_url: `${API_BASE}/commit/${commitSha}`, sha: commitSha } });
     }
     return notFound();
   }
