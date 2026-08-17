@@ -19,7 +19,7 @@
  */
 
 import type { Env } from './types';
-import { getFile, putFile, todayIn, collapse, json } from './github';
+import { getFile, putFile, todayIn, collapse, json, gh } from './github';
 import { getBrief, saveAnswer, closeBrief, setBriefReady } from './interview';
 import { passBacklogItem } from './backlog';
 import { listDesk, shipPr, commentPr, killPr, applySlots, getDraft } from './desk';
@@ -34,6 +34,13 @@ const MAX_URL_LENGTH = 500;
 const MAX_SPARK_LINES = 20;
 const SPARK_KINDS = ['spark', 'question', 'quote', 'link'] as const;
 type SparkKind = (typeof SPARK_KINDS)[number];
+
+// Mirror the Desk's content-PR boundary before applying the extra #100
+// readiness guard. The actual merge path rechecks this in worker/desk.ts; this
+// preflight exists only so invalid/code/oversized PRs keep their established
+// 400 behavior instead of being misreported as editorial-readiness failures.
+const DESK_CONTENT_PREFIXES = ['src/content/', 'drafts/', 'research/', 'public/images/'];
+const DESK_MAX_PR_FILES = 100;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -102,8 +109,15 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await getDraft(env, url);
       case 'GET /api/flow':
         return await getFlow(env);
-      case 'POST /api/desk/ship':
+      case 'POST /api/desk/ship': {
+        // Runtime backstop for the #68 critic → ship contract. Routine 04 owns
+        // the semantic decision and may write a Ready verdict only after an
+        // applicable critic KEEP; the phone/API must not be able to bypass that
+        // stage by calling the merge endpoint directly.
+        const blocked = await readyShipGuard(request.clone(), env);
+        if (blocked) return blocked;
         return await shipPr(request, env);
+      }
       case 'POST /api/desk/comment':
         return await commentPr(request, env);
       case 'POST /api/desk/kill':
@@ -122,6 +136,70 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'Internal error' }, 502);
   }
+}
+
+const SHIP_GATE_VERDICT_OPENING_RE =
+  /^[\s>#*_]*(ready to ship|ready\s*[—–-]\s*queued|needs your call|checklist fails|downgraded)/i;
+
+/**
+ * Last-resort merge guard for Desk. The ship gate remains the single owner of
+ * critic freshness and semantic readiness; this endpoint only verifies that
+ * the latest gate verdict actually permits shipping. It deliberately reads the
+ * complete issue-comment history and fails closed if GitHub cannot provide it.
+ */
+async function readyShipGuard(request: Request, env: Env): Promise<Response | null> {
+  let body: { number?: number };
+  try {
+    body = await request.json();
+  } catch {
+    return null; // shipPr owns request-shape validation and will return 400.
+  }
+  const number = Number(body.number);
+  if (!Number.isInteger(number) || number < 1) return null;
+
+  // Preserve the Desk's existing invalid/code/closed-PR behavior. This is a
+  // preflight only; shipPr repeats the authoritative content-PR validation
+  // immediately before merge.
+  const prRes = await gh(env, 'GET', `pulls/${number}`);
+  if (!prRes.ok) return null;
+  const pr = (await prRes.json()) as { state?: string };
+  if (pr.state !== 'open') return null;
+
+  const filesRes = await gh(env, 'GET', `pulls/${number}/files?per_page=${DESK_MAX_PR_FILES}`);
+  if (!filesRes.ok) return json({ error: `GitHub PR files failed (${filesRes.status})` }, 502);
+  const files = (await filesRes.json()) as Array<{ filename?: string }>;
+  const isContentPr =
+    files.length > 0 &&
+    files.length < DESK_MAX_PR_FILES &&
+    files.every(
+      ({ filename = '' }) =>
+        !filename.includes('..') && DESK_CONTENT_PREFIXES.some((prefix) => filename.startsWith(prefix))
+    );
+  if (!isContentPr) return null;
+
+  let latest: string | null = null;
+  for (let page = 1; ; page++) {
+    const res = await gh(env, 'GET', `issues/${number}/comments?per_page=100&page=${page}`);
+    if (!res.ok) return json({ error: `GitHub comments fetch failed (${res.status})` }, 502);
+    const comments = (await res.json()) as Array<{ body?: string }>;
+    for (const comment of comments) {
+      const text = comment.body ?? '';
+      if (SHIP_GATE_VERDICT_OPENING_RE.test(text)) latest = text;
+    }
+    if (comments.length < 100) break;
+  }
+
+  if (
+    !latest ||
+    (!/^[\s>#*_]*ready to ship\b/i.test(latest) &&
+      !/^[\s>#*_]*ready\s*[—–-]\s*queued\b/i.test(latest))
+  ) {
+    return json(
+      { error: 'No current ship-gate Ready verdict — editorial critic / ship gate must clear this PR first' },
+      409
+    );
+  }
+  return null;
 }
 
 async function isAuthorized(request: Request, env: Env): Promise<boolean> {
