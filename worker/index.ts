@@ -36,9 +36,9 @@ const SPARK_KINDS = ['spark', 'question', 'quote', 'link'] as const;
 type SparkKind = (typeof SPARK_KINDS)[number];
 
 // Mirror the Desk's content-PR boundary before applying the extra #100
-// readiness guard. The actual merge path rechecks this in worker/desk.ts; this
-// preflight exists only so invalid/code/oversized PRs keep their established
-// 400 behavior instead of being misreported as editorial-readiness failures.
+// readiness guard. The legacy ship path rechecks this for invalid targets; this
+// preflight exists so invalid/code/oversized PRs keep their established 400
+// behavior instead of being misreported as editorial-readiness failures.
 const DESK_CONTENT_PREFIXES = ['src/content/', 'drafts/', 'research/', 'public/images/'];
 const DESK_MAX_PR_FILES = 100;
 
@@ -111,12 +111,15 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
         return await getFlow(env);
       case 'POST /api/desk/ship': {
         // Runtime backstop for the #68 critic → ship contract. Routine 04 owns
-        // the semantic decision and emits a head-bound machine-readable verdict;
-        // the phone/API must not be able to bypass that stage with a plain-text
-        // comment or by editing the draft after approval.
-        const blocked = await readyShipGuard(request.clone(), env);
-        if (blocked) return blocked;
-        return await shipPr(request, env);
+        // the semantic decision and emits a head-bound machine-readable verdict.
+        // For a valid content PR, the guard returns the exact approved head and
+        // GitHub's merge endpoint receives that SHA as an atomic precondition.
+        const gate = await readyShipGuard(request.clone(), env);
+        if (gate instanceof Response) return gate;
+        // Invalid/code/closed/oversized targets deliberately fall back to the
+        // existing Desk path so its established 400 behavior is preserved.
+        if (!gate) return await shipPr(request, env);
+        return await mergeApprovedContentPr(env, gate.number, gate.approvedHead);
       }
       case 'POST /api/desk/comment':
         return await commentPr(request, env);
@@ -143,6 +146,8 @@ const SHIP_GATE_MARKER_RE =
 const DESK_REQUEST_RE =
   /\*\*(?:One change:|读稿标记|A\/B calibration —|Voice flag —|Downgrade to note|Adopt hypothesis —|Reject hypothesis —)/;
 
+type ReadyGate = { number: number; approvedHead: string };
+
 /**
  * Last-resort merge guard for Desk. Routine 04 remains the single owner of
  * critic freshness and semantic readiness. The Worker verifies only the
@@ -153,22 +158,20 @@ const DESK_REQUEST_RE =
  * The latest owner-authored marker must be ready/queued for the current head.
  * Any Desk feedback after that marker blocks too, so an ordinary comment that
  * happens to say "Ready to ship" cannot reset the feedback clock. We re-read
- * the PR head after comment inspection so ship-time slot commits invalidate the
- * old authorization before the merge path is entered.
+ * the PR head after comment inspection, then return that exact SHA to the merge
+ * call, which uses GitHub's `sha` precondition to close the remaining race.
  */
-async function readyShipGuard(request: Request, env: Env): Promise<Response | null> {
+async function readyShipGuard(request: Request, env: Env): Promise<Response | ReadyGate | null> {
   let body: { number?: number };
   try {
     body = await request.json();
   } catch {
-    return null; // shipPr owns request-shape validation and will return 400.
+    return null; // legacy shipPr owns request-shape validation and returns 400.
   }
   const number = Number(body.number);
   if (!Number.isInteger(number) || number < 1) return null;
 
-  // Preserve the Desk's existing invalid/code/closed-PR behavior. This is a
-  // preflight only; shipPr repeats the authoritative content-PR validation
-  // immediately before merge.
+  // Preserve the Desk's existing invalid/code/closed-PR behavior.
   const prRes = await gh(env, 'GET', `pulls/${number}`);
   if (!prRes.ok) return null;
   const pr = (await prRes.json()) as { state?: string; head?: { sha?: string } };
@@ -240,8 +243,8 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
   }
 
   // A slot edit or any other branch commit after the verdict changes head.sha.
-  // Re-read immediately before handing off to shipPr so the normal Publish flow
-  // cannot apply title/last-line changes and then reuse the old authorization.
+  // Re-read immediately before merge preparation; the merge request below also
+  // carries approvedHead as GitHub's atomic `sha` precondition.
   const currentRes = await gh(env, 'GET', `pulls/${number}`);
   if (!currentRes.ok) return json({ error: `GitHub PR fetch failed (${currentRes.status})` }, 502);
   const current = (await currentRes.json()) as { state?: string; head?: { sha?: string } };
@@ -249,7 +252,24 @@ async function readyShipGuard(request: Request, env: Env): Promise<Response | nu
     return json({ error: 'PR changed after ship-gate approval — run the editor again before publishing' }, 409);
   }
 
-  return null;
+  return { number, approvedHead };
+}
+
+async function mergeApprovedContentPr(
+  env: Env,
+  number: number,
+  approvedHead: string
+): Promise<Response> {
+  const res = await gh(env, 'PUT', `pulls/${number}/merge`, {
+    merge_method: 'merge',
+    sha: approvedHead,
+  });
+  if (res.status === 405 || res.status === 409) {
+    return json({ error: 'PR changed or is not mergeable right now — editor approval was not reused' }, 409);
+  }
+  if (!res.ok) return json({ error: `GitHub API error (${res.status})` }, 502);
+  const data = (await res.json()) as { sha?: string };
+  return json({ ok: true, merged: true, sha: data.sha });
 }
 
 async function isAuthorized(request: Request, env: Env): Promise<boolean> {
