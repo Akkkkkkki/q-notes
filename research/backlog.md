@@ -918,7 +918,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-10 — Manufacturers already know the model isn't the problem; nobody built the handoff rule
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-08-18
 
 **One-line thesis:** On the factory floor, agentic AI's real bottleneck isn't model capability, it's that almost no manufacturer has a deliberate, per-decision rule for when an agent acts alone versus when it stops and asks a human — which is the same organizational-absorption argument the author has already made about coding agents, now showing up in physical operations instead of software.
 
