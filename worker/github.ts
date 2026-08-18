@@ -52,10 +52,16 @@ function github(env: Env, method: string, path: string, body?: unknown): Promise
 /**
  * Repo-scoped GitHub API call. The repo is hard-coded from config and callers
  * pass only the path under it — this Worker never proxies the API generically.
+ *
+ * A single-PR GET has security-sensitive callers (most notably the Desk ship
+ * gate). A 404 is a definitive "not a target" result that those callers may
+ * hand back to legacy validation. Permission/rate-limit/server failures are
+ * not target validation, so throw instead of returning a non-ok Response that
+ * could be mistaken for "not a PR" and trigger a fail-open fallback.
  */
-export function gh(env: Env, method: string, repoPath: string, body?: unknown): Promise<Response> {
+export async function gh(env: Env, method: string, repoPath: string, body?: unknown): Promise<Response> {
   const base = env.GITHUB_API || 'https://api.github.com';
-  return fetch(`${base}/repos/${env.GITHUB_REPO}/${repoPath}`, {
+  const res = await fetch(`${base}/repos/${env.GITHUB_REPO}/${repoPath}`, {
     method,
     headers: {
       Authorization: `Bearer ${env.GITHUB_TOKEN}`,
@@ -66,6 +72,10 @@ export function gh(env: Env, method: string, repoPath: string, body?: unknown): 
     },
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (method === 'GET' && /^pulls\/\d+$/.test(repoPath) && res.status !== 404 && !res.ok) {
+    throw new Error(`GitHub PR fetch failed (${res.status})`);
+  }
+  return res;
 }
 
 export function todayIn(timeZone: string): string {
