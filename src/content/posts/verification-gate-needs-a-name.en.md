@@ -1,7 +1,7 @@
 ---
 title: "Cheap to reverse isn't the same as cheap to be wrong"
 date: 2026-08-20
-excerpt: "Hardware got a real verification gate at DAC 2026 because a bad tapeout is expensive to reverse. Software didn't — not because its failures are cheaper, but because usually nobody's on the hook when the check gets skipped."
+excerpt: "Hardware got a real verification gate at DAC 2026 because a bad tapeout is expensive to reverse. Software didn't — not because its failures are cheaper. One possibility: usually nobody's on the hook when the check gets skipped."
 tags: ["ai", "software", "engineering", "note"]
 lang: en
 translationKey: verification-gate-needs-a-name
@@ -25,6 +25,6 @@ In late July, Synopsys, Cadence, and Siemens all showed up at DAC with agentic c
 
 I don't think software failure is any cheaper than hardware. Reversing the commit was never the actual stakes. What the failure touches is. I've watched an unverified, AI-written codebase turn into a disastrously messy, entangled myth in about two and a half months. Reverting a single change is trivial; undoing an emergent mess like that isn't, because there's no one commit that caused it. That's just wasted engineering time. Plenty of software failures aren't reversible in any sense that matters at all: the ones that hit security, privacy, somebody's safety. `git revert` doesn't undo those any more than it undoes a bad chip.
 
-One possibility: what actually predicts whether a check is real, in hardware or software, isn't the domain at all. It's whether skipping it would cost someone specifically named. Physics verification, at least in how Siemens describes it, returns a pass or a fail. I don't know hardware well enough to say whether judgment sneaks in somewhere upstream of that check — configuring it, deciding what counts as a pass — but the headline result isn't argued over the way most software review is. Software's stakes are diffuse and easy to argue away right up until the day they aren't, which might be exactly why the software version of this stays informal instead of disappearing.
+One possibility: what actually predicts whether a check is real, in hardware or software, isn't the domain at all. It's whether skipping it would cost someone specifically named. Physics verification, at least in how Siemens describes it, returns a pass or a fail. I don't know hardware well enough to say whether judgment sneaks in somewhere upstream of that — configuring the check, deciding what counts as a pass, what happens after a fail. Software's stakes are diffuse and easy to argue away right up until the day they aren't, which might be exactly why the software version of this stays informal instead of disappearing.
 
 I don't expect most software to ever get an explicit, hardware-style verification gate. But some version of it already exists, quietly, wherever a specific person would actually answer for the failure. It just never gets called a gate, so nobody outside that team ever sees it as one.
