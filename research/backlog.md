@@ -943,3 +943,86 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 2. You said in the chip-design interview that you don't want to pretend to be a hardware expert. What's the version of this question you *do* have firsthand standing on: not "what should a factory agent be allowed to do," but "what happens in a company when nobody has decided that yet"?
 
 **Suggested tags:** `ai`, `robotics`, `business`, `management`
+
+## 2026-08-10 — A benchmark score now belongs to the harness
+
+**Status:** Backlog
+
+**One-line thesis:** Once retaining reasoning and changing context compaction can triple an agent's score while cutting its output tokens sixfold, a benchmark no longer measures a model; it measures a model-plus-memory system whose hidden operating choices may matter more than the model name.
+
+**Why this is interesting now:** OpenAI disclosed on July 29 that GPT-5.6 Sol scored 13.3% on the ARC-AGI-3 public set with the benchmark's generic harness and 38.3% with two production settings enabled: retained reasoning and compaction. The result is unusually useful because it exposes a live disagreement between two legitimate evaluation goals. ARC deliberately uses a simple common harness to make models comparable; model vendors argue that a generic harness can make a production-capable agent repeatedly forget what it has learned. The early signal is that agent leaderboards may soon need two scores — standardized and product-realistic — because one number cannot answer both questions.
+
+**Potential author angle:** Push past the familiar "the wrapper matters" line. The sharper claim is that memory policy is now part of the intelligence being sold. A company choosing an agent is not buying a model IQ score; it is buying a state machine that decides what reasoning survives, what gets compressed, and what the agent must rediscover. This also creates a governance problem: vendors can legitimately improve a weak benchmark result through harness tuning, but the same freedom makes cross-vendor rankings easier to game and harder to reproduce.
+
+**Author hook:** Extends [The best agent interface may be the codebase map](../src/content/posts/codebase-maps-are-agent-interfaces.en.md) from repository context to temporal context. The published piece argues that what an agent can see shapes what it can do; this candidate argues that what the system lets the agent remember shapes the measured intelligence itself.
+
+**Evidence checked:**
+- [OpenAI: How enabling two settings tripled our scores on the ARC-AGI-3 benchmark](https://openai.com/index/how-two-settings-tripled-our-arc-agi-3-scores/) — July 29 primary source for the 13.3% to 38.3% public-set increase, the sixfold reduction in output tokens, and the mechanisms: retained reasoning across actions and compaction instead of rolling truncation.
+- [ARC Prize: Analyzing GPT-5.5 and Opus 4.7 with ARC-AGI-3](https://arcprize.org/blog/arc-agi-3-gpt-5-5-opus-4-7-analysis) — benchmark-owner account of why ARC-AGI-3 uses novel environments and replay analysis, and of failure modes including agents solving a level without carrying the rule forward; useful as the strongest defense of the standardized-harness side.
+- [Self-Evolving Coding Agents](https://arxiv.org/abs/2608.03392) — August 4 survey separating model updates from evolution of memory, skills, tools, scaffolds, and workflow topology, while warning about benchmark overfitting and feedback reliability.
+
+**Counterargument / risk:** This is one vendor tuning its own model on one public benchmark, so the gain may reflect benchmark-specific optimization rather than a general property of production work. ARC's generic harness may still be the fairest way to compare raw models, and private reasoning retention is not equally available across providers. The thesis weakens if independently maintained, vendor-tuned harnesses preserve model rankings across diverse long-horizon tasks, or if most real-world gains disappear outside ARC-AGI-3.
+
+**Draftability:** High, because the numerical result is concrete, the mechanism is understandable, and the disagreement is real: comparability and ecological validity now pull agent evaluation in opposite directions.
+
+**Two interview questions:**
+1. If two settings can triple an agent's score, what do you think a buyer is actually purchasing: a model, a memory system, or the team that keeps tuning the loop around both?
+2. Would you trust a standardized benchmark that handicaps every model equally, or a vendor-tuned benchmark that better resembles the product but gives each vendor room to optimize the test?
+
+**Suggested tags:** `ai`, `software`, `engineering`, `evaluation`
+
+## 2026-08-10 — AI disclosure rules ask the wrong author to confess
+
+**Status:** Backlog
+
+**One-line thesis:** Open-source AI-disclosure policies are structurally weak because they ask an agent to discover a rule, identify itself truthfully, and sometimes abandon completed work — precisely the steps current agents skip or resist — while the strongest forensic signal sits in the PR prose, not the code.
+
+**Why this is interesting now:** Two late-July and early-August studies make the policy gap measurable. RepoComplianceBench found that four frontier coding agents proactively opened relevant policy files in only 3.5% of unaided runs; none refused AI-banned work, and some produced disclosures naming the wrong vendor. AgenTag then showed that AI-versus-human PR attribution can reach a balanced F1 of 0.85 from PR text alone, while code diffs add little. Meanwhile, projects such as Home Assistant are rolling out AI policies that require human-authored explanations and ban autonomous contributions. The uncomfortable synthesis is that disclosure is becoming enforceable, but not through honest self-reporting.
+
+**Potential author angle:** This is the disagreement-hunt candidate. The author's published "AI pull requests are becoming knowledge imports" argues that reviewers should focus on whether the contributor can transfer understanding, not merely on whether AI was used. The fresh evidence sharpens that position: a detector can often infer which agent wrote the explanation while learning little from the code, so automated disclosure enforcement risks policing linguistic style instead of engineering risk. The better control may be external and behavioral — require a human to explain decisions, reproduce tests, and own follow-up — rather than trying to prove machine authorship from artifacts.
+
+**Author hook:** Directly challenges and extends [AI pull requests are becoming knowledge imports](../src/content/posts/pull-requests-are-knowledge-imports.en.md). If AI identity is legible mostly in PR prose, the author's knowledge-transfer test may be more durable than a tool-disclosure checkbox — but it also needs a concrete enforcement mechanism when agents can generate plausible explanations.
+
+**Evidence checked:**
+- [A First Look at Coding Agents' Compliance with AI Contribution Rules in Open-Source Communities](https://arxiv.org/abs/2607.26819) — July 29 primary study of 106 issues from 49 repositories; reports 3.5% proactive policy-file discovery, 0% unaided refusal and handoff across four models, recovery of disclosure/verification under reminders, and cases where agents disclosed the wrong vendor.
+- [AgenTag: Attribution of AI Coding Agents from Behavioral Fingerprints](https://arxiv.org/abs/2608.00966) — August 2 primary study of 33,580 agent PRs and 6,618 human-labeled PRs; reports 0.85 balanced F1 for AI-versus-human detection from PR text alone, 0.89 across modalities, and much stronger attribution signal in PR/commit language than in code diffs.
+- [Open Home Foundation: Introducing the Open Home Foundation AI Policy](https://developers.home-assistant.io/blog/2026/07/20/ai-policy/) — maintainer-side primary source requiring contributors to understand and explain changes in their own words, banning autonomous contributions, and placing the policy in `AI_POLICY.md`, contributing guidelines, and `AGENTS.md`.
+
+**Counterargument / risk:** Both studies are preprints and operate on bounded datasets; authorship fingerprints drift, can be weakened by manual editing or custom repository instructions, and are explicitly recommended for triage rather than adjudication. A policy can also work socially without perfect technical enforcement if most contributors comply. The thesis is false if platform-stamped runtime identity becomes ubiquitous, truthful, and tamper-resistant, or if human comprehension checks prove cheap and reliable enough that authorship detection becomes irrelevant.
+
+**Draftability:** High, because it turns a current policy wave into a specific design claim: do not ask the agent to enforce the rule that may require it to stop.
+
+**Two interview questions:**
+1. Your knowledge-import piece says the human should be able to explain the change. What question would you ask in review that a person who merely pasted an agent's answer could not cheaply fake?
+2. If an AI detector flags a PR based mainly on its unusually tidy explanation rather than its code, should a maintainer act on that signal at all — and what would fair enforcement look like?
+
+**Suggested tags:** `ai`, `software`, `open-source`, `governance`
+
+## 2026-08-10 — The first real agent standard may be an insurance policy
+
+**Status:** Backlog
+
+**One-line thesis:** AI-agent safety may standardize through underwriting before regulation: once insurers put money behind specific tests, logs, limits, and failure modes, their coverage requirements become the controls enterprise buyers actually enforce.
+
+**Why this is interesting now:** A 40-author July 13 paper proposed an eight-layer insurance stack for AI agents, and a separate July paper argued for trace-level underwriting. This is no longer purely theoretical: ElevenLabs says its voice agents are covered under an AIUC-1-backed policy after 5,835 adversarial tests, AIUC markets coverage up to $50 million, and Armilla markets affirmative AI liability coverage backed by established reinsurers. The under-synthesized shift is from "is this agent safe?" to "what evidence would make someone willing to price its failure?"
+
+**Potential author angle:** Treat insurance as a governance technology, not a financial footnote. Consulting decks can recommend guardrails without agreeing which ones matter; underwriters must decide what evidence changes a premium or exclusion. That can turn vague agent assurance into a concrete due-diligence checklist — but it can also create compliance theater if certification tests are easier to pass than production behavior is to predict. The memorable test for any proposed agent standard is simple: would an insurer stake balance-sheet capital on it, and exactly which failures are excluded?
+
+**Author hook:** Extends [Helpful agents are an authorization bug](../src/content/posts/helpful-agents-authorization-bug.en.md) from product design into enterprise adoption. The published piece argues for scoped authority and external controls; insurance is an emerging mechanism that can price whether those controls are credible. It also provides a useful counterweight to today's Cloudflare-wallet candidate: identity and spending caps matter, but coverage language reveals which residual risks remain transferable.
+
+**Evidence checked:**
+- [Underwriting the Agent Economy: The Blueprint for an AI Insurance Stack](https://arxiv.org/abs/2607.11999) — July 13 multi-author paper arguing that existing policies contain silent or excluded AI exposure and proposing incident data, catastrophe models, standards, contract design, risk selection, pricing, monitoring, and claims management as an insurance stack.
+- [ElevenLabs secures first-of-its-kind AI Agent insurance](https://elevenlabs.io/blog/aiuc-announcement) — primary vendor announcement that an AIUC-1-backed policy covers its voice agents after 5,835 tests across 14 risk categories; supports existence of a live policy, while the coverage terms still require independent scrutiny.
+- [AIUC product page](https://aiuc.com/product) — primary source for the certification-plus-insurance model and advertised AI-specific limits up to $50 million, including tool-call failure, hallucination, data leakage, and IP infringement categories.
+- [Armilla: Specialized AI Coverage](https://www.armilla.ai/brokers) — primary market evidence for affirmative AI liability and performance-warranty products backed by reinsurers including Swiss Re, Chaucer, Axis Capital, Greenlight Re, and Convex.
+- [Aon AI Fact Sheet 2026](https://assets.aon.com/-/media/files/aon/reports/2026/aon-ai-fact-sheet-2026.pdf) — broker-side map showing how copyright, discrimination, defamation, bodily injury, financial loss, cyber, and regulatory risks fit poorly or unevenly across traditional policy lines; useful for checking that the coverage gap is not only a startup marketing claim.
+
+**Counterargument / risk:** The market is young, vendors control much of the public evidence, policy wording and claims experience are mostly opaque, and correlated failures from a shared foundation model may be unpriceable. Insurance could become a procurement badge that covers narrow losses while excluding the failures buyers care about most. The thesis weakens if limits stay small, exclusions swallow autonomous-action risk, premiums do not respond to technical controls, or insurers retreat after early claims.
+
+**Draftability:** High, because it offers a specific professional-services angle, several live market examples, and a falsifiable prediction: within 12–18 months, enterprise agent procurement checklists should begin borrowing more from insurer-required telemetry and controls than from generic AI principles.
+
+**Two interview questions:**
+1. In consulting, have you seen insurance requirements quietly become a stronger technical standard than the official policy or regulation? What made companies take the insurer's checklist seriously?
+2. If an agent vendor showed you a $50 million coverage certificate, what exclusion or missing telemetry would you inspect before treating it as evidence of safety rather than sales collateral?
+
+**Suggested tags:** `ai`, `business`, `insurance`, `consulting`, `governance`
