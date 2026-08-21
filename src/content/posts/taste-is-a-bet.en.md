@@ -8,6 +8,7 @@ translationKey: taste-is-a-bet
 maturity: growing
 connections:
   linksTo: ["taste-is-judgment", "agent-coordination-debt"]
+  citedBy: ["decisiveness-is-not-a-skill"]
 definedTerm:
   term: "taste"
   pos: "n."
