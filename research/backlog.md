@@ -809,7 +809,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-05 — Chip design agents buy trust with physics, not permission
 
-**Status:** Interviewing since 2026-08-05
+**Status:** Killed 2026-08-21: PR #62 (`physics-not-permission`, downgraded Essay→Note on 2026-08-14) closed after exceeding the 14-day open-PR clock without being merged, and had drifted into a merge conflict with `main`. Superseded in effect by PR #104 (`verification-gate-needs-a-name`), an independently drafted note from the same interview covering the same accountability-vs-domain thesis, currently awaiting the Routine 03b editorial critic.
 
 **One-line thesis:** At DAC 2026, Synopsys, Cadence, and Siemens all pitched "fully autonomous" chip-design agents, but the actual trust mechanism none of them will ship without is a hard physics-verification gate — proof that irreversible, expensive failure is what forces real governance, not permission scopes or model quality.
 
