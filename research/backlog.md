@@ -863,7 +863,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-10 — Cloudflare's agent wallet proves an identity, not a conscience
 
-**Status:** Backlog
+**Status:** Drafted in `src/content/posts/wallet-is-not-a-conscience.en.md` and `src/content/posts/wallet-is-not-a-conscience.zh.md` on 2026-08-18
 
 **One-line thesis:** Cloudflare's new AI-agent wallet system fixes payment fraud and identity spoofing, but the industry is already treating "the agent has a verified identity and a spending cap" as if it also answers "can I trust what this agent does" — and the answer is no, for the same reason a scoped coding agent can still write a public hit piece.
 
@@ -943,3 +943,89 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 2. You said in the chip-design interview that you don't want to pretend to be a hardware expert. What's the version of this question you *do* have firsthand standing on: not "what should a factory agent be allowed to do," but "what happens in a company when nobody has decided that yet"?
 
 **Suggested tags:** `ai`, `robotics`, `business`, `management`
+
+## 2026-08-22 — The fastest way to automate a company is to record its workarounds
+
+**Status:** Backlog
+
+**One-line thesis:** As agents learn workflows from screenshots and input traces, the first process they automate may be the workaround employees invented rather than the process management thinks it owns.
+
+**Why this is interesting now:** An August 20 paper shows a system recovering interleaved tasks from passive computer-use traces and turning them into skills that improved held-out task accuracy by 30% over its strongest baseline. This is moving beyond academic workflow mining: current task-mining vendors already pitch desktop capture as the missing ground truth for agent automation. The under-synthesized risk is not only surveillance. A trace records what worked once, including shadow systems, policy evasions, and expert judgment that the interface never made explicit. Turning that trace into a reusable skill can harden an organizational workaround into software before anyone decides whether it should survive.
+
+**Potential author angle:** Contrast two consulting artifacts. A workshop produces the official process, cleaned up until everyone can sign it. A trace produces the embarrassing process that actually ships the work. The second is more useful to an agent, but it is not automatically more correct. The author can argue that trace-trained automation needs a deliberate step between observation and reuse: decide which exception is useful knowledge, which is debt, and which is a human judgment the company should not encode as a click sequence.
+
+**Author hook:** Extends the 2026-06-19 inbox spark about developers producing more code and more silos while the organization itself does not change, and the published coordination-debt thesis in [Cheap agents create coordination debt](../src/content/posts/agent-coordination-debt.en.md). Here the organization does not merely fail to absorb new work; the agent learns that failure as the workflow.
+
+**Evidence checked:**
+- [Inducing Task Models from Computer-Use Traces](https://arxiv.org/abs/2608.20319) — August 20 primary research. On controlled human and agent trajectories, Task Model Induction reports 0.974 agreement on interleaved-task grouping, reconstructs 74.9% of observed steps, and improves held-out task accuracy by 30% over the strongest baseline.
+- [HASH: Privacy-Preserving Process Mining](https://hash.ai/blog/privacy-preserving-process-mining) — operator account of capturing screenshots, window titles, and keystrokes locally, then extracting typed events on-device; it explicitly argues that traces reveal workarounds, rework loops, and informal handoffs that interviews miss.
+- [Patterns AI: Desktop process mining](https://processfinder.ai/learn/desktop-process-mining) — August 13 current product-market signal describing task capture across desktop and browser applications, with governance controls required before collection.
+- [Cracked Labs: Monitoring, Streamlining and Reorganizing Work with Digital Technology](https://crackedlabs.org/en/data-work/publications/processmining-algomanage) — older independent mechanism source documenting how process-mining data can become worker monitoring and automated management, not only workflow discovery.
+
+**Counterargument / risk:** The paper evaluates controlled trajectories, not a messy enterprise rollout, and symbolic task models can be audited before reuse. Privacy-preserving capture and team-level aggregation can also reduce surveillance risk. The thesis weakens if organizations consistently use traces only to discover candidate workflows, then require workers to validate the purpose, exceptions, and policy boundary before any skill ships. It is false if trace-derived skills fail to generalize outside the recorded UI path and remain less useful than ordinary process documentation.
+
+**Two interview questions:**
+1. In client work, what process looked clean in the workshop but depended on an ugly spreadsheet, private message, or expert workaround in practice?
+2. If an agent can learn that workaround by watching the screen, who should decide whether it becomes the official process: the worker, their manager, risk, or the person accountable for the outcome?
+
+**Draftability:** High, because one new paper supplies a concrete mechanism and the author's consulting experience can supply the missing distinction between useful tacit knowledge and organizational debt.
+
+**Suggested tags:** `ai`, `business`, `consulting`, `work`, `governance`
+
+## 2026-08-22 — In mixed human-AI code, authorship is the wrong unit of accountability
+
+**Status:** Backlog
+
+**One-line thesis:** Once a pull request mixes human edits, AI suggestions, automated scans, and human approval, asking who wrote the vulnerable line is less useful than asking who accepted the change and owned its safety claim.
+
+**Why this is interesting now:** Wiz disclosed on August 17 that its autonomous Red Agent found and exploited a Snowflake GitHub Actions injection five days after the vulnerable workflow went live. The story initially became “Copilot wrote a bug that another AI hacked.” Wiz then corrected the record: Copilot's documented edit was in another file in the same pull request, while GitHub Advanced Security had scanned the vulnerable workflow and missed it. The correction is the signal. Mixed authorship made a neat AI-versus-human story easy to tell and hard to prove, even with the public pull request in front of everyone.
+
+**Potential author angle:** Push the software conversation away from provenance theater. Fine-grained provenance can help debug a process, but it cannot carry accountability: a human can paste an AI suggestion, an agent can modify a human patch, and a scanner can approve both. The durable unit is the accepted change. A project should be able to say what security property it believed, which evidence supported that belief, and who owned the merge decision, regardless of whose keystrokes produced each line.
+
+**Author hook:** Extends [Pull requests are becoming knowledge imports](../src/content/posts/pull-requests-are-knowledge-imports.en.md). If the project must absorb the intent and risk of an outside contribution, the same rule should apply when the “outside” contributor is embedded inside the author's editor. This is also the disagreement-hunt candidate: it rejects the current framing fight over whether AI or a human “really wrote” the bug.
+
+**Evidence checked:**
+- [Wiz: Red Agent finds its way into Snowflake's internal Jira](https://www.wiz.io/blog/red-agent-snowflake-copilot-cicd-bug) — August 17 primary disclosure and correction. It documents the injection path, autonomous exploit adaptation, same-day remediation, and the updated statement that the vulnerable change's AI authorship is unclear.
+- [Snowflake connector PR #1218](https://github.com/snowflakedb/snowflake-connector-net/pull/1218) — primary repository record showing a human approval, Copilot co-authorship on a separate fix, an automated security review, and 83 of 87 checks passing before merge.
+- [Snowflake remediation PR #1402](https://github.com/snowflakedb/snowflake-connector-net/pull/1402) — primary record of the June 23 fix restoring the safer environment-variable and `jq --arg` pattern.
+- [ITPro: Wiz CTO clarifies Snowflake-GitHub Copilot flaw](https://www.itpro.com/security/wiz-cto-speaks-out-amid-confusion-over-snowflake-github-flaw-confusion) — August 19 near-primary account quoting Wiz CTO Ami Luttwak: the vulnerable lines were not created by Copilot, but the AI review scanned them and missed the flow.
+
+**Counterargument / risk:** Authorship still matters for debugging, vendor liability, training-data audits, and deciding which tools need stronger controls. The argument should not become “provenance is useless.” It is narrower: provenance does not tell you who owns an accepted system change. The thesis weakens if tooling develops reliable line-level derivation that predicts defects well enough to justify different review rules, and it is false if mixed-author changes can be cleanly decomposed into independent, attributable risk decisions in normal engineering practice.
+
+**Two interview questions:**
+1. When an AI-assisted change fails, what would you actually want to know first: who typed the line, what evidence reviewers saw, or who decided the evidence was enough?
+2. Have you seen a project where everyone could name the contributor but nobody could name the owner of the resulting behavior?
+
+**Draftability:** High, because the public incident contains the code, review history, correction, exploit, and fix, while the thesis makes a specific distinction between provenance and accountability.
+
+**Suggested tags:** `ai`, `software`, `security`, `governance`, `open-source`
+
+## 2026-08-22 — The first humanoid labor company may be an outsourcing firm with robot bodies
+
+**Status:** Backlog
+
+**One-line thesis:** When a humanoid is remotely supervised and sold by the work-hour, autonomy is a margin target rather than a launch prerequisite; the first product is managed labor delivered through a robot body.
+
+**Why this is interesting now:** German startup Nucleus came out of stealth in August claiming it had placed humanoids in an unnamed factory in under 90 days. It uses off-the-shelf Unitree G1 bodies, starts with intensive human supervision, bills for physical work rather than selling robots, and treats paid operating hours as training data. On August 19, Hexagon and Schaeffler announced a different version of the same bridge: a “humanoid gym” to train and validate robots before a planned rollout of at least 1,000 units. These are more revealing than another dexterity demo because they show the labor and business infrastructure between a robot arriving and a robot working alone.
+
+**Potential author angle:** Treat teleoperation as the business model, not an embarrassing prelude to the product. The customer gets work immediately; the vendor owns hardware, integration, remote intervention, and the data flywheel. That makes the key operating metric human intervention minutes per paid robot hour, not robots shipped or tasks demonstrated. If that ratio falls, autonomy expands margin. If it does not, the company remains a labor service with expensive bodies.
+
+**Author hook:** Directly extends the 2026-07-17 inbox spark about AI and software lifecycles for manufacturing and robotics customers, but does not repeat the active handoff-rule candidate. The handoff item asks when a factory agent should stop. This one asks who is doing the work before the stop becomes rare enough to call the system autonomous.
+
+**Evidence checked:**
+- [Nucleus Robotics](https://nucleuslab.ai/) — primary company positioning: “humanoid labor as an industrial commodity” and plug-and-play humanoid workers at scale.
+- [Melvin Schwarz: Nucleus factory deployment](https://de.linkedin.com/in/melvin-schwarz-9a5a5a164) — founder's primary launch account claiming deployment in under 90 days, productive work under human supervision, and real-world data flowing back into training.
+- [Robots Atlas: Nucleus deploys teleoperated humanoids](https://robotsatlas.com/posts/nucleus-wdraza-teleoperowane-humanoidy-do-fabryki-w-90-dni) — near-primary technical account identifying the Unitree G1 hardware, roughly three weeks of supervised operation, hourly billing, and the undisclosed autonomy ratio.
+- [Hexagon and Schaeffler: Towards factory deployment](https://hexagon.com/company/newsroom/press-releases/2026/towards-factory-deployment-how-aeon-is-trained-to-perform) — August 19 primary announcement of a Train-Validate-Deploy cycle at Schaeffler's Humanoid Gym ahead of a planned 1,000-unit AEON rollout.
+- [Association for Advancing Automation: NEURA CEO on humanoid gyms](https://www.automate.org/robotics/industry-insights/neura-robotics-ceo-on-bots-blockchain-and-humanoid-gyms) — July operator interview in which David Reger describes current humanoid work as pressing buttons, turning switches, and placing parts, then says the next proof is reliable 24/7 operation.
+- [Bloomberg interview via Yahoo Finance: Pace of physical AI development](https://finance.yahoo.com/video/pace-physical-ai-development-ridiculous-093334292.html) — August 14 current hype-side source for Reger's much broader claim that physical AI is moving at tremendous speed; useful contrast with his concrete description of today's work.
+
+**Counterargument / risk:** Nucleus's factory is unnamed, its autonomy share and intervention frequency are undisclosed, and every deployment claim remains company-supplied. A human-supervised robot may cost more than the labor it replaces, while remote access creates latency, security, safety, and worker-acceptance problems. The thesis is false if autonomy improves so quickly that teleoperation is only a brief commissioning step, or if customers refuse the data access and remote labor needed for the model to work.
+
+**Two interview questions:**
+1. If a factory pays by the hour for a humanoid that still needs a remote human, would you describe that purchase as automation, outsourcing, or something genuinely new?
+2. What number would make you believe the business is becoming autonomous: robots deployed, tasks completed, uptime, or human intervention minutes per paid hour?
+
+**Draftability:** High, if the piece stays explicit that Nucleus's deployment is unverified and uses the business-model inversion, not the vendor's autonomy claim, as its argument.
+
+**Suggested tags:** `ai`, `robotics`, `manufacturing`, `business`, `work`
