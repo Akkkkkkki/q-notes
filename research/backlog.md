@@ -529,6 +529,88 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 **Suggested tags:** `ai`, `business`, `consulting`, `software`
 
+## 2026-08-24 — AI review can preserve throughput while eroding apprenticeship
+
+**Status:** Backlog
+
+**One-line thesis:** If an AI review assistant saves no time, lowers defect detection, and weakens the learning effect of doing the review, putting it before a novice's independent judgment turns review from an apprenticeship loop into an anchoring loop.
+
+**Why this is interesting now:** An August 21 controlled crossover experiment with 34 novice requirements inspectors found that ChatGPT assistance produced about 8% lower smell-detection F1 on average, no significant time saving, and a smaller learning effect: participants who reviewed manually first improved about 12% on the second task, while those who used AI first improved about 6%. The study is deliberately narrow — students inspecting simple game requirements, with overlapping uncertainty intervals around the performance estimates — but that is what makes the mechanism worth isolating rather than inflating into another claim that “AI makes people worse.” The live question is whether assistance order matters: perhaps the dangerous interface is not AI review itself, but AI review shown before the human has formed a view.
+
+**Potential author angle:** The industry story says developers are moving from coders to orchestrators. But orchestration still requires people who can notice a bad requirement, weak assumption, or risky diff without first being told what to see. If teams maximize review throughput by letting AI lead every inspection, they may keep tickets moving while quietly removing the practice through which junior people become credible reviewers. The practical argument is narrow and testable: require an independent first pass for learning-critical review, then use AI as a second reader. Do not universalize that rule to every routine check.
+
+**Author hook:** The author's June 19 inbox spark asks what happens when AI makes software companies produce more code without changing their organizational shape, and [Pull requests are becoming knowledge imports](../src/content/posts/agent-prs-knowledge-imports.en.md) argues that accepting a change transfers ownership, not just code. This candidate adds the missing human-capability question: if review becomes the place where ownership transfers, does an AI-led review still train the person receiving it?
+
+**Evidence checked:**
+- [Human-AI Collaboration in Requirements Engineering: A Controlled Experiment on Quality, Efficiency, and Learning](https://arxiv.org/abs/2608.21298) — August 21 primary paper; 34 BSc students completed two requirements-inspection tasks in a crossover design. AI-assisted inspection averaged roughly 8% lower detection F1, did not significantly change completion time or classification quality, and was associated with a roughly 6% learning gain versus roughly 12% in the manual-first sequence. The paper's scope is novice inspectors and simple Arkanoid/Snake specifications, not experienced engineers in production.
+- [Rethinking Code Review Workflows with LLM Assistance](https://arxiv.org/abs/2505.16339) — older industrial field study at WirelessCar used as a counterweight: developers sometimes preferred AI-led review, but that preference depended on code familiarity and issue severity. It is qualitative evidence about workflow preference, not proof that AI-led review improves detection or learning.
+- [From coder to orchestrator: How agents shift the role of a developer](https://github.blog/developer-skills/career-growth/from-coder-to-orchestrator-how-agents-shift-the-role-of-a-developer/) — August 11 operator framing from GitHub: agentic development moves developers toward workflow design, deterministic checks, and human judgment. It supplies the timely claim this candidate stress-tests, not the causal evidence.
+
+**Counterargument / risk:** This is one small student experiment with simple requirements, not a field study of professional code review, and the 95% credible intervals around the performance estimates overlap. Experts may use AI without losing skill; novices may learn more from a well-designed tutor than from a chat assistant that supplies an answer; and a manual-first rule may impose real cost on low-risk work. The thesis is false if professional replications find that AI-first review preserves independent detection and learning, or if staged interfaces that ask for a human judgment before revealing AI advice remove the observed gap.
+
+**Two interview questions:**
+1. In teams producing software faster with AI, have you seen reviewers become more capable, or have you mainly seen more tickets move through the same number of people?
+2. Would you require junior reviewers to form an independent view before seeing AI feedback, and where would that rule stop being worth the delay?
+
+**Draftability:** High for a tight Note or Opinion. The mechanism and intervention are clear, but the evidence does not yet support a broad Essay about professional skill decay without an author example or a stronger field study.
+
+**Suggested tags:** `ai`, `software`, `management`, `education`
+
+## 2026-08-24 — Portable agent skills can standardize ambiguity
+
+**Status:** Backlog
+
+**One-line thesis:** Turning a natural-language procedure into a portable agent skill scales its hidden assumptions as efficiently as its expertise; it becomes software only when data dependencies, branches, constraints, and handoffs are explicit enough to inspect.
+
+**Why this is interesting now:** Agent Plugins 1.0 began packaging skills and tool integrations into portable, cross-client units in August. On August 21, the Artic paper reported that compiling natural-language workflows into explicit execution artifacts improved average task resolution by about 28 percentage points and cross-model and repeated-run consistency by about 32 and 56 points, respectively, across 488 instances in 11 domains. A July companion result, COVENANT, similarly treats workflow instructions as source programs and raises success from 50% to 83.33% on 120 cases. The timely tension is not whether reusable skills are useful. It is whether portability is arriving faster than a semantics layer that can expose what those skills read, write, assume, and transfer.
+
+**Potential author angle:** Disagree with the emerging operator shorthand that plain-language instructions are already reusable software. A written workflow often relies on invisible global state: who knows which customer exception applies, which intermediate artifact is authoritative, or when an ambiguous case must leave the happy path. Copying that text into more agents does not operationalize the knowledge; it multiplies the number of executions that can diverge in the same unobservable way. For consulting and software teams, the useful question is not “Can the agent follow this SOP?” but “What artifact would let another person inspect the state transition after each consequential step?”
+
+**Author hook:** [The best agent interface is a map, not a prompt](../src/content/posts/codebase-map-agent-interface.en.md) argues that structural artifacts beat clever instructions when agents must navigate a codebase. The June 19 inbox spark about AI increasing output without changing organizational silos provides the business analogue. This candidate joins them at the workflow layer: a process map is not documentation decoration; it is the interface that makes implicit state governable.
+
+**Evidence checked:**
+- [Natural-Language Workflows Are Not Software Yet](https://arxiv.org/abs/2608.21341) — August 21 primary Artic paper; compiles prose workflows into explicit artifacts for reads, writes, dependencies, constraints, and control transfers. Across 488 instances in 11 domains, it reports roughly +28 percentage points average task resolution, +32 points cross-model consistency, and +56 points repeated-run consistency versus the text baseline. Judgment-heavy cases remain unsolved, and the compiler itself relies on model generation plus dry-run validation.
+- [COVENANT: Compiling Natural-Language Workflows into Verifiable Agent Programs](https://arxiv.org/abs/2607.25400) — July 28 primary mechanism source; represents instructions as an abstract syntax tree and control-flow graph. Across 120 cases in seven workflows, reported success rises from 50% to 83.33% and misalignment falls from 42.5% to 15.83%.
+- [Agent Plugins 1.0 in VS Code, Copilot CLI, and the Copilot app](https://github.blog/changelog/2026-08-12-agent-plugins-1-0-in-vs-code-copilot-cli-and-the-copilot-app/) — August 12 primary product signal that skills and MCP integrations are becoming cross-client installable packages. It establishes why ambiguous procedures can now travel farther; it does not establish Artic's causal result.
+- [From coder to orchestrator: How agents shift the role of a developer](https://github.blog/developer-skills/career-growth/from-coder-to-orchestrator-how-agents-shift-the-role-of-a-developer/) — August 11 operator account explicitly distinguishes a prompt from a wired workflow with deterministic boundaries, useful as a practical counterexample to the strongest version of the “plain language is software” claim.
+
+**Counterargument / risk:** Low-risk, linear procedures may not need compilation; adding a formal artifact can cost more than occasional ambiguity. The compiler can also mistranslate the original domain intent while making the result look reassuringly structured, and both cited systems are research prototypes rather than evidence from long-lived production workflows. The thesis is false if raw skill text becomes reliably consistent across models and repeated production runs without explicit state and control artifacts, or if the artifact-creation and maintenance cost exceeds the failures it prevents.
+
+**Two interview questions:**
+1. What supposedly “documented” workflow have you seen fail because a crucial intermediate state, exception, or owner was still implicit?
+2. If you had to turn one consulting method into an agent workflow, which artifact or handoff would you make explicit first?
+
+**Draftability:** High. It has a current distribution shift, two primary mechanism sources, and a direct author bridge; the strongest form would still benefit from one firsthand workflow whose hidden state caused a real failure.
+
+**Suggested tags:** `ai`, `software`, `consulting`, `management`
+
+## 2026-08-24 — A supervisor can be weaker than the agent if its job is smaller
+
+**Status:** Backlog
+
+**One-line thesis:** Cheap agent oversight may come from shrinking the supervisor's decision — compare two concrete next actions and return control — rather than building a second agent capable of redoing the whole task.
+
+**Why this is interesting now:** An August 21 paper, COTA, trains a 0.5B-parameter model on paired continuations from the same agent state and uses it to rank alternative next actions. The advisor does not solve the task and its recommendation is non-binding: the original actor sees the comparison and replans. Across WebShop, ALFWorld, and tau3-Retail, three different actors improved in all nine combinations, with average online wall-clock overhead of 1.38x. The result makes a more specific claim than “small models can supervise large ones”: oversight works when the supervisory judgment is deliberately narrower and more checkable than the work itself.
+
+**Potential author angle:** Agent governance is often imagined as an expensive shadow organization — another frontier model reviewing everything the first one did. This result suggests a different design budget. Find the consequential local choice, generate a small set of alternatives, ask a specialized model only which is better, and let the capable actor retain execution. The distinction between advice and forced action matters: COTA's constructive, non-binding setup beats variants that make the advisor choose absolutely or force its preferred action. The author should resist turning this into an analogy about human managers; the defensible piece is about agent-system architecture.
+
+**Author hook:** [Helpful agents are an authorization bug](../src/content/posts/helpful-agents-authorization-bug.en.md) argues that capability should not imply authority, while [Agent teammates need merge traffic control](../src/content/posts/agent-prs-need-traffic-control.en.md) argues for explicit coordination. This candidate supplies a possible control primitive neither post had: a reviewer can constrain a local decision without holding the worker's full capability or taking over execution.
+
+**Evidence checked:**
+- [Don't Solve, Just Compare: Tiny Advisors for Runtime Intervention](https://arxiv.org/abs/2608.21027) — August 21 primary COTA paper. A Qwen2.5-0.5B comparator improves three actors across WebShop, ALFWorld, and tau3-Retail in all nine tested combinations; average online wall-clock overhead is 1.38x. On 500 WebShop tasks, actor-only success is 18.2% versus 27.8% with COTA, but the run uses about 36M actor tokens plus 97M advisor tokens and the offline branch-generation/training cost reaches 81.36 H200 hours.
+- [Accurate Failure Prediction in Agentic AI](https://arxiv.org/abs/2602.03338) — older primary boundary condition: a critic with high failure-prediction accuracy can still damage an actor, including a reported 26-point collapse in one setting. Detecting a likely error is not the same as designing an intervention that improves the next action.
+- [Asymmetric Actor-Critic for Agentic Systems](https://arxiv.org/abs/2604.00304) — April mechanism source showing a smaller open-source critic supervising a stronger proprietary actor on tau-bench and UserBench, consistent with a generation-verification asymmetry but using a broader critic role than COTA's pairwise comparison.
+
+**Counterargument / risk:** “Tiny” does not mean cheap end to end. COTA pays for multiple sampled branches, substantially more advisor than actor tokens in WebShop, and offline training; its comparator cannot select an option that was never generated. The evidence is limited to three simulator-style environments and may fail under distribution shift or in open-ended code and consulting work. The thesis is false if generating diverse alternatives dominates the economics, if pairwise preference stops tracking long-horizon outcomes, or if actors routinely ignore sound non-binding advice.
+
+**Two interview questions:**
+1. Which decision in an agent workflow you actually use could be reduced to “is this next action better than that one?” without asking the reviewer to redo the task?
+2. Does non-binding advice feel like a real control to you, or merely another suggestion the agent may ignore when the stakes are high?
+
+**Draftability:** Medium-High. The mechanism is sharp and well bounded, but it needs one author-owned workflow example before it becomes more than an unusually good paper note.
+
+**Suggested tags:** `ai`, `software`, `agents`, `governance`
+
 ## 2026-07-03 — Clean setup is becoming the new supply-chain attack
 
 **Status:** Expired (2026-08-05)
