@@ -1,13 +1,11 @@
 ---
-title: "Cheap to reverse isn't the same as cheap to be wrong"
+title: "Verification gates are theater until someone can be fired for skipping one"
 date: 2026-08-20
-excerpt: "Hardware got a real verification gate at DAC 2026 because a bad tapeout is expensive to reverse. Software didn't — not because its failures are cheaper. One possibility: usually nobody's on the hook when the check gets skipped."
+excerpt: "A verification gate is theater until someone can actually get fired for skipping it. Everything else — the checklist, the sign-off field, the \"please review this\" — is decoration around that one fact."
 tags: ["ai", "software", "engineering", "note"]
 lang: en
 translationKey: verification-gate-needs-a-name
 maturity: seedling
-connections:
-  linksTo: ["helpful-agents-authorization-bug"]
 sources:
   - label: "news.siemens.com"
     title: "Siemens advances self-verifying agentic AI workflows for semiconductor and PCB design"
@@ -17,14 +15,10 @@ sources:
     url: "https://news.synopsys.com/2026-07-26-Synopsys-Showcases-Comprehensive-Autonomous-Engineering-Workflows-from-Silicon-to-Systems,-Developed-with-NVIDIA-Technology"
 ---
 
+In late July, Synopsys, Cadence, and Siemens all showed up at DAC with agentic chip-design tools built on NVIDIA's stack, and landed on the same idea within days of each other: no agent decision proceeds until Calibre or Questa One physics verification returns a pass. I don't know semiconductors, manufacturing, or hardware well enough to say whether that gate holds up in practice, and I'm not going to pretend otherwise here. What I do know is a version of the same problem from software, and it comes down to one line: a verification gate is theater until someone actually gets fired for skipping it.
+
 A colleague on my team turned in some work, said upfront that they'd used AI on it, and asked us to review it before we used it. That admission was enough to start a real argument: how much review does a sentence like that actually earn? Nobody on the team had a rule for it. We were making one up in the room, and it looked a lot like watching someone quietly avoid owning a decision they'd rather leave to "the process."
 
-Here's what I took from that argument, and I still think it's the whole thesis: a verification gate is theater until someone actually gets fired for skipping it. The checklist, the sign-off field, the "please review this" are decoration around that one fact.
+The checklist, the sign-off field, the "please review this" are decoration around whatever the real rule turns out to be. I've watched what happens without one. An unverified, AI-written codebase turned into a disastrously messy, entangled myth in about two and a half months. Reverting a single change was trivial the whole time. Undoing the mess that had built up around all of them wasn't, because there was no one commit that caused it, and no one whose job it was to notice before it compounded.
 
-In late July, Synopsys, Cadence, and Siemens all showed up at DAC with agentic chip-design tools built on NVIDIA's stack, and landed on the same idea within days of each other. Siemens' agents don't get to act until Calibre or Questa One physics verification returns a pass. No exceptions. I don't know semiconductors, manufacturing, or hardware well enough to tell you whether that gate holds up in practice or turns into a compliance checkbox once customers actually use it, and I'm not going to pretend otherwise here. But it's tempting to draw a conclusion from the outside anyway: hardware got a real gate because a bad tapeout is catastrophically expensive to reverse, and software never will, because reverting code is basically free.
-
-I don't think software failure is any cheaper than hardware. Reversing the commit was never the actual stakes. What the failure touches is. I've watched an unverified, AI-written codebase turn into a disastrously messy, entangled myth in about two and a half months. Reverting a single change is trivial; undoing an emergent mess like that isn't, because there's no one commit that caused it. That's just wasted engineering time. Plenty of software failures aren't reversible in any sense that matters at all: the ones that hit security, privacy, somebody's safety. `git revert` doesn't undo those any more than it undoes a bad chip.
-
-One possibility: what actually predicts whether a check is real, in hardware or software, isn't the domain at all. It's whether skipping it would cost someone specifically named. Physics verification, at least in how Siemens describes it, returns a pass or a fail. I don't know hardware well enough to say whether judgment sneaks in somewhere upstream of that — configuring the check, deciding what counts as a pass, what happens after a fail. Software's stakes are diffuse and easy to argue away right up until the day they aren't, which might be exactly why the software version of this stays informal instead of disappearing.
-
-I don't expect most software to ever get an explicit, hardware-style verification gate. But some version of it already exists, quietly, wherever a specific person would actually answer for the failure. It just never gets called a gate, so nobody outside that team ever sees it as one.
+That's what "theater until someone gets fired" cashes out to in practice. Not that the checklist is fake. That nobody's actually on the hook for what it's supposed to catch, until the day someone finally is.
