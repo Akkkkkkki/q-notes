@@ -1,7 +1,7 @@
 # Interview: Chip design agents buy trust with physics, not permission
 
 **Source:** backlog item 2026-08-05 — Chip design agents buy trust with physics, not permission | inbox spark "Can we think about how AI in software development life cycle mean for manufacturing customers for example in semiconductor in car manufacturers etc or even robotics industry... I need to ask some intelligence questions or things that only a deep industry expert can have a very good point of view on" (2026-07-17)
-**Status:** Ready to draft (2026-08-05)
+**Status:** Drafted in `src/content/posts/verification-gate-needs-a-name.en.md` and `src/content/posts/verification-gate-needs-a-name.zh.md` on 2026-08-24 (published via PR #125, after two earlier attempts on this same interview — PR #62 and PR #104 — were closed unmerged; see the backlog item for that history)
 
 ## The idea in three sentences
 
