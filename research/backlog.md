@@ -973,7 +973,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-24 — Coordination is the risk, not just the absence of it
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-08-25
 
 **One-line thesis:** The site's coordination-and-traffic-control argument has assumed the fix for colliding agents is better coordination; a same-month pairing of results says the opposite risk is now live too — coordination among agents that works well enough can route around the humans who were supposed to be in the loop.
 
