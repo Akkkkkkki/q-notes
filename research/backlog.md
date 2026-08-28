@@ -1023,3 +1023,85 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** High, because it is a same-day, primary, numeric result that lets the author test rather than merely assert the coordination-over-capability thesis.
 
 **Suggested tags:** `ai`, `business`, `consulting`, `software`
+
+## 2026-08-28 — The first patch is only a price check if you can throw it away
+
+**Status:** Backlog
+
+**One-line thesis:** Coding agents make a trial patch cheap enough to use as evidence in a scope debate, but that only improves decisions in organizations that can reject and delete the artifact; where every prototype acquires an owner, an audience, and sunk-cost pressure, "just try it" turns uncertainty into software inventory faster than the company can govern it.
+
+**Why this is interesting now:** GitHub's July 17 operator essay makes the smart case that a constrained agent patch can replace days of abstract scope debate with a concrete price check. Two fresh enterprise cases make that mechanism real at much larger scale: Asana says agents compressed a five-year test migration into two weeks, while loveholidays says non-engineers built more than ten customer-experience prototypes and promoted at least three to production. The under-synthesized question is what happened to the prototypes that did not ship — a count neither company reports and an outcome neither source describes. Cheap experiments are only cheap when rejection, deletion, and long-term ownership are designed as deliberately as generation.
+
+**Potential author angle:** This is a direct way to turn the author's June 19 firsthand spark into a disagreement rather than another "AI creates tech debt" essay. The author's companies had excellent developers and valuable proofs of concept, yet code volume, silos, conflict, and CTO frustration rose because the organization had no matching mechanism for deciding what should survive. The sharp claim is that AI doesn't merely move implementation cost down; it moves portfolio governance downstream, where most companies are weakest.
+
+**Author hook:** Anchored to the 2026-06-19 inbox spark about software companies producing high-value proofs of concept and millions of lines of code while the org shape stayed fixed, leaving CTOs unable to see progress and special engineering teams in conflict with the rest of the company. Self-novelty caveat for the interview and critic stages: that spark has already been used once, quoted near-verbatim in the published `agent-coordination-debt` essay (2026-06-26), so this candidate has to earn a second use by adding the rejection/ownership mechanism rather than restating the original observation.
+
+**Evidence checked:**
+- [GitHub — The cost of saying yes has changed](https://github.blog/engineering/the-cost-of-saying-yes-has-changed/) — July 17 operator argument from a Copilot Agent Control Plane engineer: use a constrained first patch as a probe, then decide whether a human can validate and own it; explicitly distinguishes cheap generation from cheap ownership.
+- [OpenAI / Asana — Asana cleared 5 years of engineering work in 2 weeks with Codex](https://openai.com/index/asana/) — August 18 primary customer account: an Enzyme migration estimated at roughly five years and $6 million was completed in two calendar weeks for about $12,000 in model and infrastructure cost, with an engineer checking progress twice daily and reviewing every proposed change.
+- [OpenAI / loveholidays — How loveholidays is making everyone a builder with Codex](https://openai.com/index/loveholidays/) — August 26 primary customer account: non-engineers produced more than ten search experiences through a guarded playground, at least three reached the live site, AI-assisted changes rose from 7% to 79%, and deployment frequency rose 73% with flat engineering headcount. The account does not say what became of the prototypes that did not reach production.
+- [Idea inbox, 2026-06-19](./inbox.md) — current author-owned firsthand observation supplying the missing failure case: faster proofs of concept without a changed organization produced more code, silos, and conflict rather than visible progress.
+
+**Counterargument / risk:** GitHub's argument already says the first patch is not the product, and loveholidays' shared design system, validations, and gated playground may show that healthy organizations can keep trials bounded without a disposal problem. The negative mechanism currently rests on the author's firsthand cases rather than a measured cross-company study, and the retention question above is genuinely open rather than evidence of waste. The thesis is false if higher AI-assisted experiment volume does not raise abandoned-code, support, or ownership costs after controlling for release gates, or if organizations routinely delete rejected trials without creating political or technical inventory.
+
+**Two interview questions:**
+1. In the companies from your June note, what happened to a proof of concept after the demo: who could kill it, who became responsible for it, and what made deletion harder than creation?
+2. GitHub's strongest version of the argument is "generate a bounded diff so people can decide from evidence instead of estimates." Where exactly does that work in your experience, and where does the artifact itself start lobbying to be kept?
+
+**Draftability:** High, because it has a current, credible argument to disagree with, two concrete positive cases, and an author-owned negative mechanism that can make the piece more than generic technical-debt commentary.
+
+**Suggested tags:** `ai`, `software`, `business`, `management`
+
+## 2026-08-28 — A smooth AI workflow can be a failed collaboration
+
+**Status:** Backlog
+
+**One-line thesis:** In consequential work, friction is often the moment a human clarifies intent, challenges the model, and takes responsibility; optimizing agents for frictionless completion can remove the only part of the workflow that was keeping the human meaningfully in control.
+
+**Why this is interesting now:** A Stanford-led study submitted August 21 analyzed 249,834 privacy-preserved Claude conversations and found that 56% of actionable tasks were consequential or higher-stakes. Friction appeared in 49.7% of conversations, but users tried to recover in 78.7% of those cases, and challenging the model's reasoning was productive 81.5% of the time. High-stakes conversations also lasted nearly twice as long as ephemeral ones. Anthropic published the independent study on August 26 just as enterprise agent products are selling the opposite ideal: fewer turns between request and execution. An August Ai2 tutoring study supplies the same mechanism in a controlled domain — models told only to "tutor well" over-helped and cut short the student's productive struggle.
+
+**Potential author angle:** Do not romanticize hallucinations, broken tools, or approval theater. Separate wasteful friction from *decision friction*: the pause created by ambiguity, disagreement, or an irreversible choice, where a human has to explain what they mean and what tradeoff they accept. The uncomfortable product claim is that an agent can become easier to use while the collaboration becomes worse. A useful enterprise interface should measure whether a pause improved the decision, not merely how many pauses it removed.
+
+**Author hook:** Extends the current author-owned 2026-08-11 inbox position that a model can state a recommendation but cannot become the responsibility-bearing signer. It also gives a narrower research mechanism to the published [Wallet is not a conscience](../src/content/posts/wallet-is-not-a-conscience.en.md): permissions can prove an action was allowed, while a moment of productive disagreement may be what reveals whether it was actually intended.
+
+**Evidence checked:**
+- [Human-AI Collaboration at Scale: Task Criticality, Agency, and Friction Across 250,000 Conversations](https://www.alphaxiv.org/abs/2608.human-ai-collaboration-at-scalev1) — August 21 primary paper based on 249,834 real conversations; reports the criticality, friction, recovery, and productive-challenge rates above, while explicitly treating the results as observational rather than causal.
+- [Anthropic: Enabling independent research on how people use Claude](https://www.anthropic.com/research/enabling-independent-research) — August 26 primary lab release describing the privacy-preserving data-access program, the external researchers' limited review constraints, and the high-level finding that friction often helped users clarify intent or stay engaged.
+- [Ai2: TutorMoments](https://allenai.org/blog/tutormoments) — August 7 primary research release built from 462 real tutoring transcripts and more than 1,500 teacher-annotated decision points; models tended to over-scaffold unless the help-versus-rigor tradeoff was made explicit, and prompting did not close the gap to human tutors.
+
+**Counterargument / risk:** The large conversation study relies on model-based classification of private interactions and cannot show that friction caused better outcomes; users may simply tolerate more turns on harder tasks. Most friction is still a defect, and deliberately slowing routine or reversible work would destroy real value. The thesis is false if well-designed low-friction agent interfaces preserve or improve error detection, intent clarity, learning, and accountable human decisions without inserting explicit pauses.
+
+**Two interview questions:**
+1. In a client or software decision, what kind of awkward back-and-forth has actually exposed a hidden assumption and changed the outcome — and what kind was merely process waste?
+2. If you could force an enterprise agent to create friction at only one moment, would it be before an irreversible action, when confidence is low, when teams disagree, or somewhere else?
+
+**Draftability:** High, because the current real-world data supplies a specific mechanism and the author can test it against firsthand consulting decisions without turning it into a generic "humans in the loop" essay.
+
+**Suggested tags:** `ai`, `business`, `consulting`, `product-design`
+
+## 2026-08-28 — A robot that scores worse can be the more capable system
+
+**Status:** Backlog
+
+**One-line thesis:** In physical AI, model capability is bounded by the machine's clock: a lower-success policy that fits onboard memory and produces actions before the current motion ends can be more deployable than a smarter model that misses the control loop.
+
+**Why this is interesting now:** NVIDIA's August 19 on-device robot-control release makes the tradeoff unusually concrete. Its 4B Edge policy scores 22.9% across 120 closed-loop manipulation tasks versus 36.8% for the larger Nano variant, yet it fits on the robot and generates a 2.13-second action chunk in about 1.53 seconds, allowing continuous motion without a data-center GPU. On August 26, Arm separately argued that larger models can improve task performance while increasing memory, bandwidth, scheduling, and runtime-control pressure across systems where motor control, perception, planning, and safety all run at different rates. The early signal is that robotics needs a system Pareto frontier, not a single model leaderboard.
+
+**Potential author angle:** This answers the author's manufacturing/robotics curiosity without pretending to supply robotics-domain judgment. The useful bridge from software is narrower: software agents can wait, retry, or buy more cloud compute; a moving machine has deadlines set by its body and environment. The essay-worthy claim is that "smarter" stops being a scalar once inference competes with control and safety for finite time and hardware.
+
+**Author hook:** Connects to the 2026-07-17 inbox spark asking what AI in the software-development lifecycle means for manufacturing, automotive, and robotics. The chip-design note that spark already produced (`verification-gate-needs-a-name`) deliberately stayed on the software half and left the manufacturing/robotics half unanswered, so this is a second, non-duplicative use of it. The spark also asks for questions only a deep industry expert can answer: treat that as a domain boundary — interview the author for the software-to-physical-system comparison, and seek an operator for any stronger deployment claim.
+
+**Evidence checked:**
+- [NVIDIA — Post-Train Cosmos 3 Edge for On-Device Robot Control](https://developer.nvidia.com/blog/post-train-nvidia-cosmos-3-edge-for-on-device-robot-control/) — August 19 primary technical tutorial: 4B policy, about 9 GB in BF16, 1.53-second inference for a roughly 2.13-second action chunk, 22.9% closed-loop success across 120 tasks, compared with 36.8% for the larger Nano variant; also discloses roughly 17,400 GB200-hours for the validated post-training run.
+- [Arm — Building the systems behind the next generation of intelligent robots](https://newsroom.arm.com/blog/robotics-systems-physical-ai) — August 26 primary systems argument explaining concurrent workloads with different timing and isolation needs, and how a larger model or richer world model raises memory, bandwidth, scheduling, and runtime-control demands.
+- [Arm — The missing science of robotic systems](https://www.arm.com/resources/white-paper/missing-science-of-robotic-systems) — accompanying technical-paper page framing robotics as an integration-centric discipline across perception, reasoning, planning, control, safety, heterogeneous compute, and memory systems.
+
+**Counterargument / risk:** Both sources sell hardware platforms, NVIDIA's result is a simulation benchmark rather than a field deployment, and 22.9% success is far below commercial reliability for most tasks. The Edge/Nano comparison may reflect a temporary hardware constraint that disappears with faster accelerators, better quantization, or better policy architecture. The thesis is false if higher model-level task success consistently dominates end-to-end robot outcomes once latency, power, safety isolation, and onboard cost are included, or if cloud/edge offload makes deadline misses negligible in the intended environments.
+
+**Two interview questions:**
+1. From your software background, which engineering instinct becomes most dangerous when carried into robotics: optimizing the smartest component, assuming retries are cheap, or treating latency as a performance metric rather than a correctness condition?
+2. What would you need to hear from a robotics or automotive operator before you were willing to say publicly that a lower benchmark score can represent a better real-world system?
+
+**Draftability:** Medium-High, because the current numbers expose a memorable mechanism and fit the author's stated curiosity, but the 22.9% result cannot carry a broad deployment claim without an industry interview or a second real-world case.
+
+**Suggested tags:** `ai`, `robotics`, `manufacturing`, `systems`
