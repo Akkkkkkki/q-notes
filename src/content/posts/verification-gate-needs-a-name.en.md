@@ -15,6 +15,9 @@ sources:
   - label: "news.synopsys.com"
     title: "Synopsys Showcases Comprehensive Autonomous Engineering Workflows from Silicon to Systems, Developed with NVIDIA Technology"
     url: "https://news.synopsys.com/2026-07-26-Synopsys-Showcases-Comprehensive-Autonomous-Engineering-Workflows-from-Silicon-to-Systems,-Developed-with-NVIDIA-Technology"
+  - label: "futurumgroup.com"
+    title: "Synopsys, Cadence, and Siemens Take Agentic Chip Design Autonomous at DAC"
+    url: "https://futurumgroup.com/insights/synopsys-cadence-and-siemens-take-agentic-chip-design-autonomous-at-dac/"
 ---
 
 In late July, Synopsys, Cadence, and Siemens all showed agentic chip-design workflows built on NVIDIA's stack. Siemens describes a hard gate inside its own workflow: its agents must clear Calibre or Questa One physics verification before proceeding. I don't know semiconductors, manufacturing, or hardware well enough to say whether that gate holds up in practice, and I'm not going to pretend otherwise here. What I do know is a version of the same problem from software, and it comes down to one line: a verification gate is theater until someone actually gets fired for skipping it.
