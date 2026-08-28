@@ -1023,3 +1023,85 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** High, because it is a same-day, primary, numeric result that lets the author test rather than merely assert the coordination-over-capability thesis.
 
 **Suggested tags:** `ai`, `business`, `consulting`, `software`
+
+## 2026-08-28 — Critical thinking is useless if the rubric pays for convergence
+
+**Status:** Backlog
+
+**One-line thesis:** AI is exposing a more embarrassing education and management problem than cheating: standard evaluation systems can reward polished, conventional answers while failing to pay for causal reasoning, falsifiability, or an idea nobody else had.
+
+**Why this is interesting now:** An August 27 randomized experiment with 1,053 first-year university students separated access to ChatGPT from a short causal-reasoning intervention. ChatGPT raised scores by 0.86 on a five-point rubric and made novice recommendations look more like experts'. Causal training instead increased mechanism identification by roughly 0.5 standard deviations, falsification logic by roughly 0.8, and the diversity of ideas — yet did not improve rubric scores. The paper's own decomposition is the uncomfortable signal: evaluators rewarded richer conventional answers but penalized departures from the typical solution space. A competent AI can now make the mismatch between what institutions say they value and what their rubrics actually buy impossible to ignore.
+
+**Potential author angle:** Push beyond the familiar "schools need new assessments" line. The sharper claim is that critical thinking will not become scarce and valuable merely because AI makes polished output cheap; it becomes valuable only when an institution changes who gets promoted, funded, hired, or graded for using it. In consulting, a junior who produces the polished consensus deck may still score better than one who identifies why the recommended mechanism will fail. AI did not create that incentive. It made the old incentive cheaper to satisfy.
+
+**Author hook:** Extends [Decisiveness isn't a skill, it's a pricing problem](../src/content/posts/decisiveness-is-not-a-skill.en.md): a supposedly scarce human capability does not matter commercially or institutionally until the evaluation system pays for it. It also gives the author's distinction in [Taste is a bet](../src/content/posts/taste-is-a-bet.en.md) a concrete test — a rubric built around existing expert answers is structurally unable to reward a good call whose standard has not formed yet.
+
+**Evidence checked:**
+- [Training novices to think, or giving them LLMs? Evidence from an RCT](https://cdn.openai.com/pdf/novices-and-llm-august-2026.pdf) — August 2026 primary paper; preregistered 2x2 classroom experiment with 1,053 students. It reports the separate effects above and finds that falsifiability and mechanism identification were negatively related to the standard evaluation score.
+- [OpenAI summary of the Bocconi experiment](https://openai.com/index/what-students-gain-from-chatgpt-critical-thinking-training/) — August 27 primary release confirming the randomization, five-point human rubric, near-one-point ChatGPT gain, and the mismatch between idea diversity and what the rubric captured.
+- [TutorMoments: Do AI tutors know when to help and when to hold back?](https://allenai.org/blog/tutormoments) — August 7 primary Ai2 release based on 462 real tutoring transcripts and more than 1,500 teacher-annotated decision points; models told only to "tutor well" tended to over-help, supporting the mechanism that helpful output and human learning can point in different directions.
+
+**Counterargument / risk:** This was one marketing case at one university, evaluated against two fixed goals. A conventional rubric may be appropriate when the task really does have a conventional answer, and the combined ChatGPT-plus-causal-training group retained benefits from both treatments. The thesis is false as a general claim if more varied domains show that mechanism-based, falsifiable, unusual work is consistently rewarded in real hiring, promotion, investment, or client outcomes even when classroom rubrics miss it.
+
+**Two interview questions:**
+1. Where have you seen a consulting, hiring, or performance-review rubric reward a polished answer everyone recognizes while punishing the person who asks whether the mechanism is wrong?
+2. If you could change one evaluation rule for junior consultants or AI-assisted knowledge workers, what observable behavior would you pay for instead of output polish?
+
+**Draftability:** High, because the randomized result supplies a crisp mechanism and the author's existing pricing argument supplies a non-generic angle beyond another education-policy piece.
+
+**Suggested tags:** `ai`, `education`, `consulting`, `business`
+
+## 2026-08-28 — AI productivity is easiest to measure where it hurts
+
+**Status:** Backlog
+
+**One-line thesis:** The first hard evidence of an AI productivity boom may be infrastructure strain rather than business value: vendors can count tokens, commits, and agent runs immediately, while nobody can yet tell whether the extra work deserved to exist.
+
+**Why this is interesting now:** GitHub's August 20 outage post says monthly commits doubled from 1.4 billion in April to 2.9 billion in August, completed Actions runs rose above 100 million, and the company added more than three million CPU cores plus 120 petabytes of high-speed storage — yet a traffic peak still contributed to a 7-hour-47-minute outage. A Copilot client retry loop then amplified load during recovery. Eight days earlier, OpenAI called the 8.3x gap in output tokens per active user between its highest-usage and typical enterprise customers a "frontier gap." Read together, the numbers prove that much more machine-mediated work is being produced and transported. They do not prove that organizations are absorbing proportionally more value.
+
+**Potential author angle:** Make this a disagreement with the industry's easiest measurement habit, not a claim that AI causes GitHub outages. Tokens, commits, pull requests, and Actions runs are load metrics. They become productivity metrics only after someone connects them to accepted changes, fewer defects, shorter durable cycle times, or revenue. The infrastructure sees cheap action first because it has to process every attempt, retry, abandoned branch, and generated test. That makes capacity pressure a useful leading indicator of AI adoption and a terrible proxy for progress.
+
+**Author hook:** Directly anchors to the 2026-06-19 inbox spark: the author saw software companies accumulate millions of lines of code, silos, and technical debt while executives saw little progress and developers felt more productive than ever. It also stress-tests [Cheap agent action creates expensive coordination debt](../src/content/posts/agent-coordination-debt.en.md) with fresh platform-scale numbers rather than another team anecdote. This is the disagreement-hunt candidate: OpenAI presents output-token intensity as evidence of frontier adoption; the author has firsthand reason to ask whether it instead measures how much new coordination demand a company has created.
+
+**Evidence checked:**
+- [GitHub: The August 17 outage, and the work ahead](https://github.blog/news-insights/company-news/the-august-17-outage-and-the-work-ahead/) — August 20 primary post documenting the 7-hour-47-minute outage, April-to-August commit growth from 1.4 billion to 2.9 billion per month, capacity additions, and the Copilot retry loop that increased recovery traffic.
+- [GitHub Status root-cause report](https://www.githubstatus.com/incidents/zkxwbgr0cnmx) — primary incident timeline corroborating the affected services and recovery sequence.
+- [OpenAI: From assistance to execution](https://openai.com/index/how-enterprises-put-ai-to-work/) — August 12 primary release based on more than 10 million enterprise messages; defines "frontier firms" by output tokens per active user and reports an 8.3x intensity gap, up from 2.6x in January.
+- [OpenAI: The full stack behind abundant intelligence](https://openai.com/index/the-full-stack-behind-abundant-intelligence/) — August 25 primary company post explicitly invokes Jevons paradox: cheaper useful intelligence should expand consumption, reinforcing the interpretation that infrastructure demand can rise even as per-task inference becomes more efficient.
+
+**Counterargument / risk:** GitHub does not attribute the commit surge or capacity failure to AI, so any causal claim that agents drove the outage would be unsupported and must be cut. More commits and tokens can accompany real customer value, while an infrastructure company should scale for legitimate growth regardless of source. The thesis is false if accepted-change rates, defect-adjusted delivery speed, and business outcomes rise in step with these volume metrics, or if the volume growth turns out to be mostly unrelated to AI-assisted work.
+
+**Two interview questions:**
+1. In the software companies you visited, what metric made developers feel dramatically more productive, and what metric made leadership conclude that progress had barely moved?
+2. What would you count as the smallest honest unit of AI-assisted software progress: an accepted change after 30 days, a retired manual process, customer behavior, or something else?
+
+**Draftability:** High, because the author has firsthand material for the gap and the current platform data makes the tension concrete without pretending traffic is value.
+
+**Suggested tags:** `ai`, `software`, `business`, `infrastructure`
+
+## 2026-08-28 — The AI drug-discovery moat is a graveyard of failed experiments
+
+**Status:** Backlog
+
+**One-line thesis:** As agents make plausible molecules cheap, the compounding asset in drug discovery may become the private record of what failed in the wet lab, with enough context to stop the next agent from paying to fail the same way.
+
+**Why this is interesting now:** Anthropic reported on August 18 that Claude autonomously produced 1,320 protein-binder designs and external labs confirmed 354 binders across 14 of 15 targets, with 22.6% to 35.1% hit rates versus a cited 10-15% typical range. The computational campaigns ran for 24-48 hours; Anthropic still notes that physical validation takes weeks. The next day, Sanofi and AWS described a production "lab-in-the-loop" system built around more than 20 petabytes of scientific data, including experiment history, lineage, failed approaches, and parallel work. Sanofi's stated target is not simply more generated molecules: it is 50% fewer molecules sent to scarce wet-lab validation while improving hit quality.
+
+**Potential author angle:** Avoid another "AI accelerates drug discovery" summary. The sharper business claim is that cheap hypothesis generation raises the value of negative physical evidence. A successful molecule can be published or copied; a well-contextualized graveyard of failed candidates tells an organization which attractive paths not to fund again. That looks less like a model moat than institutional memory with assay metadata, lineage, and closed-loop routing — the same kind of unglamorous organizational asset that AI transformation decks routinely omit.
+
+**Author hook:** Extends the author's consulting argument in [The real AI bottleneck is not intelligence. It is coordination.](../src/content/posts/consulting-coordination.en.md): institutional memory is only valuable when it changes the next workflow. It also offers a science-domain version of the 2026-06-19 inbox concern about organizations producing more artifacts without absorbing what previous work should have taught them.
+
+**Evidence checked:**
+- [Anthropic: How Claude is accelerating protein design and analytical chemistry](https://www.anthropic.com/research/Claude-accelerates-protein-design) — August 18 primary result with external wet-lab testing by Adaptyv Bio and Twist Bioscience; reports 1,320 designs, 354 confirmed binders, 14 of 15 targets, hit rates, compute budgets, and the remaining weeks-long physical-validation cycle. Anthropic also released prompts and experimental data.
+- [AWS and Sanofi: Enterprise lab-in-the-loop](https://aws.amazon.com/blogs/industries/enterprise-lab-in-the-loop-on-aws-how-sanofi-is-compressing-drug-discovery-from-years-to-weeks/) — August 19 near-primary operator account of Sanofi's SWEL system; says agents otherwise lack awareness of prior experiments, failed approaches, and parallel work, and documents the 20-petabyte contextual data layer plus the goal of halving molecules that require wet-lab validation.
+- [Bio-IT World: As AI reshapes drug discovery, the lab remains the bottleneck](https://www.bio-itworld.com/news/2026/06/09/as-ai-reshapes-drug-discovery-the-lab-remains-the-bottleneck) — older operator-focused mechanism source quoting Novartis computational-discovery leadership on biology and physical validation remaining the wall after faster in-silico generation.
+
+**Counterargument / risk:** Anthropic's campaign is evidence against the strongest version of this thesis: it achieved unusually high hit rates using public tools and benchmark targets without Sanofi's private experimental memory. Sanofi's 50% reduction is an aspiration in a co-marketing post, not a measured outcome, and failed experiments are often noisy, target-specific, or poorly documented rather than reusable gold. The thesis is false if general models keep improving hit rates on genuinely novel targets without private closed-loop data, or if standardized public wet-lab datasets erase most of the advantage of proprietary failure history.
+
+**Two interview questions:**
+1. In consulting or software work, when has a client's record of failed attempts been more valuable than its library of successful templates — and what made that failure history usable rather than anecdotal?
+2. Is "the graveyard of failed experiments" a real data moat, or just a flattering name for the documentation debt large organizations already fail to manage?
+
+**Draftability:** Medium-High, because the mechanism and numbers are strong, but the author should keep the claim at the organizational-memory level rather than pretend to have drug-discovery expertise.
+
+**Suggested tags:** `ai`, `science`, `business`, `biotech`
