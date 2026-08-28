@@ -1023,3 +1023,85 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** High, because it is a same-day, primary, numeric result that lets the author test rather than merely assert the coordination-over-capability thesis.
 
 **Suggested tags:** `ai`, `business`, `consulting`, `software`
+
+## 2026-08-28 — The first patch is only a price check if you can throw it away
+
+**Status:** Backlog
+
+**One-line thesis:** Coding agents make a trial patch cheap enough to use as evidence in a scope debate, but that only improves decisions in organizations that can reject and delete the artifact; where every prototype acquires an owner, an audience, and sunk-cost pressure, “just try it” turns uncertainty into software inventory faster than the company can govern it.
+
+**Why this is interesting now:** GitHub's July 17 operator essay makes the smart case that a constrained agent patch can replace days of abstract scope debate with a concrete price check. Two fresh enterprise cases make that mechanism real at much larger scale: Asana says agents compressed a five-year test migration into two weeks, while loveholidays says non-engineers built more than ten customer-experience prototypes and promoted at least three to production. The under-synthesized question is what happens to the other seven. Cheap experiments are only cheap when rejection, deletion, and long-term ownership are designed as deliberately as generation.
+
+**Potential author angle:** This is a direct way to turn the author's June 19 firsthand spark into a disagreement rather than another “AI creates tech debt” essay. The author's companies had excellent developers and valuable proofs of concept, yet code volume, silos, conflict, and CTO frustration rose because the organization had no matching mechanism for deciding what should survive. The sharp claim is that AI doesn't merely move implementation cost down; it moves portfolio governance downstream, where most companies are weakest.
+
+**Author hook:** Directly anchored to the 2026-06-19 inbox spark about software companies producing high-value proofs of concept and millions of lines of code while the org shape stayed fixed, leaving CTOs unable to see progress and special engineering teams in conflict with the rest of the company.
+
+**Evidence checked:**
+- [GitHub — The cost of saying yes has changed](https://github.blog/engineering/the-cost-of-saying-yes-has-changed/) — July 17 operator argument from a Copilot Agent Control Plane engineer: use a constrained first patch as a probe, then decide whether a human can validate and own it; explicitly distinguishes cheap generation from cheap ownership.
+- [OpenAI / Asana — Asana cleared 5 years of engineering work in 2 weeks with Codex](https://openai.com/index/asana/) — August 18 primary customer account: an Enzyme migration estimated at roughly five years and $6 million was completed in two calendar weeks for about $12,000 in model and infrastructure cost, with an engineer checking progress twice daily and reviewing every proposed change.
+- [OpenAI / loveholidays — How loveholidays is making everyone a builder with Codex](https://openai.com/index/loveholidays/) — August 26 primary customer account: non-engineers produced more than ten search experiences through a guarded playground, at least three reached the live site, AI-assisted changes rose from 7% to 79%, and deployment frequency rose 73% with flat engineering headcount.
+- [Idea inbox, 2026-06-19](./inbox.md) — current author-owned firsthand observation supplying the missing failure case: faster proofs of concept without a changed organization produced more code, silos, and conflict rather than visible progress.
+
+**Counterargument / risk:** GitHub's argument already says the first patch is not the product, and loveholidays' shared design system, validations, and low promotion rate may show that healthy organizations can keep trials bounded. The negative mechanism currently rests on the author's firsthand cases rather than a measured cross-company study. The thesis is false if higher AI-assisted experiment volume does not raise abandoned-code, support, or ownership costs after controlling for release gates, or if organizations routinely delete rejected trials without creating political or technical inventory.
+
+**Two interview questions:**
+1. In the companies from your June note, what happened to a proof of concept after the demo: who could kill it, who became responsible for it, and what made deletion harder than creation?
+2. GitHub's strongest version of the argument is “generate a bounded diff so people can decide from evidence instead of estimates.” Where exactly does that work in your experience, and where does the artifact itself start lobbying to be kept?
+
+**Draftability:** High, because it has a current, credible argument to disagree with, two concrete positive cases, and an author-owned negative mechanism that can make the piece more than generic technical-debt commentary.
+
+**Suggested tags:** `ai`, `software`, `business`, `management`
+
+## 2026-08-28 — The frontier AI firm may just be the firm that burns more tokens
+
+**Status:** Backlog
+
+**One-line thesis:** Ranking companies by output tokens per employee can invert enterprise AI progress: longer agent loops automatically look like deeper adoption, while a better-routed system that reaches the same accepted outcome with fewer attempts can look less advanced.
+
+**Why this is interesting now:** OpenAI's August 12 Enterprise Signals defines “frontier firms” as the top 10% by output tokens per active user and reports an 8.3× gap versus typical firms, up from 2.6× in January. Thirteen days later, OpenAI's CFO argued that progress means more useful intelligence per unit of compute and highlighted a coding-agent result using 54% fewer output tokens than another leading model. A live agent leaderboard updated August 26 likewise separates confirmed success, cost per task, and output tokens per task. The tension is useful: the same company is treating token volume as evidence of organizational depth and token reduction as evidence of technical progress.
+
+**Potential author angle:** Make this a consulting-measurement argument, not a model-efficiency post. Seat counts measured access; token counts measure activity; neither proves that a reviewed result changed a decision, entered production, or reduced total human work. The uncomfortable implication is that many enterprise AI “maturity” rankings may be utilization dashboards with a more flattering name. A better operating measure starts with accepted outcomes and then prices attempts, retries, review time, and reversals.
+
+**Author hook:** Continuity hook only, not present-tense position authorization under strict-v1 provenance: the published [Consulting outcomes](../src/content/posts/consulting-outcomes.en.md) note distinguished deliverables from outcomes. An interview should establish whether the author currently adopts the parallel claim that AI activity metrics are becoming a substitute for business value.
+
+**Evidence checked:**
+- [OpenAI Enterprise Signals](https://openai.com/signals/enterprise-data/) — August 12 primary data product: ranks firms by output tokens per active user, reports the 8.3× frontier gap and 64% Codex share of combined enterprise output tokens, and explicitly concedes that tokens are an imperfect measure of value and that long-running agent tasks require more compute.
+- [OpenAI — The full stack behind abundant intelligence](https://openai.com/index/the-full-stack-behind-abundant-intelligence/) — August 25 primary executive argument: defines value as useful intelligence per unit of compute and cites a coding-agent result using 54% fewer output tokens, fewer retries, and lower total cost for successful work.
+- [Agent Arena leaderboard](https://arena.ai/leaderboard/agent) — live August 26 near-primary operational dataset covering more than 2.05 million sessions and reporting confirmed success, tool reliability, median cost per task, and median output tokens separately; its top configurations show materially different token use and cost even among nearby ranks.
+
+**Counterargument / risk:** OpenAI labels tokens a proxy, not a business-value measure, and its report also finds that high-token firms use more plugins and skills, so token intensity may correlate with genuinely more complex delegated work. A universal outcome metric is also hard because legal review, code migration, sales research, and customer support have different success definitions. The thesis is false if token intensity remains strongly predictive of independently measured accepted outcomes after controlling for task mix, model, retry rate, and workflow maturity.
+
+**Two interview questions:**
+1. In client AI programs, which activity metric has most often been mistaken for value: seats, prompts, tokens, agents launched, or something else, and what did the dashboard hide?
+2. If you had to give an executive one replacement number that can survive across different workflows, would you choose accepted outcomes, cost per accepted outcome, human minutes saved, or a portfolio of measures? What breaks your choice?
+
+**Draftability:** High, because the contradiction is explicit in current primary sources, the metric can be explained without technical jargon, and the argument naturally produces a practical replacement test rather than a complaint about vendor marketing.
+
+**Suggested tags:** `ai`, `business`, `consulting`, `measurement`
+
+## 2026-08-28 — A robot that scores worse can be the more capable system
+
+**Status:** Backlog
+
+**One-line thesis:** In physical AI, model capability is bounded by the machine's clock: a lower-success policy that fits onboard memory and produces actions before the current motion ends can be more deployable than a smarter model that misses the control loop.
+
+**Why this is interesting now:** NVIDIA's August 19 on-device robot-control release makes the tradeoff unusually concrete. Its 4B Edge policy scores 22.9% across 120 closed-loop manipulation tasks versus 36.8% for the larger Nano variant, yet it fits on the robot and generates a 2.13-second action chunk in about 1.53 seconds, allowing continuous motion without a data-center GPU. On August 26, Arm separately argued that larger models can improve task performance while increasing memory, bandwidth, scheduling, and runtime-control pressure across systems where motor control, perception, planning, and safety all run at different rates. The early signal is that robotics needs a system Pareto frontier, not a single model leaderboard.
+
+**Potential author angle:** This answers the author's manufacturing/robotics curiosity without pretending to supply robotics-domain judgment. The useful bridge from software is narrower: software agents can wait, retry, or buy more cloud compute; a moving machine has deadlines set by its body and environment. The essay-worthy claim is that “smarter” stops being a scalar once inference competes with control and safety for finite time and hardware.
+
+**Author hook:** Directly connects to the 2026-07-17 inbox spark asking what AI in the software-development lifecycle means for manufacturing, automotive, and robotics, but the spark also asks for questions that only a deep industry expert can answer. Treat that as a domain boundary: interview the author for the software-to-physical-system comparison, and seek an operator for any stronger deployment claim.
+
+**Evidence checked:**
+- [NVIDIA — Post-Train Cosmos 3 Edge for On-Device Robot Control](https://developer.nvidia.com/blog/post-train-nvidia-cosmos-3-edge-for-on-device-robot-control/) — August 19 primary technical tutorial: 4B policy, about 9 GB in BF16, 1.53-second inference for a roughly 2.13-second action chunk, 22.9% closed-loop success across 120 tasks, compared with 36.8% for the larger Nano variant; also discloses roughly 17,400 GB200-hours for the validated post-training run.
+- [Arm — Building the systems behind the next generation of intelligent robots](https://newsroom.arm.com/blog/robotics-systems-physical-ai) — August 26 primary systems argument explaining concurrent workloads with different timing and isolation needs, and how a larger model or richer world model raises memory, bandwidth, scheduling, and runtime-control demands.
+- [Arm — The missing science of robotic systems](https://www.arm.com/resources/white-paper/missing-science-of-robotic-systems) — accompanying technical-paper page framing robotics as an integration-centric discipline across perception, reasoning, planning, control, safety, heterogeneous compute, and memory systems.
+
+**Counterargument / risk:** Both sources sell hardware platforms, NVIDIA's result is a simulation benchmark rather than a field deployment, and 22.9% success is far below commercial reliability for most tasks. The Edge/Nano comparison may reflect a temporary hardware constraint that disappears with faster accelerators, better quantization, or better policy architecture. The thesis is false if higher model-level task success consistently dominates end-to-end robot outcomes once latency, power, safety isolation, and onboard cost are included, or if cloud/edge offload makes deadline misses negligible in the intended environments.
+
+**Two interview questions:**
+1. From your software background, which engineering instinct becomes most dangerous when carried into robotics: optimizing the smartest component, assuming retries are cheap, or treating latency as a performance metric rather than a correctness condition?
+2. What would you need to hear from a robotics or automotive operator before you were willing to say publicly that a lower benchmark score can represent a better real-world system?
+
+**Draftability:** Medium-High, because the current numbers expose a memorable mechanism and fit the author's stated curiosity, but the 22.9% result cannot carry a broad deployment claim without an industry interview or a second real-world case.
+
+**Suggested tags:** `ai`, `robotics`, `manufacturing`, `systems`
