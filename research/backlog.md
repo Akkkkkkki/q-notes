@@ -891,7 +891,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-10 — EA's AI-efficiency story has to justify a $1.8 billion annual interest bill
 
-**Status:** Backlog
+**Status:** Expired (2026-08-31)
 
 **One-line thesis:** Now that the $55 billion PIF/Silver Lake/Affinity buyout of EA has closed with roughly $18 billion in new debt, "AI will make game development more efficient" stops being a strategic talking point and becomes the explanation the new owners need for cuts the leverage already makes necessary — the honest test is whether the next round of EA layoffs tracks the debt service schedule more closely than any actual AI rollout.
 
@@ -1105,3 +1105,32 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 **Draftability:** Medium-High, because the current numbers expose a memorable mechanism and fit the author's stated curiosity, but the 22.9% result cannot carry a broad deployment claim without an industry interview or a second real-world case.
 
 **Suggested tags:** `ai`, `robotics`, `manufacturing`, `systems`
+
+## 2026-08-31 — "Embodied intelligence" is measured by the loop, not the sensor
+
+**Status:** Backlog
+
+**One-line thesis:** "Embodied intelligence" started as a specific claim — that intelligence emerges from a tight perception-decision-action-feedback loop coupling a body to its environment — and has drifted into a label any product with a sensor and an algorithm can claim; the honest test is whether removing the "loop" story changes what the thing actually does.
+
+**Why this is interesting now:** The gap between definition and marketing is unusually visible right now. On the definitional side, the academic framing (perception-decision-action-feedback, body-brain-environment coupling) has stayed stable and specific. On the marketing side, China's embodied-intelligence sector has pulled in tens of billions of yuan in 2026, with 25-plus startups crossing RMB 10 billion valuations and analysts already flagging "concept-chasing and homogenization" (概念滥用与同质化) among companies whose demos, hardware, and even PR narratives converge on the same template. The clearest instance is consumer, not industrial: a 14-year-old parenting-app company launched an "AI具身智能婴儿床" (AI embodied-intelligence baby crib/sleep pod) in August 2026, explicitly marketed as completing a "perception-decision-execution-feedback closed loop" — the exact academic vocabulary, applied to a crib. That is close to verbatim the author's own complaint.
+
+**Potential author angle:** This is not "AI hype is bad" — that's a vibes claim the editorial bar already rejects. The sharper, testable version is definitional: name the actual criterion (a real closed sensorimotor loop that changes behavior, not a sensor feeding a preset rule) and use it to sort real cases — a warehouse manipulation robot, a self-driving stack, a WiFi-camera "smart" crib, a wearable with an LLM bolted on — into "meets the bar" and "renamed something older." The author's own worked distinction is the actual content here; a model-generated taxonomy dressed up as analysis would be exactly the kind of "correct but useless" piece the editorial critic should cut.
+
+**Author hook:** Directly answers the 2026-08-29 inbox spark: "现在大家什么都要叫具身智能...我觉得我们应该写一篇文章来聊聊我认为的具身智能是什么，以及一些相近的、或者说，我们见过很多混淆的混用的一些词汇" (everyone calls everything "embodied intelligence" now... I think we should write a piece about what I think embodied intelligence actually is, and some adjacent terms that keep getting confused or conflated).
+
+**Evidence checked:**
+- [Embodied Intelligence: where control meets cognition in the physical world](https://www.oaepublish.com/articles/ei.2026.01) — 2026 academic framing of embodied intelligence as tight brain-body-environment coupling generated through continuous perception-action interaction, the specific definition the marketing usage has drifted from.
+- [Circus Group: What is the difference between Embodied AI and Physical AI?](https://www.circus-group.com/glossary/embodied-ai) — industry glossary distinguishing embodied AI (intelligence shaped by a body and its environment) from physical AI (closing the perception-action loop in the physical world broadly), evidence the terms are already blurring even at the definitional-reference level.
+- [亲宝宝用AI具身智能婴儿床，完成了一次品类命名 (via search summary; direct fetch blocked by network policy)](https://m.tech.china.com/redian/2026/0813/082026_1940162.html) — August 13, 2026 coverage of Qinbaobao's "AI睡眠舱" (AI sleep pod) smart crib, marketed explicitly as completing a "感知-决策-执行-反馈" (perception-decision-execution-feedback) closed embodied-intelligence loop; a dated, named, concrete instance of the exact overreach the inbox spark names.
+- [2026年具身智能前瞻与警言 (via search summary; direct fetch blocked by network policy)](https://36kr.com/p/3635916029588228) — 2026 industry-analyst piece describing widespread "concept-chasing and homogenization" (概念滥用与同质化) among embodied-intelligence startups converging on nearly identical technical routes, hardware, demos, and PR narratives while funding and valuations keep climbing.
+- [China Embodied AI Unicorns Surge: 15 Startups Hit $1.4B Valuation in H1 2026 (via search summary; direct fetch blocked by network policy)](https://chinabizinsider.com/15-embodied-ai-unicorns-in-6-months-chinas-robot-race-hits-a-reality-check/) — reports 25-plus Chinese embodied-intelligence startups above RMB 10 billion valuation, most with cash runways expiring 2027-2028, framed as a "dissonance between long-duration narratives and near-term operating reality."
+
+**Counterargument / risk:** The terminology fight may be genuinely unsettled rather than a case of bad-faith labeling — "embodied AI," "physical AI," and "robotics" are used inconsistently even by careful technical writers, and reasonable people can disagree about where sensor-plus-rule-based automation ends and a real perception-action loop begins. The thesis is weaker if the author's own dividing line turns out to be as fuzzy as the marketing usage it critiques, or if this reads as a narrow gripe about one crib rather than a durable taxonomy readers can reuse.
+
+**Draftability:** High as a Note; the material and the author's own irritation are already there, and the crib example gives it one concrete anchor instead of staying abstract. It should not become an Essay by importing a model-built taxonomy in place of the author's own working definition — the interview needs to extract *the author's* dividing line and boundary cases, not have the model supply one.
+
+**Two interview questions:**
+1. You've clearly got a working definition of "具身智能" in your head that most of what's marketed under that name fails. What's the simplest test you'd actually apply — the one thing a product has to do for you to call it real embodied intelligence rather than a sensor plus a rule?
+2. Which of the adjacent, commonly-confused terms (embodied AI, physical AI, smart hardware, IoT, plain robotics) do you think people conflate most often with 具身智能, and where specifically does the confusion cause a bad decision — an investor overpaying, a buyer disappointed, a team building the wrong thing?
+
+**Suggested tags:** `ai`, `robotics`, `language`, `business`
