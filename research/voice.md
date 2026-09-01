@@ -17,11 +17,14 @@ Keep every entry to one line. If an entry stops being true, delete it; a stale
 voiceprint is worse than none.
 
 Source annotation: every proposed entry carries a date and a source tag —
-`chat observation`, `voice sample`, `interview`, `retell`, `A/B choice`, or
-`read-aloud mark`. Entries from spoken sources (chat, voice memos, retells) add
-`spoken register`: they capture word choice and stance, but their syntax gets adapted
-before use in prose — chat is raw material, not copy. Promoted entries may keep the tag
-or drop it; proposals must have one.
+`chat observation`, `voice sample`, `interview`, `retell`, `A/B choice`,
+`read-aloud mark`, or `published piece`. Entries from spoken sources (chat, voice memos,
+retells) add `spoken register`: they capture word choice and stance, but their syntax
+gets adapted before use in prose — chat is raw material, not copy. `published piece` is
+for a structural/phrasing pattern the gardener finds by rereading the archive itself
+(`automations/05-gardener.md` §3) with no chat/interview/inbox/A-B/read-aloud record
+behind it — cite the post(s) it was found in. Promoted entries may keep the tag or drop
+it; proposals must have one.
 
 `A/B choice` and `read-aloud mark` records land here automatically when the author taps
 on the Desk (Publish tab) — they are records of author decisions, not automation
@@ -103,4 +106,4 @@ for two months get deleted by the gardener.
 - 2026-08-05 (inbox spark 2026-07-17, spoken register — realized verbatim in post: taste-is-a-bet, zh) Move: Repeat an overused buzzword three times in a row, unpunctuated, to perform its own emptiness before defining a sharper replacement ("taste taste taste" / "品味品味品味地念"). Distinct from the "translate a buzzword into its mechanism" example already scaffolded in Signature moves above — this one enacts the cliché rather than decoding it.
 - 2026-09-01 (interview 2026-08-05-chip-design-agents-buy-trust-with-physics-not-permission Q1; taken in public in post: verification-gate-needs-a-name) Stance: A verification gate is theater until someone can actually get fired for skipping it — the checklist, the sign-off, the "please review this" are decoration around that one fact.
 - 2026-09-01 (interview 2026-08-05-chip-design-agents-buy-trust-with-physics-not-permission Q2, spoken register — realized verbatim in post: verification-gate-needs-a-name, zh: 一团乱麻) Move: "a disastrously messy, entangled myth" — a vivid firsthand collapse-description, transcreated rather than translated literally.
-- 2026-09-01 (archive-mined from the published piece, not a chat/interview/inbox/A-B/read-aloud source — no tag in this file's list fits, flagging rather than mislabeling it as `chat observation`; found in post: ai-native-game-is-a-test, both languages) Move: Isolate a single-sentence verdict as its own bare paragraph, no supporting clause or transition, to crystallize the argument right before the counterpoint paragraph. "Averaging is the opposite of taste." / 取平均，恰恰是品味的反面。 Distinct from the "It is not X. It is Y." reveal already scaffolded above — this is one flat verdict, not a two-part construction.
+- 2026-09-01 (published piece: ai-native-game-is-a-test, both languages — no chat/interview/inbox/A-B/read-aloud record behind it) Move: Isolate a single-sentence verdict as its own bare paragraph, no supporting clause or transition, to crystallize the argument right before the counterpoint paragraph. "Averaging is the opposite of taste." / 取平均，恰恰是品味的反面。 Distinct from the "It is not X. It is Y." reveal already scaffolded above — this is one flat verdict, not a two-part construction.
