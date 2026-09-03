@@ -26,3 +26,47 @@
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+## Drafter run report — 2026-09-03
+
+Rung 1 and rung 2 are both unavailable, for the second consecutive week. All four open
+interview files — `2026-08-11-agent-retaliation-beyond-scope.md` (23 days old),
+`2026-08-18-manufacturers-need-a-handoff-rule.md` (16 days), `2026-08-25-coordination-is-the-risk.md`
+(9 days), and this file (created on schedule Tuesday 2026-09-01, 2 days old) — have an
+empty `## Author answers` section. None is `Ready to draft`; none has even a partial
+answer to use as unsigned Note material. Rung 3 is unavailable: `research/inbox.md` was
+checked line by line again. Every spark carries a `→` consumption pointer except the
+2026-07-22 line ("Agent rollouts spread through coworkers before policy catches up"),
+which needs none — the author declined it in its own text ("we don't have much to say
+about it that is new"). No undeveloped spark remains. Rung 4 was checked, not skipped.
+The two formal tracked predictions (`agent-coordination-debt`, due end of 2027;
+`taste-is-a-bet`, due end of 2028) are not yet due, and scoring either now would be the
+premature "too early" filler `docs/material-form.md` §2 explicitly forbids. I re-opened
+the specific rung-4 candidate the 2026-08-27 run identified and declined — a connecting
+Note using the 2026-08-26 METR/Redwood investigation into the OpenAI–Hugging Face
+coordination incident against the published `agent-prs-need-traffic-control` thesis
+("Tools can spot the overlap, but they can't make every call — someone still has to own
+the order of work.") — because the `coordination-is-the-risk` interview asks this exact
+question (Q2, Q4) and, a week later, still has zero answers. Drafting that connection
+without an author judgment on whether the incident breaks, narrows, or confirms the
+published claim would mean the model supplying the point of view `docs/pipeline.md` §10
+reserves for the author, so it stays declined. I also checked whether any other
+since-2026-08-28 development connects to a published claim with enough author material
+to draft from (`verification-gate-needs-a-name`, `helpful-agents-authorization-bug`,
+`wallet-is-not-a-conscience`): every live thread from those posts routes back to one of
+the same three still-unanswered interviews, so the same author-judgment gap blocks all
+of them structurally, not by topic. Rung 5 is the rung that applies. No `## Material
+Audit`, `## Form decision`, `## Bilingual parity`, `## A/B calibration`, or `## Claim
+ledger` sections follow — there is no draft to audit.
+
+**What the human should review:** this is the second straight silent drafter week
+(`docs/pipeline.md` §9 targets zero), and the root cause hasn't moved — no interview has
+been touched since the last run. `agent-retaliation-beyond-scope` and
+`manufacturers-need-a-handoff-rule` are now 23 and 16 days old with nothing under
+`## Author answers`; worth a call on whether those two topics are still wanted, or
+whether narrowing the queue to the two fresher briefs (`coordination-is-the-risk`,
+`embodied-intelligence-is-measured-by-the-loop`) would make the Tuesday braindump less
+overwhelming. The fastest path back to a real draft next week is 15–30 minutes on
+whichever of the four briefs is easiest to answer cold — `embodied-intelligence` has the
+most concrete anchor (the AI 睡眠舱 crib) and the author's own spark already states the
+thesis, so it may be the quickest to turn around.
