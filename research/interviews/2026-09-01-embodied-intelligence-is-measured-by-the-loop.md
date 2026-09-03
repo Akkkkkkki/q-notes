@@ -34,11 +34,26 @@ interview files — `2026-08-11-agent-retaliation-beyond-scope.md` (23 days old)
 `2026-08-18-manufacturers-need-a-handoff-rule.md` (16 days), `2026-08-25-coordination-is-the-risk.md`
 (9 days), and this file (created on schedule Tuesday 2026-09-01, 2 days old) — have an
 empty `## Author answers` section. None is `Ready to draft`; none has even a partial
-answer to use as unsigned Note material. Rung 3 is unavailable: `research/inbox.md` was
-checked line by line again. Every spark carries a `→` consumption pointer except the
+answer to use as unsigned Note material. Rung 3 is unavailable, and not merely because
+`research/inbox.md`'s sparks carry `→` pointers — a pointer records where a spark went,
+it doesn't by itself disqualify the source. The 2026-08-29 具身智能 spark specifically
+was re-audited on its own merits: it supplies an arguable complaint and one concrete
+anchor (the AI 睡眠舱 crib), but not the thing the piece actually needs — the author's own
+test for what clears the "real embodied intelligence" bar. `research/backlog.md`'s own
+entry for this item says so directly: "the interview needs to extract the author's
+dividing line and boundary cases, not have the model supply one." Per
+`docs/material-form.md` §2, that gap puts this spark's Material Audit at `fragment`, not
+`note` — a sharp complaint without yet enough owned material to carry a standalone
+argued Note — and a `fragment` audit means research/interview more before polish, not
+draft anyway. That is exactly why the interviewer escalated it past rung 3 into the
+interview this file already is (`Status: Interviewing` in the backlog), rather than
+leaving it as a bare inbox line. Drafting a Note straight from the raw spark now would
+mean supplying the author's own dividing line myself — the one thing this interview
+exists to extract and the one thing `docs/pipeline.md` §10 forbids. The other three
+sparks all carry pointers into completed work and need no further audit, except the
 2026-07-22 line ("Agent rollouts spread through coworkers before policy catches up"),
-which needs none — the author declined it in its own text ("we don't have much to say
-about it that is new"). No undeveloped spark remains. Rung 4 was checked, not skipped.
+which needs none for a different reason — the author declined it in its own text ("we
+don't have much to say about it that is new"). Rung 4 was checked, not skipped.
 The two formal tracked predictions (`agent-coordination-debt`, due end of 2027;
 `taste-is-a-bet`, due end of 2028) are not yet due, and scoring either now would be the
 premature "too early" filler `docs/material-form.md` §2 explicitly forbids. I re-opened
@@ -59,9 +74,12 @@ of them structurally, not by topic. Rung 5 is the rung that applies. No `## Mate
 Audit`, `## Form decision`, `## Bilingual parity`, `## A/B calibration`, or `## Claim
 ledger` sections follow — there is no draft to audit.
 
-**What the human should review:** this is the second straight silent drafter week
-(`docs/pipeline.md` §9 targets zero), and the root cause hasn't moved — no interview has
-been touched since the last run. `agent-retaliation-beyond-scope` and
+**What the human should review:** this is the second straight week with no draft PR,
+though not the pipeline-health failure that phrase might suggest — `docs/pipeline.md` §9
+counts a drafter run as producing "nothing" only when it has "no artifact, no report,"
+and both weeks filed the required rung-5 report, so that metric is still at zero. The
+real signal is upstream of the drafter: no interview has been touched since the last
+run. `agent-retaliation-beyond-scope` and
 `manufacturers-need-a-handoff-rule` are now 23 and 16 days old with nothing under
 `## Author answers`; worth a call on whether those two topics are still wanted, or
 whether narrowing the queue to the two fresher briefs (`coordination-is-the-risk`,
