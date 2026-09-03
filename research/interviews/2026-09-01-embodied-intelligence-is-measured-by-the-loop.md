@@ -51,6 +51,12 @@ Not yet but I welcome your view
 
 I think so, and my previous responses may have answered it. The line blurs when you have an unexplainably huge complex model (over the traditional models) dictating the behaviour of the obejct / subject, maybe. Similar to data science / machine learning models start to be considered "intelligence" when they became so huge (e.g. our LLMs nowadays) that most people thought them having genuine intelligence
 
+### Q5
+
+<!-- q-notes: answer-provenance=free -->
+
+All of them, yes. It may cause hype and bubbles (and I may have a small sense of jealousy due to the fact that I don't want to make these bubbly claims to win attention but they work).
+
 ## Drafter run report — 2026-09-03
 
 Rung 1 and rung 2 are both unavailable, for the second consecutive week. All four open
