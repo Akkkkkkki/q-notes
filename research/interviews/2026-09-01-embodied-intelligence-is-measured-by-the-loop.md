@@ -39,6 +39,12 @@ I just really dislike calling everything with a fancy word that isn't the right 
 
 It should be an impressive piece of intelligence no matter what "body" you put it in, or, even if you don't see a body for it. Now, I'm not saying just some science fiction terms, I want to be practical and talk in commercial world too. But just a simple hardware with a bit of sensor and some small statistical models or even just basic analytics, doesn't really count - even if you remove the "intelligence" part it still serves the user. People are just generalising the term as "hardware with a bit of software, where hardware may not even be electronic...it might just be any physical object"
 
+### Q3
+
+<!-- q-notes: answer-provenance=free -->
+
+Not yet but I welcome your view
+
 ## Drafter run report — 2026-09-03
 
 Rung 1 and rung 2 are both unavailable, for the second consecutive week. All four open
