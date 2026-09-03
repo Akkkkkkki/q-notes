@@ -1,7 +1,7 @@
 # Interview: "Embodied intelligence" is measured by the loop, not the sensor
 
 **Source:** backlog item 2026-08-31 — "Embodied intelligence" is measured by the loop, not the sensor | inbox spark "有点烦 现在大家什么都要叫具身智能...我觉得我们应该写一篇文章来聊聊我认为的具身智能是什么" (2026-08-29)
-**Status:** Answers in progress (2026-09-03)
+**Status:** Ready to draft (2026-09-03)
 
 ## The idea in three sentences
 
