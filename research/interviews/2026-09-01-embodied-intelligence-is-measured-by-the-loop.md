@@ -45,6 +45,12 @@ It should be an impressive piece of intelligence no matter what "body" you put i
 
 Not yet but I welcome your view
 
+### Q4
+
+<!-- q-notes: answer-provenance=free -->
+
+I think so, and my previous responses may have answered it. The line blurs when you have an unexplainably huge complex model (over the traditional models) dictating the behaviour of the obejct / subject, maybe. Similar to data science / machine learning models start to be considered "intelligence" when they became so huge (e.g. our LLMs nowadays) that most people thought them having genuine intelligence
+
 ## Drafter run report — 2026-09-03
 
 Rung 1 and rung 2 are both unavailable, for the second consecutive week. All four open
