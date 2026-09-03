@@ -63,7 +63,18 @@ original failure mode this pipeline exists to prevent. The remaining two sparks 
 pointers into genuinely completed work and need no further audit, except the 2026-07-22
 line ("Agent rollouts spread through coworkers before policy catches up"), which needs
 none for a different reason — the author declined it in its own text ("we don't have
-much to say about it that is new"). Rung 4 was checked, not skipped.
+much to say about it that is new"). Rung 4 was checked, not skipped. This also covers
+the third 2026-08-28 backlog item, "The first patch is only a price check if you can
+throw it away" — it looks like a rung-4 candidate because it shares the 2026-06-19
+firsthand spark with the published `agent-coordination-debt`, but it isn't scoring or
+connecting a published claim to new evidence; it's a new thesis about experiment
+disposal and ownership. Its own self-novelty caveat says a second use of that spark "has
+to earn a second use by adding the rejection/ownership mechanism rather than restating
+the original observation," and its own interview questions ask for exactly that
+mechanism ("who could kill it... what made deletion harder than creation?"), which the
+June spark never answers. Drafting it now would mean inventing the rejection/ownership
+mechanism myself. Same stage as the other two Aug 28 items: `Status: Backlog`, not yet
+interviewed.
 The two formal tracked predictions (`agent-coordination-debt`, due end of 2027;
 `taste-is-a-bet`, due end of 2028) are not yet due, and scoring either now would be the
 premature "too early" filler `docs/material-form.md` §2 explicitly forbids. I re-opened
