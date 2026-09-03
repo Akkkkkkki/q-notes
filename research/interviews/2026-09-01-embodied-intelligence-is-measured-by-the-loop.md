@@ -1,7 +1,7 @@
 # Interview: "Embodied intelligence" is measured by the loop, not the sensor
 
 **Source:** backlog item 2026-08-31 — "Embodied intelligence" is measured by the loop, not the sensor | inbox spark "有点烦 现在大家什么都要叫具身智能...我觉得我们应该写一篇文章来聊聊我认为的具身智能是什么" (2026-08-29)
-**Status:** Awaiting answers
+**Status:** Answers in progress (2026-09-03)
 
 ## The idea in three sentences
 
@@ -26,6 +26,12 @@
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+### Q1
+
+<!-- q-notes: answer-provenance=free -->
+
+I just really dislike calling everything with a fancy word that isn't the right description at all. People don't even think about the fact that it's "an intelligence that is enbodied" i.e. the focus is intelligence, not the "body"
 
 ## Drafter run report — 2026-09-03
 
