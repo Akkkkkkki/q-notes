@@ -39,7 +39,10 @@ export function reconstructLegacyEditorialRun(input: {
   return {
     schemaVersion: EDITORIAL_RUN_SCHEMA_VERSION,
     runId: input.runId,
-    stage: tier ? 'form-decided' : 'requested',
+    // A reconstructed body can preserve known fields, but it cannot prove that
+    // earlier pipeline stages ran successfully. Keep it at the initial stage
+    // until a migrated runtime explicitly advances it.
+    stage: 'requested',
     createdAt: input.createdAt,
     updatedAt: input.updatedAt,
     semanticHeadSha: input.semanticHeadSha,
