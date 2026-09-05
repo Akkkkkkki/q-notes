@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
+import EditorialStatusNotice from '../../components/EditorialStatusNotice.astro';
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
@@ -15,5 +16,11 @@ const { Content } = await render(entry);
 ---
 
 <PostLayout frontmatter={entry.data}>
+  <EditorialStatusNotice
+    status={entry.data.editorialStatus}
+    supersededBy={entry.data.supersededBy}
+    archiveReason={entry.data.archiveReason}
+    lang="en"
+  />
   <Content />
 </PostLayout>
