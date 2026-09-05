@@ -14,6 +14,8 @@ export async function GET() {
       excerpt: p.data.excerpt,
       tags: (p.data.tags ?? []).map((t) => t.toLowerCase()).filter((t) => !TIERS.has(t)),
       maturity: p.data.maturity,
+      editorialStatus: p.data.editorialStatus ?? 'active',
+      supersededBy: p.data.supersededBy,
       lang: p.data.lang,
       date: new Date(p.data.date).toISOString().slice(0, 10),
       url:
