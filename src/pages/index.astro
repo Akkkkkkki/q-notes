@@ -4,8 +4,9 @@ import NoteCard from '../components/NoteCard.astro';
 import NoteRow from '../components/NoteRow.astro';
 import Threads from '../components/Threads.astro';
 import { getCollection } from 'astro:content';
+import { isActiveEditorial } from '../utils/editorialLifecycle';
 
-const allPosts = (await getCollection('posts', ({ data }) => data.lang === 'en')).sort(
+const allPosts = (await getCollection('posts', ({ data }) => data.lang === 'en' && isActiveEditorial(data))).sort(
   (a, b) => new Date(b.data.date).valueOf() - new Date(a.data.date).valueOf(),
 );
 const withUrl = allPosts.map((post) => ({ ...post, url: `/posts/${post.data.translationKey}`, frontmatter: post.data }));
