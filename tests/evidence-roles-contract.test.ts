@@ -47,7 +47,7 @@ describe('evidence-role editorial contract', () => {
 
   it('wires the normative contract into every content agent through AGENTS.md', () => {
     expect(agents).toContain('docs/evidence-roles.md');
-    expect(agents).toContain('assign an evidence role before using an external source');
+    expect(agents).toContain('assign an evidence role from `docs/evidence-roles.md`');
     expect(agents).toContain('search for the missing evidence role');
     expect(agents).toContain('role upgrade');
   });
