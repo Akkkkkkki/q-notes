@@ -2,7 +2,7 @@
 
 This repository is a personal website for publishing sharp notes, opinions, essays, and blog posts. Treat it as an editorial system, not as a generic application repo.
 
-The editorial pipeline — content tiers, weekly automation loop, definitions of done, and the bilingual contract — is defined in `docs/pipeline.md`. **`docs/material-form.md` is the normative material/form addendum for Issue #67 and amends the tier-length, counterpoint, prediction, and form-fit rules in `docs/pipeline.md` §3/§5. Where those older checklist bullets conflict, the addendum wins.** `docs/editorial-critic.md` defines the independent scope/novelty review introduced by Issue #68. Runnable stage prompts live in `automations/`. Any agent drafting or editing content must read the applicable canonical documents and follow them together.
+The editorial pipeline — content tiers, weekly automation loop, definitions of done, and the bilingual contract — is defined in `docs/pipeline.md`. **`docs/material-form.md` is the normative material/form addendum for Issue #67 and amends the tier-length, counterpoint, prediction, and form-fit rules in `docs/pipeline.md` §3/§5. Where those older checklist bullets conflict, the addendum wins.** `docs/article-spine.md` defines the Issue #90 rule that sources support a thought-led article spine rather than becoming the article structure. `docs/editorial-critic.md` defines the independent scope/novelty review introduced by Issue #68. Runnable stage prompts live in `automations/`. Any agent drafting or editing content must read the applicable canonical documents and follow them together.
 
 **Phase-0 strict-v1 provenance override (#98/#97): until #97 is fully implemented and the canonical docs are consolidated, published article bodies are archive/context only and never authorize a current `Q-explicit` position by themselves. This override takes precedence over broader legacy wording in `docs/pipeline.md` §10. Current author positions may be authorized only by current author interview/capture/input, explicitly adopted `research/positions.md` entries, or explicitly promoted `research/voice.md ## Stances`.**
 
@@ -15,6 +15,7 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 - Favor topics around AI, technology, software, business, robotics, consulting/professional services, gaming intersecting with AI, and occasional philosophy, media, or culture when there is a strong idea.
 - Avoid publishing "correct but useless" observations: every piece should contain a point of view a thoughtful reader can argue with or remember.
 - **Material decides form.** `Ready to draft` authorizes supplied material; it does not select Essay. Before choosing tier, form, or outline, run the Material Audit in `docs/material-form.md`. Choose the smallest honest form the material supports.
+- **Sources support the article spine; they do not become the spine.** After Material Audit and Form decision, but before outlining, record one `## Article spine` using an existing Claim Ledger claim: `author-claim`, `firsthand-case`, `concrete-mechanism`, `correction`, or `unresolved-question`. A research trend or sequence of sources is not a valid substitute. Follow `docs/article-spine.md`.
 - **Scope earns shipping separately from polish.** Every content PR must receive the independent editorial critic in `automations/03b-editorial-critic.md` before Routine 04 can say Ready. The critic may return `KEEP`, `CUT`, `DOWNGRADE`, `SPLIT`, or `SKIP`. Only a current applicable `KEEP` advances to the ship gate.
 - The editorial critic owns thesis/scope/evidence/novelty decisions; deterministic build/parity/mechanical checks and ordinary voice polish stay with the content/ship gates. Do not collapse the two roles.
 
@@ -33,6 +34,7 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 - Target a reading time under 5 minutes unless explicitly asked otherwise. Length is an output of the material, not a floor to fill.
 - Open with the strongest claim or tension; avoid throat-clearing.
 - Use sections only when each section contains material that could not have been written before the interview/research. If a section is generic connective tissue, cut it.
+- Do not let research-memo ordering become article ordering by default. Every major section must advance, challenge, or delimit the declared Article spine and add irreplaceable material. The critic runs the citation-hiding test from `docs/article-spine.md`: if hiding source/citation labels leaves only a topic or source sequence, the piece needs restructuring, downgrading, or more thought before publication.
 - End when the material is done. A memorable implication, unresolved question, or prediction tracker is useful when earned; a neat conclusion is not mandatory. The editorial critic explicitly tests whether a late third act is separable.
 - Make the argument sharper during revision: remove generic framing, reduce caveats that do not change the conclusion, and replace abstractions with concrete examples.
 - Write in plain language. Prefer the common word over the fancy one; cut any term that sounds clever but adds no meaning a smart non-specialist couldn't already follow (e.g. "metabolise" → "absorb", "bifurcated" → "two-tier", "the read-across" → "the parallel"). The only exception is a deliberately reused keyword or a `research/glossary.md` term: coin those sparingly, define them on first use, then reuse them on purpose. The measure of a piece is insight conveyed, not vocabulary.
@@ -70,6 +72,8 @@ KEEP | CUT | DOWNGRADE | SPLIT | SKIP
 
 Do not add a family of permanent top-level audit sections as later v3 rules land. Evidence role, inference distance, article spine, natural endpoint, analogy, taxonomy, title, objection, prediction, and archive-provenance signals feed the same critic internally. Issue #68 owns severity and integration.
 
+For the article-spine signal, run the citation-hiding test in `docs/article-spine.md`. Hiding citation/source labels must still leave one clear author-owned claim/correction, firsthand case, concrete mechanism, or unresolved question. A source-led structure should feed the existing verdict as a scope/structure finding, never a second PR-facing critic report.
+
 A critic `KEEP` is valid only for the semantic draft reviewed. A thesis, Claim Ledger, evidence, form/tier, major-scope, hypothesis-adoption, or other substantive reasoning change requires a fresh pass. Purely mechanical typo/format/link/build or claim-preserving voice edits do not force another model review; Routine 04 must verify that they changed no semantic scope before carrying a `KEEP` forward.
 
 ## Bilingual contract
@@ -85,7 +89,8 @@ A critic `KEEP` is valid only for the semantic draft reviewed. A thesis, Claim L
 ## Pull request expectations
 
 - For article drafts, open a PR rather than committing directly to main publishing flow.
-- In the PR body, include `## Material Audit` and `## Form decision` in the exact shapes defined by `docs/material-form.md`, plus the thesis, why it is timely, key sources checked, unresolved doubts, and what the human should review most carefully.
+- In the PR body, include `## Material Audit` and `## Form decision` in the exact shapes defined by `docs/material-form.md`, plus `## Article spine` in the compact shape defined by `docs/article-spine.md`, the thesis, why it is timely, key sources checked, unresolved doubts, and what the human should review most carefully.
+- The Article spine must reference existing Claim Ledger IDs and may not add a new load-bearing claim after Material Audit. If selecting it exposes a missing claim, update the ledger and rerun Material Audit/Form decision before outlining.
 - A declared form/tier may not exceed the Material Audit's density judgment. If it does, trim or downgrade; do not add generic sections, predictions, counterpoints, or filler to justify the higher tier.
 - Before any ship verdict, the PR must have an applicable `## Editorial critic` result with verdict `KEEP`. `CUT`, `DOWNGRADE`, `SPLIT`, and `SKIP` are scope actions, not advisory voice flags.
 - Editorial-critic comments are internal PR metadata. Never copy them into the public article.
