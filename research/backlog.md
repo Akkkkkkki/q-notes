@@ -1134,3 +1134,57 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 2. Which of the adjacent, commonly-confused terms (embodied AI, physical AI, smart hardware, IoT, plain robotics) do you think people conflate most often with 具身智能, and where specifically does the confusion cause a bad decision — an investor overpaying, a buyer disappointed, a team building the wrong thing?
 
 **Suggested tags:** `ai`, `robotics`, `language`, `business`
+
+## 2026-09-07 — Opening a repo became remote code execution across seven coding agents
+
+**Status:** Backlog
+
+**One-line thesis:** The newest coding-agent attack surface is not the model, the prompt, or even the sandbox; it is git's own decades-old configuration plumbing, which every major agent trusted by default until a single disclosure showed it silently running attacker-chosen commands the moment a repo is opened, before any prompt exists to review.
+
+**Why this is interesting now:** Manifold Security disclosed "GitSpawn" in the first days of September 2026: eight flaws across seven CLI coding agents (Claude Code, OpenAI Codex, Cursor, Goose, Hermes Agent, Qwen Code, Grok Build) that all trace to git's `core.fsmonitor` performance setting, which lets a repository's own `.git/config` name a helper command that git runs automatically whenever the index refreshes — triggered by ordinary operations like `git status` or `git diff`. The command executes as the user, outside the agent's sandbox, with no approval prompt, as long as the `.git` directory survives intact (a shared archive, sync folder, or USB stick, though not an ordinary clone). Four of the eight flaws were still exploitable when Manifold retested on September 1. The same day, OpenAI published three of its own CVEs for the identical vulnerability class in Codex, credited to three unrelated research groups — independent convergence on the same obscure git setting in the same week, which is itself a signal the surface was sitting there waiting to be found.
+
+**Potential author angle:** Push the "review the diff" mental model back one step further than the author's own published piece did — to the moment before any diff exists, when the agent is still working out where it is. The sharper claim is that this was never an AI-specific bug; it is twenty-year-old developer tooling that nobody audited for a context where opening a folder now triggers autonomous command execution. "Don't run untrusted code" has to become "don't let an agent even look at an untrusted repository's own configuration" — a boundary most permission models don't currently draw.
+
+**Author hook:** Directly extends [Helpful agents are an authorization bug](../src/content/posts/helpful-agents-authorization-bug.en.md) (published 2026-06-23) and revives the expired 2026-07-03 backlog item "Clean setup is becoming the new supply-chain attack," which speculated from a single Mozilla 0din proof-of-concept; GitSpawn supplies the same mechanism validated across seven independent products with real, dated CVEs instead of one demo.
+
+**Evidence checked:**
+- [The Hacker News: Malicious .git Configs Can Make Claude, Codex, Cursor, and Other AI Agents Run Attacker Code](https://thehackernews.com/2026/09/malicious-git-configs-can-make-claude.html) — September 2026 near-primary report on Manifold Security's GitSpawn disclosure, listing affected agents, patch status, and the `core.fsmonitor` mechanism.
+- [Manifold Security: GitSpawn — A Single Flaw Lets Untrusted Repos Run Code in Claude Code, Codex, Cursor, and Grok](https://www.manifold.security/blog/ai-coding-agents-git-hijack) — primary disclosure naming per-agent patch status (fixed: Goose, Claude Code, Cursor; still exploitable at the September 1 retest: Hermes Agent, Qwen Code, Grok Build, and a second path in Claude Code) and the exact mechanism.
+- [CyberSecurityNews: GitSpawn Flaws Let Malicious Repositories Execute Code in Claude Code, Codex, Cursor, and Grok](https://cybersecuritynews.com/gitspawn-flaws-execute-code/) — corroborating coverage confirming OpenAI's same-day publication of three CVEs for the identical class in Codex, credited to three independent research groups.
+
+**Counterargument / risk:** Exploitation requires the `.git` directory to survive intact, which an ordinary `git clone` does not preserve, so the practical blast radius is narrower than "seven agents affected" implies, and three of seven vendors shipped fixes within what looks like a normal responsible-disclosure window. The thesis weakens if this turns out to be one narrow, now-patched git quirk rather than the first instance of a recurring pattern: ordinary developer-tooling plumbing becoming an unaudited agent trust boundary.
+
+**Draftability:** High, because it gives a concrete, memorable test — does the harness distrust a repository's own configuration before running anything on it, including "harmless" commands — and it extends a published post with dated, cross-vendor proof rather than another single-vendor bug report.
+
+**Two interview questions:**
+1. When an agent runs `git status` on a repo you just opened, did you think of that as an action you'd authorized, or as something that just happens before real work starts?
+2. Does "review the diff" survive as your governing safety model when the bug executes before there's a diff to review — or does the boundary need to move to "review the repo before the agent is allowed to touch it at all"?
+
+**Suggested tags:** `ai`, `security`, `software`, `engineering`
+
+## 2026-09-07 — The humanoid data moat lasted about as long as the marketing slide
+
+**Status:** Backlog
+
+**One-line thesis:** A venture-investor consensus formed this summer that robot hardware is commoditizing while training data and safety remain the durable moat; a marketplace that opened days later, selling graded, licensed demonstration data at checkout, is already commoditizing the exact asset that consensus just named as scarce.
+
+**Why this is interesting now:** On September 1, 2026, Kinetic Blocks opened a gated-beta marketplace where robotics teams buy and sell egocentric video, teleoperation recordings, and motion-capture demonstration data, each dataset graded by KBQS (the platform's own quality system) with a commercial licence attached at purchase — replacing what had been monthslong bilateral licensing negotiations or roughly $118/hour self-collection with a one-session transaction. That launch landed less than two weeks after a widely circulated CNBC investor segment (August 19) arguing that robot hardware is becoming a commodity while training data and safety remain where the durable moats sit. The tension is immediate: the category of asset the investor named as the moat became a line item you can buy off a shelf within the same news cycle.
+
+**Potential author angle:** Treat this as a fast, falsifiable test of "moat" claims in physical AI, using the same commoditization logic the author has already applied to model capability and coding-agent capability: raw material gets cheap fast, and the scarce thing keeps moving downstream. If "we have more or better demonstration data" was ever a real competitive claim, a graded, licensed, one-click marketplace erodes it almost as fast as it was made. The more interesting question the piece can ask is what becomes scarce next once data itself is fungible: the grading criteria, the integration loop that turns purchased data into a working policy, or something not yet named.
+
+**Author hook:** Extends the 2026-07-17 inbox spark on manufacturing and robotics a further, non-duplicative time: the chip-design note that spark already produced stayed on the software half, and the active 2026-08-28 backlog item "A robot that scores worse can be the more capable system" covers the systems/latency half; this candidate is the data-supply-chain half neither has used. It also revives the expired 2026-07-08 backlog item "Robotic hands turn embodiment into a data problem" with a concrete, operating marketplace instead of a speculative pipeline.
+
+**Evidence checked:**
+- [Kinetic Blocks — The Global Store of Humanoid Intelligence](https://kineticblocks.com/) — primary source on marketplace mechanics: KBQS grading, seller-set pricing with a platform margin, licence attached at purchase, and a one-account-at-a-time gated beta restricted to teams with licensable data or active model training.
+- [humanoid.guide: Kinetic Blocks opens humanoid training data marketplace](https://humanoid.guide/kinetic-blocks-humanoid-training-data-marketplace/) — near-primary coverage confirming the September 1 launch date, the shift from bilateral deals to a one-session process, and the roughly $118/hour self-collection baseline the marketplace undercuts.
+- [CNBC: Robot hardware is becoming a commodity, U.S. leads in AI, training and safety moats](https://www.cnbc.com/video/2026/08/19/robot-hardware-ai-training-safety.html) — August 19 investor framing that training data and safety are the durable moat once hardware commoditizes; the claim this candidate tests against real-time market evidence.
+
+**Counterargument / risk:** A gated, one-account-at-a-time beta restricted to teams that already hold licensable data or are actively training models is not yet a liquid market — supply may be thin, KBQS grading unproven at scale, and the real "moat" data (a company's own deployed-fleet telemetry) may be exactly what no seller ever lists. The thesis is false if the marketplace stays a niche clearinghouse for commodity footage while the data that actually differentiates a robotics company never becomes a purchasable good.
+
+**Draftability:** High, because it has a clean falsifiable mechanism — does a graded marketplace erode a stated moat claim within the same news cycle — and a direct, non-duplicative line to an unconsumed half of an existing author spark.
+
+**Two interview questions:**
+1. In software you've argued the scarce thing keeps moving downstream as each layer gets cheap — is "the moat is the data" just robotics catching up to a claim you've already watched fail once in coding agents?
+2. If you could buy graded, licensed demonstration data off a shelf tomorrow, what's the one thing about a robotics company you'd still trust more than its dataset — the team's judgment, its safety validation, or something else?
+
+**Suggested tags:** `ai`, `robotics`, `business`, `data`
