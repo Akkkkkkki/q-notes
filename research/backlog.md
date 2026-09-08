@@ -1137,7 +1137,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-09-07 — Opening a repo became remote code execution across seven coding agents
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-09-08
 
 **One-line thesis:** The newest coding-agent attack surface is not the model, the prompt, or even the sandbox; it is git's own decades-old configuration plumbing, which every major agent trusted by default until a single disclosure showed it silently running attacker-chosen commands the moment a repo is opened, before any prompt exists to review.
 
