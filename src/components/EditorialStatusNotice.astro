@@ -1,0 +1,50 @@
+---
+interface Props {
+  status?: 'active' | 'superseded' | 'archived';
+  supersededBy?: string;
+  archiveReason?: string;
+  lang?: 'en' | 'zh';
+}
+
+const { status = 'active', supersededBy, archiveReason, lang = 'en' } = Astro.props;
+const replacementUrl = supersededBy
+  ? lang === 'zh'
+    ? `/zh/posts/${supersededBy}`
+    : `/posts/${supersededBy}`
+  : undefined;
+
+const copy =
+  status === 'superseded'
+    ? lang === 'zh'
+      ? { label: '较早的观点', body: '我后来改变了这篇文章的核心判断。', link: '阅读现在的观点 →' }
+      : { label: 'Earlier working view', body: 'I later changed my mind about the central claim in this note.', link: 'Read the current view →' }
+    : lang === 'zh'
+      ? { label: '已归档', body: '这篇文章保留作为思考记录，但不再代表我目前推荐的观点。', link: '' }
+      : { label: 'Archived note', body: 'This piece remains as part of the record, but I no longer recommend it as a current statement of the argument.', link: '' };
+---
+
+{status !== 'active' && (
+  <aside class="editorial-status" aria-label={copy.label}>
+    <strong>{copy.label}.</strong> {copy.body}
+    {archiveReason && <span class="reason"> {archiveReason}</span>}
+    {status === 'superseded' && replacementUrl && (
+      <> <a href={replacementUrl}>{copy.link}</a></>
+    )}
+  </aside>
+)}
+
+<style>
+  .editorial-status {
+    margin: 0 0 28px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    background: var(--card2);
+    color: var(--body);
+    font: 500 14px/1.55 var(--sans);
+  }
+  .editorial-status strong { color: var(--ink); }
+  .editorial-status a { color: var(--accent); font-weight: 650; }
+  .reason { color: var(--muted); }
+</style>

@@ -1,8 +1,9 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
+import { isActiveEditorial } from '../../utils/editorialLifecycle';
 
 export async function GET(context) {
-  const posts = await getCollection('posts', ({ data }) => data.lang === 'zh');
+  const posts = await getCollection('posts', ({ data }) => data.lang === 'zh' && isActiveEditorial(data));
 
   // Sort posts by date (most recent first)
   const sortedPosts = posts.sort((a, b) =>

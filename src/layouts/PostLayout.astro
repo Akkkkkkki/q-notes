@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { isActiveEditorial, editorialStatusLabel } from '../utils/editorialLifecycle';
 import { getCollection } from 'astro:content';
 import Maturity from '../components/Maturity.astro';
 import DefinedTerm from '../components/DefinedTerm.astro';
@@ -64,14 +65,14 @@ const resolve = (keys: string[] = []) =>
   keys
     .map((k) => byKey.get(k))
     .filter(Boolean)
-    .map((p) => ({ url: urlFor(p!.data.translationKey), title: p!.data.title }));
+    .map((p) => ({ url: urlFor(p!.data.translationKey), title: [p!.data.title, editorialStatusLabel(p!.data, lang)].filter(Boolean).join(' — ') }));
 const citedBy = resolve(connections?.citedBy);
 const linksTo = resolve(connections?.linksTo);
 
 // Read next: closest by shared topic tags, then most recent.
 const connectedKeys = new Set([...(connections?.citedBy ?? []), ...(connections?.linksTo ?? [])]);
 const readNext = sameLang
-  .filter((p) => p.data.translationKey !== translationKey)
+  .filter((p) => p.data.translationKey !== translationKey && isActiveEditorial(p.data))
   .map((p) => {
     const otherTopics = new Set(
       p.data.tags.map((t: string) => t.toLowerCase()).filter((t: string) => !TIERS.has(t)),
