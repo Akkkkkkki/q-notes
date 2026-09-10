@@ -3,6 +3,8 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
+const AUTHOR_ROUTES = ['/flow/', '/capture/', '/interview/', '/desk/'];
+
 export default defineConfig({
   output: 'static',
   site: 'https://notes.qiuyue.dev',
@@ -26,8 +28,8 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      // The Companion surfaces are the author's app, not site pages.
-      filter: (page) => !page.includes('/capture') && !page.includes('/interview')
+      // Author workspace routes are deployed static shells, not public reading pages.
+      filter: (page) => !AUTHOR_ROUTES.some((route) => page.includes(route))
     })
   ]
 });
