@@ -52,6 +52,7 @@ const T =
 </div>
 
 <script>
+  import { isActiveEditorial, editorialStatusLabel } from '../utils/editorialLifecycle';
   // One binding for the whole session; the root persists across navigations.
   (() => {
     if ((window as any).__qnSearchInit) return;
@@ -116,7 +117,7 @@ const T =
       const lang = curLang();
       const pool = data.filter((p) => p.lang === lang);
       results = !ql
-        ? pool.slice(0, 6)
+        ? pool.filter(isActiveEditorial).slice(0, 6)
         : pool
             .filter(
               (p) =>
@@ -135,12 +136,14 @@ const T =
         box.innerHTML = results
           .map((p, i) => {
             const on = i === sel;
+            const label = editorialStatusLabel(p, lang);
+            const status = label ? `<small style="display:block;font:500 12px/1.6 var(--sans)">${esc(label)}</small>` : '';
             return `<a href="${p.url}" data-idx="${i}" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:9px;text-decoration:none;${
               on ? 'background:var(--accent-08)' : ''
             }">${dash(p.maturity)}<span style="flex:1;font-family:var(--serif);font-size:16px;color:var(--ink)">${highlight(
               p.title,
               q,
-            )}</span>${on ? '<span style="font:500 10px/1 var(--mono);color:var(--faint)">↵</span>' : ''}</a>`;
+            )}${status}</span>${on ? '<span style="font:500 10px/1 var(--mono);color:var(--faint)">↵</span>' : ''}</a>`;
           })
           .join('');
       }

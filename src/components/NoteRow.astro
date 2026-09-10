@@ -2,6 +2,7 @@
 // A single note in a list (home "Latest notes", journal, tag pages).
 // Serif title that tints to accent on hover, maturity dashes, ISO date, excerpt.
 import Maturity from './Maturity.astro';
+import { editorialStatusLabel, type EditorialStatus } from '../utils/editorialLifecycle';
 
 interface Props {
   post: {
@@ -12,6 +13,7 @@ interface Props {
       excerpt: string;
       maturity: 'seedling' | 'growing' | 'evergreen';
       lang?: 'en' | 'zh';
+      editorialStatus?: EditorialStatus;
     };
   };
   titleSize?: number;
@@ -19,12 +21,14 @@ interface Props {
 }
 const { post, titleSize = 24, excerptSize = 16.5 } = Astro.props;
 const { title, date, excerpt, maturity, lang = 'en' } = post.frontmatter;
+const statusLabel = editorialStatusLabel(post.frontmatter, lang);
 const iso = new Date(date).toISOString().slice(0, 10);
 ---
 
 <a class="row-note" href={post.url}>
   <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
     <Maturity maturity={maturity} lang={lang} size="sm" />
+    {statusLabel && <span class="lifecycle-label">{statusLabel}</span>}
     <h3
       class="rt"
       style={`font-family:var(--serif);font-weight:500;font-size:clamp(19px,4.8vw,${titleSize}px);line-height:1.16;color:var(--ink);margin:0;flex:1;min-width:55%`}

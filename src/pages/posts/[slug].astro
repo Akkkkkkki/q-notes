@@ -1,10 +1,14 @@
 ---
 import { getCollection, render } from 'astro:content';
+import { validateEditorialCollection } from '../../utils/editorialLifecycle';
 import PostLayout from '../../layouts/PostLayout.astro';
 import EditorialStatusNotice from '../../components/EditorialStatusNotice.astro';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('posts', ({ data }) => data.lang === 'en');
+  const collection = await getCollection('posts');
+  const errors = validateEditorialCollection(collection);
+  if (errors.length) throw new Error(errors.join('\n'));
+  const allPosts = collection.filter(({ data }) => data.lang === 'en');
   return allPosts.map((entry) => ({
     params: { slug: entry.data.translationKey },
     props: { entry },
