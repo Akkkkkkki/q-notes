@@ -52,6 +52,8 @@ export interface DeskPr {
   number: number;
   title: string;
   branch: string;
+  /** Exact PR revision represented by this card/preview. */
+  headSha: string;
   url: string;
   ageDays: number;
   files: string[];
@@ -122,6 +124,7 @@ export async function listDesk(env: Env): Promise<Response> {
       number: pr.number,
       title: pr.title,
       branch: pr.head.ref,
+      headSha: pr.head.sha,
       url: pr.html_url,
       ageDays: Math.floor((Date.now() - Date.parse(pr.created_at)) / 86400000),
       files,
