@@ -6,7 +6,10 @@ Where this document conflicts with the older tier wording in `docs/pipeline.md` 
 
 ## 1. Ready is authorization, not a tier
 
-`Status: Ready to draft` means the author has authorized the supplied answers for publishable use. It does **not** mean:
+`Status: Ready to draft` means the author requests drafting from the supplied answers.
+It is separate from publication approval and applies only while current and unconsumed.
+Saved unsigned answers, inbox sparks, old posts, and source expiry do not authorize
+drafting. No draft or a private fragment is an ordinary outcome, even after authorization. It does **not** mean:
 
 - the material deserves an Essay;
 - every question must be resolved;
@@ -42,9 +45,11 @@ Do not score by number of bullets. One unusually rich firsthand case can support
 
 The four judgments mean:
 
-- **fragment** — a sharp correction, observation, question, or application exists, but there is not yet enough owned/evidenced material to carry a standalone argued Note without synthesis padding. Keep it as a fragment/question memo, or research/interview more before polish.
-- **note** — one arguable point is supported by at least one irreplaceable concrete mechanism, firsthand example, or research case. It can stand without inventing a second act.
-- **essay** — several distinct, load-bearing pieces of material interact: the thesis has a mechanism, the strongest live objection or boundary can be engaged, and multiple sections would each contain evidence/experience that could not have been written before this material existed.
+- **fragment** — a sharp correction, observation, question, or application exists, but there is not yet enough owned/evidenced material to carry a standalone piece without synthesis padding. Keep it as a fragment/question memo, or research/interview more before polish.
+- **note** — one point, scene, detail, humorous observation, or useful question has enough
+  specific material to stand on its own. A personal note need not argue a theory or
+  generalize a mechanism. Do not invent a second act.
+- **essay** — several distinct, load-bearing pieces of material interact: the material sustains the central point or personal narrative, any live objection or boundary can be engaged, and multiple sections would each contain evidence/experience that could not have been written before this material existed.
 - **tracker** — the primary task is to score or qualify a **previously published falsifiable claim/prediction**, and current evidence is sufficient to say what happened. `tracker` is not an escape hatch for a thin new thesis and is not selected merely because a new Note/Essay contains a prediction.
 
 ### The irreplaceable-material test
@@ -91,7 +96,7 @@ These rules amend the old checklist wording in `docs/pipeline.md` §5.
 
 A Note needs:
 
-- one arguable/repeatable claim **or** one genuinely useful unresolved question;
+- one supported point, specific personal scene/observation, **or** useful unresolved question;
 - at least one irreplaceable concrete example, mechanism, firsthand observation, or evidence-bearing case;
 - clear ownership and epistemic boundaries;
 - both language versions with Claim Ledger parity;
@@ -101,7 +106,7 @@ A counterpoint is **conditional**, not a slot. Include one when a strong informe
 
 ### Essay
 
-An Essay includes the Note requirements and also needs enough material for multiple genuinely distinct sections, a mechanism-level argument, current sources where needed, and honest treatment of the strongest **live** objection/boundary.
+An Essay includes the Note requirements and also needs enough material for multiple genuinely distinct sections, a mechanism-level argument where the piece makes a causal claim, current sources where needed, and honest treatment of the strongest **live** objection/boundary.
 
 A falsifiable statement or prediction is **opportunistic**. If the argument naturally produces one, record it in frontmatter / tracker machinery. If not, the Essay can still pass. Never generate a 2027 prediction because the checklist expects tracker fuel.
 
@@ -137,7 +142,11 @@ The outline comes **after** the Material Audit and Form decision. Draft from the
 4. Decide which candidate sections pass the irreplaceable-material test.
 5. Draft the first language naturally from the shared package.
 6. Draft the second language clean-room style from the same package, preserving #69 claim parity without mirroring structure.
-7. Run the human pass as a diagnostic/editing pass, not a quota-filling pass.
+7. Check the natural endpoint: mentally remove the late portion; keep it only when it
+   adds necessary material or a live objection. No fixed deletion percentage.
+8. Review ownership, evidence, and title/excerpt certainty before the human-style pass.
+   Apply the integrated checks in `docs/editorial-critic.md`; then edit wording without
+   inventing author judgments. The independent critic checks scope again before Ready.
 
 An unresolved ending is valid. "We do not know yet" is valid when that is what the material supports. Research can make facts clearer; it cannot manufacture an author-owned resolution.
 
@@ -160,7 +169,8 @@ Mechanical failures (broken links, Claim Ledger parity gaps, build errors) can s
 
 ## 8. Retrospective signal
 
-The gardener tracks late downgrades (`Downgrade to note` author comments and the >7-day gate downgrade), split by the drafter's originally declared form/tier. A high Essay → Note rate is evidence that the drafter is over-tiering upstream.
+The gardener may inspect explicit author downgrades for scope mistakes. Age-based
+downgrades are removed. A paused draft is not evidence that the author owes publication.
 
 ## 9. Regression fixtures
 
@@ -168,7 +178,9 @@ Use these fixtures when changing the policy:
 
 - **PR #62**: the useful material was a narrow firsthand observation plus an explicit hardware/domain boundary. It should be recognized early as `field-note` / `note`, not expanded into DAC vendor architecture, DO-178C, a coined framework, and a forecast merely to look complete.
 - **PR #58**: where the central claim still lacks enough owned/evidenced mechanism, the right result is `fragment` / more research or interview before polish, not smoother connective prose.
-- **`taste-is-a-bet`**: a piece with an author-owned correction story, multiple concrete examples, and interacting claims can still earn `essay`. The point is not to prefer short work; it is to make long form pay for itself with material.
+- **`taste-is-a-bet`**: inspect the original input and sources before assuming a correction
+  story or cross-domain conclusion is author-owned. Use the frozen source-backed cases
+  in `tests/editorial/author-led-v1.md`; the old positive label is not adoption evidence.
 
 ## Relationship to sibling issues
 

@@ -55,9 +55,9 @@ describe('editorial critic integration contract', () => {
 
   it('wires the critic between drafter and ship gate in both canonical pipeline docs', () => {
     expect(pipeline).toContain('03b Editorial critic');
-    expect(pipeline).toContain('### 4.3b Thursday — Editorial critic');
+    expect(pipeline).toContain('### 4.3b Independent scope review — Editorial critic');
     expect(pipelineZh).toContain('03b 编辑批评器');
-    expect(pipelineZh).toContain('### 4.3b 周四 — 独立编辑批评器');
+    expect(pipelineZh).toContain('### 4.3b 独立审稿 — 编辑批评器');
   });
 
   it('keeps v3 child signals behind the same integration surface', () => {
