@@ -1,25 +1,10 @@
-# Retired
+# Retired editorial prompts
 
-These automations are **retired**. They are superseded by the editorial pipeline
-in [`docs/pipeline.md`](../../docs/pipeline.md), whose runnable prompts live in
-[`automations/`](../../automations/).
+The old `article-drafter.md` and `topic-scout.md` are retired. Current instructions live
+in [`automations/`](../../automations/) and [`docs/pipeline.md`](../../docs/pipeline.md).
 
-| Old (here) | Replaced by |
-|---|---|
-| `article-drafter.md` | `automations/03-drafter.md` (Thursday, opens a PR for review — never merges) |
-| `topic-scout.md` | `automations/01-topic-scout.md` (Monday, ≤3 candidates, expiry enforced) |
-
-## Why they were retired
-
-The old drafter ran **twice a week** and opened plain PRs with no ship-gate
-verdict and no Desk card, so drafts could be merged without going through review.
-That is how unreviewed posts reached the site. The pipeline replaces it with a
-**single weekly drafter** whose output is gated by `automations/04-ship-gate.md`,
-the `/desk` review surface, and the `Content gate` CI check (`.github/workflows/`),
-which blocks any content PR that fails the mechanical tier checklist.
-
-## Action required (one-time)
-
-Removing these files stops nothing on its own — **unschedule the old Codex
-routines in whatever scheduler runs them** (the twice-weekly "backlog-to-article
-drafter" and the topic scout). Keep only the `automations/01–05` routines live.
+Removing files or editing prompts does not stop an externally configured task. Inspect
+actual schedules before rollout and retire duplicate drafters or pasted production
+prompts. New drafting requires explicit intent tied to selected material; no output is
+normal. Optional discovery may run without creating a publishing assignment. This
+repository change does not claim any external task was disabled or rescheduled.

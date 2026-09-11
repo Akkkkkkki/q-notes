@@ -99,7 +99,7 @@ elsewhere.
 - link/formatting errors;
 - punctuation and ordinary prose polish;
 - voice/style warnings that preserve the same semantic claim;
-- cadence and stale-PR clocks.
+- publication scheduling, which belongs to the author.
 
 This boundary matters. The critic must be strong enough to say `SKIP`, while the ship gate
 must remain strong enough to stop perfectionism once scope is settled.
@@ -187,22 +187,44 @@ expansion, prediction, ceremonial counterargument, or neat closer, default to `C
 
 An article is allowed to stop when its idea is complete.
 
-## v3 integration surface
+## Integrated evidence and scope checks
 
-Issue #68 remains the **single integration owner** for later v3 reasoning signals. As
-#87–#97 land, their shared data/checks feed this same critic internally. They must not add
-permanent competing top-level reviewer contracts to content PRs.
+Issue #68 remains the **single integration owner**. Apply #87–#95 through this existing
+critic, not separate required documents, reviews, or PR sections. Record compact support
+notes beside load-bearing Claim Ledger entries and reuse those IDs throughout review.
 
-Potential internal signals include evidence roles, inference distance, article spine,
-natural endpoint, analogy transfer, concept maturity, title claim ceiling, live-objection
-damage, prediction scoreability/ownership, and archive canonical status.
+- **Claim-relative evidence:** name what a source supports for this claim: direct
+  evidence, example, context, analogy, or counterexample. A prevalence measurement can
+  directly support a prevalence claim but not its proposed cause. Several adjacent
+  sources still do not establish that cause.
+- **Inference:** name the supporting premises and missing link in plain language.
+  An accurate citation cannot establish a multi-hop conclusion. Narrow, qualify, remove,
+  or ask the consequential question; do not expose a numeric inference taxonomy to Q.
+- **Spine:** organize around one idea, case, question, or evidence-based tracker
+  assessment. Hiding citations should leave a coherent point rather than a source tour.
+  Restructuring is an action under CUT/SPLIT, never a sixth verdict.
+- **Analogy and categories:** an analogy explains a comparison; it does not establish
+  the target mechanism. Test a proposed category against a meaningful edge case. Omit
+  labels that do no work beyond plain language; no taxonomy is required.
+- **Public claim ceiling:** title, excerpt, social description, and other public metadata
+  must preserve the body’s supported scope and uncertainty. A qualified body does not
+  excuse an overconfident title. This blocks readiness until repaired and reviewed.
+- **Objections and predictions:** keep a live objection that can change the thesis,
+  even when it appears late. Predictions need an observable outcome, bounded population
+  or event, and clear scoring conditions; do not invent one or sharpen an ill-posed
+  prediction just to complete an article. Explicit adoption still governs ownership.
+- **Natural endpoint:** the drafter runs this after drafting, and the critic checks it
+  independently. Remove completion furniture, not an arbitrary percentage. Supported
+  technical writing can progress intact; personal writing can end with detail, humor,
+  or a useful open question without a mechanism-level theory.
 
-A missing future signal is not automatically a blocker. #68 owns severity. The public PR
-result remains the compact five-section contract above.
+These checks precede ordinary style polishing. They feed the same compact verdict.
+Do not award KEEP because text sounds fluent, or downgrade merely because it is long.
 
 ## Regression philosophy
 
-The semantic calibration set is `tests/editorial/critic-v2.md`.
+The semantic calibration sets are `tests/editorial/critic-v2.md` and
+`tests/editorial/author-led-v1.md`; source-backed snapshots override old shape-only assumptions.
 
 Do not snapshot model prose. Test outcomes and failure families instead:
 

@@ -1,51 +1,24 @@
-# Routine 01 — Topic scout
+# Routine 01 — Optional discovery
 
-Schedule: Monday 08:00. Requires web access. Commits directly to `main` (no PR).
+Trigger: requested reading or an existing optional discovery schedule. Requires web
+access. Read `AGENTS.md`, `docs/pipeline.md`, and the backlog format first.
 
-## Role
+Surface useful reading or a question; do not generate a publishing assignment. No
+minimum candidate count or author-hook quota. A week with no candidate is normal.
 
-You maintain the idea queue for `q-notes`, a bilingual personal essay site. Your job is
-not to summarize news. It is to surface early, mechanism-level ideas the author can add a
-distinctive point of view to — and to keep the queue honest by expiring what went stale.
+1. Review the existing backlog to avoid duplicate recommendations. An old source may
+   need rechecking; age is not permission to draft from it or consume author answers.
+2. Read author-selected interests and relevant archive context. Archive bodies can
+   support history, continuity, and source discovery, never current author adoption.
+3. Browse current primary or near-primary sources. Prefer a specific case, useful
+   finding, or question over generic trend summaries. Check what a source actually
+   supports; topical relevance and analogy do not prove a causal conclusion.
+4. Offer at most three worthwhile candidates, fewer when appropriate. Name the source,
+   what is interesting, and one useful optional question. Do not supply Q's stance or
+   require a theory, objection, or prediction for a personal observation.
+5. Add only public-safe external research to the backlog when useful and authorized.
+   Do not copy private captures or raw author material into public Git. Preserve
+   existing records. A zero-result run needs no commit or filler report.
 
-Read `AGENTS.md` for the editorial north star and `research/backlog.md` for the existing
-queue format before doing anything.
-
-## Steps
-
-1. **Expire first.** Any item in `research/backlog.md` with `Status: Backlog` whose date
-   is 21 days or older: change its status to `Expired (YYYY-MM-DD)`. Do not delete
-   the entry; decay should be visible. (The flow surface projects this same 21-day cutoff
-   at read time, so an item already reads as expired the day the scout is due to reap it —
-   keep the two in step.)
-2. **Read the author's own material.** Review `research/inbox.md` (the author's raw
-   sparks) and skim the published posts in `src/content/posts/`. Note the positions and
-   predictions the author has already committed to.
-3. **Scout.** Browse high-signal sources from the last 7–14 days (researchers, operators,
-   founders, independent analysts, technical communities, podcasts/transcripts — not
-   pre-packaged mainstream reports). Topics: AI, software, business, robotics,
-   consulting/professional services, AI x gaming, occasional philosophy/media/culture.
-4. **Select at most 3 candidates**, subject to:
-   - At least one candidate must connect to an inbox spark or extend/test a position from
-     a published post. Say which, explicitly.
-   - Include one **disagreement-hunt** candidate when possible: a smart, current take the
-     author would plausibly disagree with given their published positions. Original
-     essays come from friction, not agreement.
-   - Reject anything reducible to "AI will change X", anything whose only source is an
-     institutional report, and anything already mainstream consensus.
-5. **Fact-check** each candidate's factual substrate and stress-test the logic (strongest
-   argument, best counterargument, what would falsify it).
-6. **Append** the survivors to `research/backlog.md` using the template at the top of
-   that file, with two additions to each entry:
-   - **Author hook:** the inbox spark, published post, or known position this connects
-     to — or "none" with one sentence on why it still earns a slot.
-   - **Two interview questions:** the questions you would ask the author to extract what
-     only they can add.
-7. **Commit directly to `main`** with message `scout: <N> candidates, <M> expired (YYYY-MM-DD)`.
-   If zero candidates survived the bar, still commit the expiry changes and append a
-   dated one-paragraph run note explaining what was considered and rejected.
-
-## Quality bar
-
-Fewer, sharper, more personal. A thin week with one strong author-anchored candidate
-beats five generic trend reports. You are feeding a thinking process, not a content mill.
+A reading recommendation, inbox spark, or near-expiry candidate does not authorize an
+interview assignment or a draft. Wait for the author to choose whether to develop it.

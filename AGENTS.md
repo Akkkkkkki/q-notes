@@ -2,9 +2,27 @@
 
 This repository is a personal website for publishing sharp notes, opinions, essays, and blog posts. Treat it as an editorial system, not as a generic application repo.
 
-The editorial pipeline — content tiers, weekly automation loop, definitions of done, and the bilingual contract — is defined in `docs/pipeline.md`. **`docs/material-form.md` is the normative material/form addendum for Issue #67 and amends the tier-length, counterpoint, prediction, and form-fit rules in `docs/pipeline.md` §3/§5. Where those older checklist bullets conflict, the addendum wins.** `docs/editorial-critic.md` defines the independent scope/novelty review introduced by Issue #68. Runnable stage prompts live in `automations/`. Any agent drafting or editing content must read the applicable canonical documents and follow them together.
+The editorial pipeline — content forms, author-led assistance, definitions of done, and the bilingual contract — is defined in `docs/pipeline.md`. **`docs/material-form.md` is the normative material/form addendum for Issue #67 and amends the tier-length, counterpoint, prediction, and form-fit rules in `docs/pipeline.md` §3/§5. Where those older checklist bullets conflict, the addendum wins.** `docs/editorial-critic.md` defines the independent scope/novelty review introduced by Issue #68. Runnable stage prompts live in `automations/`. Any agent drafting or editing content must read the applicable canonical documents and follow them together.
 
 **Phase-0 strict-v1 provenance override (#98/#97): until #97 is fully implemented and the canonical docs are consolidated, published article bodies are archive/context only and never authorize a current `Q-explicit` position by themselves. This override takes precedence over broader legacy wording in `docs/pipeline.md` §10. Current author positions may be authorized only by current author interview/capture/input, explicitly adopted `research/positions.md` entries, or explicitly promoted `research/voice.md ## Stances`.**
+
+## Author intent and review order
+
+Capture → choose whether to develop → author writing or targeted AI help → review
+ownership/meaning/evidence → edit style → bilingual preview → explicit publication.
+A private fragment, an unresolved question, or no draft is an ordinary successful outcome.
+Saving an answer, a calendar firing, expiry, and earlier publication never authorize a
+new draft. Use author-selected material with explicit drafting intent; a current
+`Ready to draft` authorizes only that supplied material. Check that authorization has not
+been withdrawn or consumed by another draft. Existing complete drafts need no interview.
+Keep original input intact. Do not commit private working material to this public repo;
+follow the verified storage boundary in #142. Login and noindex do not make Git private.
+
+Offer targeted help only when useful: ask one question, challenge a claim, find evidence,
+or suggest an edit. Whole-draft generation is available on explicit request. No required
+retelling, A/B exercise, three-phrase quota, title/last-line exercise, publishing cadence,
+or age-based downgrade/closure. Preserve confirmed preferences and explicit adoption.
+Personal writing may earn its place through scene, detail, humor, or an open question.
 
 ## Editorial north star
 
@@ -13,7 +31,7 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 - Prefer specific claims, concrete mechanisms, and crisp tradeoffs. Use falsifiable predictions when the material naturally earns one; never manufacture a prediction to complete an Essay shape.
 - Keep the tone slightly more professional than personal, but do not remove the author's voice.
 - Favor topics around AI, technology, software, business, robotics, consulting/professional services, gaming intersecting with AI, and occasional philosophy, media, or culture when there is a strong idea.
-- Avoid publishing "correct but useless" observations: every piece should contain a point of view a thoughtful reader can argue with or remember.
+- Avoid generic observations. An argued piece needs a clear supported point; a personal piece can earn its place through a specific scene, detail, humor, or an open question.
 - **Material decides form.** `Ready to draft` authorizes supplied material; it does not select Essay. Before choosing tier, form, or outline, run the Material Audit in `docs/material-form.md`. Choose the smallest honest form the material supports.
 - **Scope earns shipping separately from polish.** Every content PR must receive the independent editorial critic in `automations/03b-editorial-critic.md` before Routine 04 can say Ready. The critic may return `KEEP`, `CUT`, `DOWNGRADE`, `SPLIT`, or `SKIP`. Only a current applicable `KEEP` advances to the ship gate.
 - The editorial critic owns thesis/scope/evidence/novelty decisions; deterministic build/parity/mechanical checks and ordinary voice polish stay with the content/ship gates. Do not collapse the two roles.
@@ -31,7 +49,7 @@ The editorial pipeline — content tiers, weekly automation loop, definitions of
 ## Article style
 
 - Target a reading time under 5 minutes unless explicitly asked otherwise. Length is an output of the material, not a floor to fill.
-- Open with the strongest claim or tension; avoid throat-clearing.
+- Open with the strongest claim, tension, scene, or detail the piece actually has; avoid throat-clearing.
 - Use sections only when each section contains material that could not have been written before the interview/research. If a section is generic connective tissue, cut it.
 - End when the material is done. A memorable implication, unresolved question, or prediction tracker is useful when earned; a neat conclusion is not mandatory. The editorial critic explicitly tests whether a late third act is separable.
 - Make the argument sharper during revision: remove generic framing, reduce caveats that do not change the conclusion, and replace abstractions with concrete examples.
