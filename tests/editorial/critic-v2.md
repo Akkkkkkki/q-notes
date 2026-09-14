@@ -73,6 +73,11 @@ Specific game cases now carry the mechanism and constrain the argument.
 
 ## Fixture E — `taste-is-a-bet`
 
+**Historical shape-only fixture, superseded for this article by #85/#147.** The earlier
+positive expectation below applies only to a hypothetical version with independently
+verified author ownership and source support. It does not certify the current article.
+Use `author-led-v1.md` for the inspected source/input package and missing evidence.
+
 **Known shape**
 
 The piece reuses prior taste/judgment terminology but genuinely corrects/deepens the older

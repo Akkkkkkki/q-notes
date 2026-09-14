@@ -1,6 +1,8 @@
 # Routine 03 — Drafter
 
-Schedule: Thursday 08:00. Requires web access. Opens a ready (non-draft) pull request.
+Trigger: explicit author drafting request, or a check for an unconsumed author-marked
+`Ready to draft` brief. Requires web access for external claims. Opens a ready
+(non-draft) pull request only when the authorized material supports one.
 
 ## Role
 
@@ -19,35 +21,30 @@ broader legacy wording in `docs/pipeline.md` §10. Current author positions may 
 authorized only by current author interview/capture/input, explicitly adopted entries in
 `research/positions.md`, or explicitly promoted entries in `research/voice.md ## Stances`.**
 
-## The fallback ladder — never skip, never go silent
+## Entry condition — selected material and drafting intent
 
-Produce the highest rung the material honestly supports:
+Read `AGENTS.md` and `docs/pipeline.md` first. Find an explicit author request to draft
+from selected material, or a current author-marked `Status: Ready to draft` brief.
+Check later author edits/comments for withdrawal or changed scope, and existing PRs and
+`Drafted` records for an already-consumed request. Continue the existing piece rather
+than opening a duplicate. An old adoption record can support ownership; it does not
+request a new article. Reuse confirmed material only within its recorded authorization.
 
-1. **An interview file is marked `Status: Ready to draft`** (the author's explicit
-   green light) → the answers are authorized for publishable use. Re-validate every
-   external source before relying on it, then choose the smallest honest form supported
-   by the Author Kernel below. A ready brief may support an Essay, but readiness does
-   **not** override a `domain-limit`, a tentative claim, an unresolved author-judgment
-   question, or thin firsthand material. Those can cap the piece at a Note / field note
-   or leave a question unresolved rather than being filled by research synthesis.
-2. **An interview file has answers but is *not* marked ready** → the author is still
-   in control of it; do **not** build a full Essay on answers they haven't signed off,
-   and do **not** change its `Status`. Prefer to leave it for the author to finish and
-   mark ready. Use it only as **Note** material when it is the only developable thing
-   available or the brief is near expiry — keep the Note under its normal 700-word
-   ceiling unless the material genuinely needs more, with no minimum to fill — and say
-   in the PR body that this came from an unsigned-off brief, so a fuller pass can still
-   follow once the author marks it ready.
-3. **No usable answers, but `research/inbox.md` has a developable spark** → draft the
-   smallest **Note** that develops that spark. One idea, one concrete example or
-   mechanism, and an acknowledged counterpoint only when a real counterpoint is live;
-   never add words to reach a minimum band.
-4. **None of the above** → draft a **Tracker** or Note connecting a published post's
-   claim or prediction to something that happened since. A Tracker is valid only when
-   its primary job is to score/qualify that prior falsifiable claim against new evidence.
-5. **Genuinely nothing clears the bar** → append a dated one-paragraph run report to the
-   newest interview file (or `research/backlog.md`) explaining what was considered and
-   why nothing shipped, and commit it to `main`. This rung should be rare.
+- No material or no drafting intent: stop without creating a content PR. A short outcome
+  in the run response is enough; do not append filler reports to source files or main.
+- Saved answers without Ready to draft remain untouched as source material, even when
+  every answer is complete or the brief is near expiry. They cannot become a Note.
+- An inbox spark, optional reading, an old post, or a prediction date cannot substitute
+  for drafting intent. A declined subject does not trigger a different draft.
+- A supplied complete draft can enter review directly. Do not require an interview.
+- Authorization permits work within the supplied scope, not mandatory completion. A
+  private fragment, question, or no draft may still be the honest result. Preserve input
+  in place; do not copy it into public Git/PR metadata to demonstrate that work occurred.
+
+Once intent exists, review ownership, meaning, and evidence before style. Follow the
+material/form contract below; no theory, objection, taxonomy, prediction, or conclusion
+is required. A 200-word personal observation can be complete. Whole-draft generation is
+available when requested, with model interpretations kept separate from adopted views.
 
 Answer directions (`→ ` lines under a question) are prompts the interviewer offered,
 not the author's words — treat a question as unanswered unless the author actually
@@ -222,13 +219,13 @@ Only after the audit and form decision are fixed should you create the outline.
 
 ## Drafting rules
 
-- Lead with the tension, thesis in the first two paragraphs, no throat-clearing,
+- Lead with the useful point, scene, or detail; an argued piece should reveal its thesis
+  early. No throat-clearing,
   concrete over abstract, engage a counterargument honestly **when a real one is live**,
   speculation labeled.
 - Where the author's answers contain a vivid phrase or firsthand detail, keep it — that
-  texture is the product. Carry **at least three of the author's own phrases verbatim**
-  into the draft (the verbatim spine), choosing phrases that carry the piece's actual
-  claims, not filler. Never launder a vivid fragment into smooth prose. Where their
+  texture is the product. Preserve useful original phrasing without a phrase quota;
+  a short piece may need only one detail. Never launder a vivid fragment into smooth prose. Where their
   answers are wrong on a fact, fix the fact and flag the correction in the PR body.
 - Draft only from the Claim Ledger frozen before the audit. Do not introduce a new
   load-bearing mechanism, causal theory, framework, prediction, coined category, or
@@ -251,6 +248,13 @@ Only after the audit and form decision are fixed should you create the outline.
   sentence level — so splitting a sentence for readability is always allowed and never a
   parity violation, in either language. Long sentences are earned only when walking
   through one mechanism.
+- **Run the natural-endpoint check after drafting, before style polishing.** Ask what
+  would be lost if the final roughly 30% disappeared. Keep late evidence or an objection
+  that changes the central point; cut a detachable theory, implication, or conclusion.
+  The percentage is a probe, not a deletion quota. Check the title, excerpt, and public
+  metadata against the same supported claim and uncertainty as the body. Use the
+  evidence rules in `docs/editorial-critic.md`; flag unsupported inferences before
+  smoothing their wording. The independent critic repeats this check later.
 - **Run the human pass before opening the PR.** After both language versions are
   complete, run the pre-publish checklist in `research/human-voice.md` §4 on each
   version as a named revision step: the talk test (would you say this sentence to a
@@ -258,8 +262,8 @@ Only after the audit and form decision are fixed should you create the outline.
   diagnose suspiciously uniform rhythm without manufacturing a short/long paragraph or
   casual touch, no framing reused from the last three posts, 中文版不是英文的对齐翻译.
   Include one line in the PR body confirming the pass ran and what it changed. A
-  first-person moment must trace to author input; if the material has none, flag the gap
-  in the PR body instead of inventing one. Never write a mental-history claim — "I used
+  first-person moment must trace to author input; if the material has none, do not
+  invent one or treat its absence as a defect. Never write a mental-history claim — "I used
   to think...", "I've come to think...", "I changed my mind...", "what convinced me
   was...", "the correction came when...", "I was wrong because..." — unless the
   author's material actually contains that change-of-mind story (`docs/pipeline.md`
@@ -335,35 +339,23 @@ File placement depends on whether the Phase 2 bilingual site work (`docs/pipelin
    §5) — uncontracted English, stacked corrective pivots, question volleys, clustered
    paragraph lengths, 万能动词. Fix them before the author sees them; leave a warning
    standing only when the fix would cost a load-bearing line, and say so in the PR body.
-1. Mark the source backlog item `Drafted in <path> on YYYY-MM-DD`. For a **rung 1**
-   (ready) brief, also mark the interview file `Status: Drafted`. For a **rung 2**
-   (unsigned) brief used only as Note material, leave its `Status` untouched so the
-   author can still finish it and mark it ready for a fuller pass.
+1. Only after a draft exists, link it from the selected source and mark an authorized
+   brief `Status: Drafted`. Do not alter unsigned answers or mark a no-draft outcome as
+   consumed. Do not publish private source text in working notes or PR metadata.
 2. Run `npm run build`; fix what breaks.
-3. Open a **ready** pull request. Body must include: tier and thesis; which rung of the
-   ladder this came from; sources re-checked; the 2–3 things the author should challenge
-   hardest; any factual corrections made to the author's answers; the exact
-   **`## Material Audit`** and **`## Form decision`** from Step 0.5; a **Bilingual
-   parity** table keyed by the shared Claim Ledger IDs (do not say the two files carry
-   claims "in the same order"); a **Voice** section listing the verbatim-spine phrases
-   kept and any opinion you could not trace to author input (this list should be empty —
-   if it isn't, each entry is phrased as a question for the author, not a claim); an
-   **Author Kernel** section (the tagged Kernel fragments from Step 0, including
-   interview answer provenance and every material `domain-limit`; say whether any limit
-   reduced the chosen scope/tier); a **Claim ledger** section, one stable ID per
-   load-bearing claim; a **Candidate hypotheses — not yet yours** section listing
-   **every** unadopted `Model-hypothesis`, numbered `H1.`, `H2.`, ... — including one
-   already written into the prose as a hedged open possibility ("One possibility is…"),
-   not only the ones fully omitted from it. A hedged entry needs an Hn the same as an
-   omitted one, or the author has no id to adopt/reject by; say in its `Why it emerged`
-   line whether it's already in the draft or was left out entirely. Each entry carries
-   `- Why it emerged:`, `- Would change the piece by:`, and `- Status: not adopted` (the
-   whole section is empty only when the draft has no unadopted hypothesis at all —
-   including hedged ones — since the draft must read correctly with every listed
-   hypothesis absent; the author replies `**Adopt hypothesis — Hn**` or
-   `**Reject hypothesis — Hn**` on the PR); an **A/B calibration** section (below); and
-   **three title options per language** (the one used plus two alternates), so the author
-   can swap titles at ship time without composing anything.
+3. Open a **ready** PR for review, never auto-merge. Record the request/authorization
+   reference, supported point, scope left open, and validation. Keep the existing
+   `## Material Audit`, `## Form decision`, `## Claim ledger`, and `## Bilingual parity`
+   headings for client compatibility. Together these are one compact review record:
+   cross-reference claim IDs and source/input references instead of repeating evidence.
+   The Material Audit can point to the Author Kernel; the Kernel may be a short safe
+   source reference rather than a second inventory. Do not paste confidential raw input.
+   Record evidence role and any inference gap beside the relevant claim, not as new
+   mandatory audit sections. Include `## Candidate hypotheses — not yet yours` only for
+   hypotheses actually under consideration, preserving the Hn adoption protocol below.
+   Present Q only with consequential decisions. Do not require Voice, A/B calibration,
+   title alternatives, retelling, or author-written final lines. Optional alternatives
+   can be supplied when Q asks; an unanswered optional choice does not block review.
 
 Use these exact semantic shapes for the two parity sections (the claim text may be
 shortened for readability, but the IDs must match):
@@ -390,37 +382,12 @@ it does **not** justify harmless structural divergence. A missing required claim
 certainty, changed number/date, changed causal direction, or source mismatch is a parity
 failure. Different order/headings/paragraphing/length is not.
 
-## A/B calibration (every draft PR)
+## Optional wording alternatives
 
-Pick 1–3 load-bearing sentences or short passages from the draft — an opening, a claim,
-a closer — and for each, offer 2–3 alternative renderings that differ in something real:
-sentence shape, register, or degree of 中英混排. Label them A/B/C, put the version used
-in the draft first, and ask one question: "哪个像你说的？" The author replies with the
-letter, optionally one line of why; each choice becomes voiceprint signal (`A/B choice`
-source tag) that the gardener mines monthly. Hard cap: **three questions per PR** —
-each must be answerable from a phone in ten seconds, and a skipped question is a valid
-answer. Never block the PR on the A/B replies; the drafted version stands until the
-author says otherwise.
-
-The section must use this exact shape — the phone client (Publish tab) parses it into
-one-tap questions, and anything else is invisible to the author's thumb:
-
-```md
-## A/B calibration
-
-哪个像你说的？点选或回复编号（例：1B）；跳过也是有效回答。
-
-1. <where the passage sits — e.g. "en opening" / "zh 结尾">
-   - A. <the version used in the draft>
-   - B. <alternative>
-   - C. <optional third alternative>
-```
-
-Numbered question lines, lettered options as list items, the drafted version always A.
-The author's choices come back as PR comments (`**A/B calibration — Q1: B.**`) and as
-raw dated records the Desk appends to `research/voice.md ## Proposed`; treat an answered
-question as settled. The Friday ship gate applies the chosen rendering to the PR
-(routine 04, step 4) — you apply it only if you make another pass over the draft first.
+Only when requested, offer a small number of meaningful alternatives. Existing Desk
+comments and the `## A/B calibration` numbered/lettered format remain supported for
+older PRs. Honor explicit choices already made; do not generate a calibration exercise
+for every piece or automatically turn a single edit into a permanent voice rule.
 
 ## Candidate hypotheses (same PR, when any Model-hypothesis exists)
 
@@ -447,7 +414,7 @@ H2. <a second hypothesis you already wrote in as a hedged possibility>
 Omit the section entirely only when the draft has no unadopted hypothesis at all —
 including hedged ones. The draft must read correctly with every listed hypothesis absent
 or left hedged — a hypothesis is bonus material, not scaffolding. The author replies
-`**Adopt hypothesis — H1**` or `**Reject hypothesis — H1**`; the Friday ship gate applies
+`**Adopt hypothesis — H1**` or `**Reject hypothesis — H1**`; the ship gate applies
 the decision (routine 04, step 4) — appending an adopted claim to
 `research/positions.md` and promoting it to a plain assertion in both languages, or stripping
 a rejected one with no record left anywhere.
