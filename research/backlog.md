@@ -1219,7 +1219,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-09-14 — The industry keeps buying identity when it needed containment
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-09-15
 
 **One-line thesis:** A wave of enterprise "agent identity" products launched within days of each other this month is being bought and reported as if it solves agent trust, but the same September data shows the gap between having a scoped agent identity and actually containing what a rogue agent can do is barely closing — the exact distinction the site made about a payment wallet, now visible industry-wide instead of at one company.
 
