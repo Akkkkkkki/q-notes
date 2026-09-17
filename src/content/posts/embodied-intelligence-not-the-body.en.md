@@ -1,7 +1,7 @@
 ---
 title: "Embodied intelligence is the intelligence, not the body"
 date: 2026-09-17
-excerpt: "\"Embodied intelligence\" is a claim about the intelligence, not the body. My test: pull the intelligence out and see if anything changes. Whether an AI-branded baby crib would survive that swap is a real, unanswered question. Whether a big enough model gets a pass it hasn't earned is another one."
+excerpt: "\"Embodied intelligence\" is a claim about the intelligence, not the body. My test: pull the intelligence out and see if anything changes. Whether an AI-branded baby crib would survive that swap is a real, unanswered question. Whether a big enough model would earn a pass anyway is another one I haven't settled."
 tags: ["ai", "robotics", "language", "note"]
 lang: en
 translationKey: embodied-intelligence-not-the-body
@@ -10,7 +10,7 @@ connections:
   linksTo: ["ai-native-game-is-a-test"]
 ---
 
-I keep running into products wearing "具身智能," or embodied intelligence, like a sticker, and it's starting to bug me. Nobody stops to notice what the phrase is actually claiming: an intelligence that happens to be embodied. The emphasis belongs on the first word, not the second.
+I keep running into products wearing "具身智能," or embodied intelligence, like a sticker, and it's starting to bug me. Nobody stops to notice what the phrase is actually claiming: an intelligence that happens to be embodied. The emphasis belongs on "intelligence," not "embodied."
 
 Take 亲宝宝's "AI睡眠舱," an AI-branded baby crib that [went on sale in July 2026](https://cn.chinadaily.com.cn/a/202608/18/WS6a8416d0a3105d3d7a27b8fd.html), pitched as completing a "perception-decision-execution-feedback" (感知-决策-执行-反馈) closed loop entirely inside the crib. That's real embodied-intelligence vocabulary, applied to a crib. Whether it earns the label is a separate question, and it's the one worth asking. The crib's own marketing lists real sensing (cameras, infrared, pressure, radar) and real actions (soothing music or a story, a temperature alert, tracking a baby's growth), but none of that tells you whether the "decision" step in between is doing real work. Swap it for a fixed if-this-then-that rule — cry sound triggers lullaby, temperature threshold triggers alert — and I don't know whether the same actions would still fire on the same triggers.
 
