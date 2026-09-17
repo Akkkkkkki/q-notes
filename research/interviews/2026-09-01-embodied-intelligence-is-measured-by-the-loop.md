@@ -1,7 +1,7 @@
 # Interview: "Embodied intelligence" is measured by the loop, not the sensor
 
 **Source:** backlog item 2026-08-31 — "Embodied intelligence" is measured by the loop, not the sensor | inbox spark "有点烦 现在大家什么都要叫具身智能...我觉得我们应该写一篇文章来聊聊我认为的具身智能是什么" (2026-08-29)
-**Status:** Ready to draft (2026-09-03)
+**Status:** Drafted (2026-09-17, second attempt — see run note below)
 
 ## The idea in three sentences
 
@@ -139,3 +139,200 @@ overwhelming. The fastest path back to a real draft next week is 15–30 minutes
 whichever of the four briefs is easiest to answer cold — `embodied-intelligence` has the
 most concrete anchor (the AI 睡眠舱 crib) and the author's own spark already states the
 thesis, so it may be the quickest to turn around.
+
+## Drafter run report — 2026-09-17
+
+Second attempt at this interview. The first (PR #139, opened 2026-09-10) was closed
+unmerged by the author the same day, as part of a broader content-quality reset
+(#140/#143), for three specific reasons that survived an earlier round of Codex-review
+fixes: (1) both excerpts asserted the crib actually fails the removal test, when the
+body only supported a hypothetical — listing the crib's sensors/actions never
+established that a fixed-rule substitute would perform equivalently; (2) the closing
+paragraphs (EN and ZH) still tied the "embodied intelligence" vocabulary to
+valuations/funding as if causal, reintroducing a claim already challenged in review;
+(3) the opening overclaimed ("most" labeled products) and invoked an author history
+("As I keep telling people") not established by the interview, and the piece conflated
+"not intelligent" with "not a loop" — a fixed-rule controller can have feedback too, so
+lacking intelligence doesn't by itself mean lacking a loop. The author's close comment
+directed a revisit "as a short, explicitly bounded note from current author input, with
+aligned excerpts/body, verified external claims."
+
+This redo keeps the interview's rung-1 status (`Ready to draft`, 2026-09-03) and the
+same Author Kernel and Claim Ledger as the first attempt — nothing in the author's
+answers changed — but rewrites both language versions to fix exactly those three
+points:
+
+1. The removal-test application to the crib is now explicitly framed as an open,
+   unresolved question ("I don't know whether the same actions would still fire... Nobody's
+   published that comparison, including me") rather than an assertion that the crib
+   fails. The crib's documented sensing/action set is kept as verified fact; only the
+   claim about what a fixed-rule substitute would do is hedged.
+2. The funding/valuation figure (re-verified this run: 22 China-based embodied-
+   intelligence unicorns above ¥10B in H1 2026, ¥93.5B total sector financing — see
+   Sources below) is kept only as background with an explicit correlation-not-causation
+   hedge, and the word "valuation" was cut entirely from both closing paragraphs so
+   nothing reads as "the term makes valuations hold up."
+3. The opening drops "most" and the invented "As I keep telling people" framing. A new
+   paragraph in both languages makes the loop/intelligence distinction explicit — a
+   thermostat has a feedback loop and nobody calls it embodied intelligence, so the test
+   is whether the *decision* step is doing real work, not whether a feedback loop exists
+   in the engineering sense.
+
+No new load-bearing claim was introduced (the Claim Ledger below is unchanged from the
+first attempt except C4's number, corrected from "close to twenty" to the verified 22),
+so this stays a claim-preserving/voice-and-precision revision of the same semantic
+draft, not a new thesis, scope, or form decision.
+
+**Sources re-checked this run** (both blocked for direct fetch by network egress
+policy; re-verified via search-result summaries, consistent with how the original
+backlog research was sourced):
+- Crib product and its "感知-决策-执行-反馈" closed-loop marketing claim, confirmed via
+  中国日报网 (2026-08-18) and corroborating 科技日报/界面新闻/凤凰网 coverage; launch
+  confirmed as **July 2026** (press coverage followed in August).
+- Funding scale, confirmed via search summaries of 搜狐网/新浪财经/IT之家/36氪 coverage
+  of the same H1-2026 data: **22** China-based embodied-intelligence companies valued
+  above ¥10 billion (up from 3 in 2025), **¥93.5 billion** total sector financing, 322
+  financing events (+137% YoY).
+
+## Material Audit
+
+### Author-owned specifics
+- The author's own removal test, in their own words (Q2).
+- A vivid, self-aware admission of "jealousy" toward hype-makers (Q5) — real firsthand
+  texture, not invented.
+- An explicit, named epistemic boundary: no fuzzy case yet (Q3).
+- A tentative, hedged hunch about scale and perceived intelligence (Q4), explicitly tied
+  back by the author to the removal test in "AI-native game is a test, not a vibe."
+
+### Research specifics
+- The 亲宝宝 AI睡眠舱 crib: a dated, concrete, currently-marketed instance of the exact
+  overreach the author's inbox spark named, re-validated this run.
+- H1-2026 embodied-intelligence financing scale, re-validated this run and corrected to
+  the verified figure, used only as one hedged clause of background, not as an argument
+  pillar or a causal claim.
+
+### Open gaps
+- No author-supplied fuzzy boundary case (Q3) — an explicit domain-limit, kept open
+  rather than filled by research or model invention.
+- No specific "most absurd label" example beyond the crib (Q1 offered directions; none
+  picked a concrete instance beyond what the interview brief itself supplied).
+
+### Density judgment
+- Supported by this material: **note**
+- Why: unchanged from the first attempt — one arguable, repeatable claim (the removal
+  test) backed by the author's own words, one irreplaceable concrete case (the crib,
+  re-validated), a genuine live epistemic boundary the piece respects rather than
+  resolves, and one real firsthand admission. Not enough for an essay: no second
+  interacting mechanism, no engaged live counterargument beyond the author's own hedge.
+
+## Form decision
+- Chosen form: argument-note
+- Public tier: note
+- Strongest available material: the author's own removal test (Q2) plus the crib as a
+  case whose pass/fail is honestly unresolved, closed by the author's own tentative
+  doubt (Q4) and open question (Q3).
+- Material deliberately not expanded: no taxonomy of embodied AI vs. physical AI vs. IoT
+  beyond the author's own one-line list (Q5); no boundary case invented for Q3; no
+  claim that the crib actually fails the removal test, since that was never verified.
+
+## Claim ledger
+
+C1. "Embodied intelligence" is a claim about the intelligence, not about having a body — Q-explicit (interview Q1) — Required in: EN + ZH
+C2. The test: remove the intelligence and see if the product still serves the user the same way; whether that changes anything for a given product (e.g. the crib) is a separate, unresolved empirical question, not asserted either way — Q-explicit (interview Q2) — Required in: EN + ZH
+C3. The 亲宝宝 "AI睡眠舱" crib, on sale July 2026, marketed as completing a "perception-decision-execution-feedback" closed loop, with a documented sensing/action set — External (中国日报网 et al., re-validated) — Required in: EN + ZH
+C4. China's embodied-intelligence sector added 22 new ¥10B+ unicorns in H1 2026 (¥93.5B total financing) — External (搜狐/新浪财经/IT之家/36氪, re-validated) — Required in: optional (background clause, explicitly hedged as correlation not causation, non-load-bearing)
+C5. The removal test gets harder to apply once an unexplainably huge, hard-to-explain model drives the behavior, echoing how LLM scale made "intelligence" read as description rather than metaphor — Q-explicit, tentative (interview Q4) — Required in: EN + ZH
+C6. The author has no settled fuzzy-boundary case yet and says so explicitly, leaving it an open question — Q-explicit (interview Q3) — Required in: EN + ZH
+C7. Adjacent terms (embodied AI, physical AI, smart hardware, IoT, robotics) get conflated with 具身智能, fueling hype/bubbles; the author admits a personal "small sense of jealousy" toward hype-makers — Q-explicit (interview Q5) — Required in: EN + ZH
+C8. A feedback loop existing in the engineering sense (sensor → rule → actuator → sensor) is not the same question as whether the decision step is intelligent — a thermostat has the former without qualifying for either "intelligence" or "embodied intelligence" — Q-derived (a precision drawn from C1+C2 to avoid conflating "not intelligent" with "not a loop"; adds no new value judgment) — Required in: EN + ZH
+
+No `Model-hypothesis` claims exist in this draft — C5 originates from the author's own
+hedge (Q4), and C8 is a conservative near-inference from C1+C2, not a model-built
+theory — so no `## Candidate hypotheses` section follows.
+
+## Bilingual parity
+
+| ID | Claim | EN | ZH | Notes |
+|---|---|---|---|---|
+| C1 | Intelligence, not body | ✅ | ✅ | zh opens from the original 2026-08-29 inbox spark instead of the definition; en opens from the general irritation |
+| C2 | Removal test (unresolved for the crib) | ✅ | ✅ | both explicitly hedge "I don't know" / "我不知道" rather than asserting a result |
+| C3 | Crib example | ✅ | ✅ | same source, same figures, both languages |
+| C4 | Funding scale (optional, hedged) | ✅ | ✅ | both explicitly say correlation isn't causation; neither ties the term to valuation |
+| C5 | Scale blurs the test (tentative) | ✅ | ✅ | equivalent hedge ("我说不准" / "I don't have a settled answer") |
+| C6 | No settled boundary case yet | ✅ | ✅ | equivalent open invitation in both |
+| C7 | Term conflation + jealousy admission | ✅ | ✅ | zh folds the funding-deck/headline examples into a short clause instead of en's parallel pair, to avoid a 排比 construction in Chinese |
+| C8 | Loop ≠ intelligence (thermostat) | ✅ | ✅ | same thermostat example, both languages |
+
+## Voice
+
+Verbatim spine kept (EN): "the emphasis belongs on the first word, not the second";
+"even if you remove the intelligence part it still serves the user" (Q2, echoed in the
+loop/intelligence paragraph); "an unexplainably huge complex model"; "a small sense of
+jealousy."
+
+Verbatim spine kept (ZH, from the 2026-08-29 inbox spark): "有点烦"; "加了点传感器和算法的婴儿床"; "这个词炒得有些过热了" (grammar-smoothed from "炒的").
+
+Opinions not traceable to author input: **none** — every load-bearing claim traces to an
+interview answer, the inbox spark, or a re-validated External source stated as fact and
+explicitly hedged where the author's own material was itself tentative.
+
+Human pass (`research/human-voice.md` §4) ran on both language versions after drafting:
+- Talk test: read aloud; the opening was trimmed of an unsupported "As I keep telling
+  people" aside and a "most products" overclaim that didn't survive the talk test either.
+- EN: contractions by default throughout; one corrective pivot ration observed; `node
+  scripts/content-gate.mjs` flagged em-dash density (9 in 540 words) and paragraph
+  clustering on the first pass — both fixed directly: four dash pairs converted to
+  colons/periods (kept two genuine appositive-list pairs per voice.md's exception), and
+  a one-sentence paragraph ("Nobody's published that comparison, including me.") split
+  out as the isolated-verdict move already scaffolded in `research/voice.md ## Proposed`
+  (2026-09-01 entry), not manufactured filler.
+- ZH: rewritten from the argument, not translated from the English sentence order —
+  opens from the original Chinese inbox spark rather than the English opening. The gate
+  flagged 6 dashes in 909 Han chars on the first pass; all six converted to
+  colons/periods per voice.md's explicit "破折号能用逗号就用逗号" rule, none left
+  standing. One remaining advisory (0 concrete-scene words against a work-scene keyword
+  list calibrated for office settings) is left standing: the list (团队/客户/会议/PR/...)
+  doesn't fit a consumer-hardware piece, and inserting one of those words would be
+  artificial stuffing, not real grounding — the piece's concrete grounding is the
+  crib/thermostat mechanism itself.
+- One firsthand moment present in both languages (the "jealousy" admission), directly
+  traceable to Q5; no invented scene.
+- No mental-history claims ("I used to think...") anywhere in either version.
+- `node scripts/content-gate.mjs` run on both files after fixes: zero warnings except
+  the one documented above.
+
+## A/B calibration
+
+哪个像你说的？点选或回复编号（例：1B）；跳过也是有效回答。
+
+1. en opening
+   - A. "I keep running into products wearing "具身智能," or embodied intelligence, like a sticker, and it's starting to bug me."
+   - B. "There's a word I keep seeing slapped on things that don't deserve it: 具身智能, embodied intelligence."
+   - C. "Here's a test I keep applying to anything marketed as "embodied intelligence": what's left if you pull the intelligence out?"
+
+2. zh 结尾
+   - A. "老实说，这里面也有我自己一点不太体面的小心思：我不想讲那种能把泡泡吹大的话，虽然我知道它们确实好使。"
+   - B. "说白了我也有点羡慕：不想吹泡泡，但吹泡泡的人确实拿到了关注。"
+   - C. "我知道这么说不太体面：我不想讲能把泡泡吹大的话，可它们确实好使，这我承认。"
+
+3. en closer
+   - A. "And if I'm honest, there's a small sense of jealousy in there too: I don't want to make the claims that inflate a bubble. They obviously work."
+   - B. "And, honestly, some of that irritation is jealousy. I don't want to make the bubbly claims. They work anyway."
+   - C. "There's a smaller, less flattering feeling under the irritation too — something close to jealousy. I don't make the bubbly claims. They still work."
+
+## Title options
+
+**English** (used first):
+1. Embodied intelligence is the intelligence, not the body
+2. A crib is not embodied intelligence, yet
+3. Pull the intelligence out and see what's left
+
+**中文**（已用的排第一）：
+1. 具身智能，是智能，不是身体
+2. 婴儿床算不上具身智能：现在还不算
+3. 把智能拿掉，看还剩下什么
+
+**What the human should review:** whether the crib is the strongest available anchor, or
+whether the author has since run into a sharper example; whether the loop/intelligence
+distinction (C8) reads as a fair, non-invented precision rather than a new claim; and
+the three A/B choices above.
