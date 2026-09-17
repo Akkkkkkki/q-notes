@@ -1,4 +1,9 @@
-# q-notes Companion — product vision
+# q-notes Companion — historical product vision
+
+> Historical implementation/design reference, superseded for behavior by the author-led
+> reset in `docs/pipeline.md` (#140/#147). Timers, unsigned-Note fallback, calibration
+> quotas, voice mining, and publication targets below are not current instructions.
+> Existing UI still needs #146; editing this document does not implement that workspace.
 
 A phone-first companion app for the q-notes editorial pipeline. Not a blog editor, not a
 CMS — a tool that makes the author's three recurring touchpoints (capture a spark, answer

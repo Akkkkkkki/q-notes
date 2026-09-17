@@ -9,9 +9,8 @@ and the occasional aside on games, books, films, or culture.
 This repo is two things layered together:
 
 1. **A small Astro site** — the blog itself: posts, layouts, pages, and styles.
-2. **An editorial pipeline** — automation prompts that scout topics, interview the
-   author, draft bilingual posts, and run a weekly publish loop, so writing the
-   author's own point of view is the only manual step. If you're an agent (or human)
+2. **Editorial assistance** — optional discovery, questions, requested drafting, and
+   independent review. The author chooses the material and decides what to publish. If you're an agent (or human)
    working on content here, start with [`AGENTS.md`](./AGENTS.md).
 
 ## Stack
@@ -92,18 +91,19 @@ Images referenced from frontmatter or post content go in `public/images/`.
 
 ## Editorial pipeline
 
-Most posts here come out of a weekly automation loop (scout -> interview -> author
-braindump -> draft -> ship gate, plus a monthly gardener pass) rather than ad hoc
-writing. The full design — content tiers (note / essay / tracker), the bilingual
-transcreation contract, and per-tier definitions of done — lives in
-[`docs/pipeline.md`](./docs/pipeline.md). The material-driven form rules in
-[`docs/material-form.md`](./docs/material-form.md) normatively amend the older tier
-wording: Ready-to-draft is authorization, not an Essay selection; Material Audit runs
-before form/tier/outline; length has ceilings rather than minimum fill targets; and the
-ship gate trims/downgrades instead of inventing missing editorial furniture.
-[`AGENTS.md`](./AGENTS.md) is the always-on summary any agent should read before drafting
-or editing content, and [`docs/companion-vision.md`](./docs/companion-vision.md) sketches
-a possible phone-first companion app for the pipeline's recurring author touchpoints.
+Capture original material, choose whether to develop it, write or request targeted help,
+review meaning and evidence, edit style, preview both languages, then explicitly publish.
+Saving an idea is not permission to draft; a private fragment or no draft is normal.
+Whole-draft generation remains available on explicit request. No weekly publishing quota,
+age-based downgrade, compulsory interview, retell, or A/B exercise.
+
+Start with [`AGENTS.md`](./AGENTS.md), [`docs/pipeline.md`](./docs/pipeline.md),
+[`docs/material-form.md`](./docs/material-form.md), and
+[`docs/editorial-critic.md`](./docs/editorial-critic.md). The runnable prompts read these
+existing contracts together. Runtime inventory and rollout limits are in pipeline §8:
+this change does not reconfigure external schedules or deploy the Worker. The legacy
+Companion below still has weekly/deadline UI copy pending #146. Its clocks do not
+supply drafting or publication authorization. Public Git and PRs are not private storage.
 
 ## Companion — Today + Capture + Answer + Publish
 
@@ -178,7 +178,7 @@ drafts — while URLs, file formats, and the API keep the pipeline's original na
   drafter will not build an Essay on answers you did not sign off; reopen a ready brief
   any time to keep editing.
 - Skipping a question is just not answering it; **Not this topic** closes the whole
-  brief in one tap, freeing Thursday's drafter to use the fallback ladder.
+  brief in one tap. Declining does not authorize a replacement draft.
 - **Tuesday push** (optional): a cron checks every Tuesday 08:30 whether the fresh
   brief is still unanswered and wakes subscribed devices via web push. Enable it from
   the Answer page once VAPID keys are configured.

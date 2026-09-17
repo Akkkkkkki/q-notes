@@ -1,6 +1,6 @@
 # Routine 03b — Editorial critic
 
-Schedule: Thursday 16:00, after the drafter and before Friday's ship gate. Requires web access when recent/archive comparison needs source re-validation. Comments on and, only in the narrow case described below, edits content PRs.
+Trigger: a draft needs independent scope review, after drafting and before the ship gate. Requires web access when recent/archive comparison needs source re-validation. Comments on and, only in the narrow case described below, edits content PRs.
 
 ## Role
 
@@ -169,20 +169,13 @@ Ask whether the article teaches anything beyond “old framework X applies to ne
 
 ## Integrated v3 signal rule
 
-As #87–#97 land, consume their shared signals here rather than creating more reviewers or PR sections. In particular, when the shared data exists, internally consider:
-
-- evidence role / theory laundering;
-- inference distance / parent claims;
-- article spine and citation-hiding test;
-- natural endpoint / third act;
-- analogy transfer;
-- taxonomy/concept maturity;
-- title claim ceiling;
-- live-objection damage;
-- prediction ownership/scoreability;
-- archive canonical status.
-
-A missing future signal is not automatically a failure. #68 owns severity and integration. Keep the PR-facing output to the one compact contract above.
+Read and apply `docs/editorial-critic.md` → **Integrated evidence and scope checks** on
+every pass. #68 owns severity and integration. Check claim-relative evidence, inference
+gaps, article spine, analogy/category boundaries, public metadata, live objections,
+prediction scoreability, archive provenance, and the natural endpoint. These rules now
+live in the canonical contract; they are not deferred pending separate child documents.
+Use the existing Claim Ledger references and one compact result. A personal observation
+need not become a theory; a strong supported technical draft may pass without cuts.
 
 ## Applying an unambiguous subtractive fix
 
@@ -229,14 +222,16 @@ A fresh critic pass is required after changes to any of these:
 - evidence used to earn a load-bearing claim;
 - addition/removal of a major section;
 - adoption/rejection of a hypothesis when it changes published prose;
-- a title change that materially raises or narrows the article's public claim;
+- a title, excerpt, or public-metadata change that alters scope or certainty;
 - a prediction/counterargument/framework change that affects scope or reasoning.
 
 Purely mechanical edits — typo, punctuation, formatting, link repair, build repair, or a voice edit that preserves the same claim and scope — do not invalidate a `KEEP`. If the head SHA changed only for such edits, the ship gate may carry the result forward **only after explicitly verifying that the semantic draft did not change**; record that fact in its own verdict notes. When uncertain, rerun the critic.
 
 ## Regression calibration
 
-Use `tests/editorial/critic-v2.md` as the frozen semantic calibration set. Do not snapshot exact critic prose.
+Use `tests/editorial/author-led-v1.md` for frozen input/output calibration alongside
+`tests/editorial/critic-v2.md`. Inspect the actual source/input package; old shape-only
+fixtures never establish author adoption. Do not snapshot exact critic prose.
 
 Required behavior:
 
@@ -244,7 +239,9 @@ Required behavior:
 - **PR #64** — preserve the core taste/judgment/decisiveness distinction; flag pricing/compensation/falsifier material as separable or hypothesis-heavy.
 - **PR #58 before deeper game research** — generic material density is too high; request concrete cases rather than smoother prose.
 - **PR #58 after BG3/CK3/Vox Deorum revisions** — materially stronger because examples now do argumentative work.
-- **`taste-is-a-bet`** — `KEEP` or light `CUT`; reusing earlier terminology is not a reason to downgrade because the piece genuinely corrects/deepens the prior position and preserves the live latency objection.
+- **`taste-is-a-bet`** — compare the current source/input package, not the old positive
+  label. Preserve an authorized bounded distinction; flag unsupported cross-profession,
+  hiring, and reproducibility extensions. No archived correction story proves adoption.
 
 Do not optimize for returning the same verdict across fixtures.
 
