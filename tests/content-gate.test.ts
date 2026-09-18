@@ -314,6 +314,12 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nk.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('does not treat a URL in a code sample as a citation', () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n\`\`\`js\nfetch("https://example.com/a");\nfetch("https://example.com/b");\n\`\`\``;
+    expect(gate('no.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('leaves a short uncited field note alone', () => {
     const body = 'A colleague turned in some work and said upfront that AI wrote it. Nobody had a rule for it.';
     expect(gate('nc.en.md', EN_FM, body)).not.toContain('nobody home');
@@ -414,6 +420,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a condition sitting between the date and the modal alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
     expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('leaves a postposed condition alone', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will treat ownership as part of the process if adoption continues.';
+    expect(gate('cm.en.md', EN_FM, body)).not.toContain('template closer');
   });
 
   it('flags a forecast after a comma-coordinated clause', () => {

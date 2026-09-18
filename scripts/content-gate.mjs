@@ -172,7 +172,8 @@ const EN_CLOSER_FRAMES = [
     // date is only the frame's opening, and a condition can legitimately sit between
     // the two ("By 2027, if adoption continues, teams will…").
     re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(will|I\s+expect|I'd\s+expect|should)\b/id,
-    conditional: /\b(?:if|unless|whether)\b/i,
+    conditional: /\b(?:if|unless|whether)\b/i, // before the modal: all three subordinate
+    postposed: /\b(?:if|unless)\b/i, // after it: "whether" is a complement, not a condition
     label: 'an asserted forecast ("by the end of 20XX, X will Y")',
   },
 ];
@@ -199,13 +200,24 @@ const proseParagraphs = (body) =>
 //   "By 2027, teams will stop debating whether…"    cond follows  → the template
 //   "Whether X succeeds is beside the point; by     cond is in
 //    2027, teams will…"                             another clause → the template
-// The search window is the forecast's own clause, so a conditional belonging to a
-// different independent clause cannot launder an assertion:
-//   "If this launch fails, we will revisit it, but by 2027 teams will…"  → the template
-// A clause opens at a semicolon or at a comma followed by a coordinating conjunction.
+// A conditional exempts the forecast only when it *governs* it, which means being in
+// the forecast's own clause. A clause opens at a semicolon or at a comma followed by a
+// coordinating conjunction, and runs to the next semicolon or the end of the sentence.
 // Deliberately *not* boundaries: a bare comma, which would cut "By 2027, if adoption
 // continues, teams will…" apart, and an em dash, which usually wraps a parenthetical.
-// Both would strip a genuinely governing "if" out of its own clause.
+//
+// Position relative to the modal decides which words count, because English puts
+// different things on each side of it:
+//   before — "if", "unless" and "whether" all subordinate the forecast
+//   after  — "if"/"unless" are a postposed condition ("teams will X if Y"), but
+//            "whether" is almost always an embedded complement ("debating whether X")
+// That asymmetry is the whole rule; every sentence shape below falls out of it.
+//   "If by 2028 I still can't find that link…"                    → a real test
+//   "By 2027, if adoption continues, teams will…"                 → a real test
+//   "By 2027, teams will treat ownership… if adoption continues."  → a real test
+//   "By 2027, teams will stop debating whether agents need owners" → the template
+//   "Whether X succeeds is beside the point; by 2027, teams will…" → the template
+//   "If this launch fails, we will revisit it, but by 2027 teams will…" → the template
 const usesCloserFrame = (closer, frame) =>
   closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
     const hit = s.match(frame.re);
@@ -214,7 +226,10 @@ const usesCloserFrame = (closer, frame) =>
     const before = s.slice(0, modalAt);
     const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
     const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
-    return !frame.conditional.test(s.slice(clauseStart, modalAt));
+    const clauseEnd = s.indexOf(';', modalAt) === -1 ? s.length : s.indexOf(';', modalAt);
+    const governsBefore = frame.conditional.test(s.slice(clauseStart, modalAt));
+    const governsAfter = frame.postposed.test(s.slice(modalAt, clauseEnd));
+    return !(governsBefore || governsAfter);
   });
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
@@ -607,7 +622,10 @@ for (const file of targets) {
     // brackets — it would be arbitrary for two checks in this file to disagree about
     // that on punctuation. Counting the scheme itself also counts each source once,
     // however it is written, where summing per-syntax patterns risked double-counting.
-    const externalLinks = (body.match(/https?:\/\//g) || []).length;
+    // Counted over `blocks`, not `body`: a URL inside a fenced code example is a code
+    // sample, not evidence, and the rest of this routine already reads code-stripped
+    // text. A technical note whose only URLs sit in a snippet cites nothing.
+    const externalLinks = (blocks.match(/https?:\/\//g) || []).length;
     const hasRoomForAuthor =
       words.length >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
