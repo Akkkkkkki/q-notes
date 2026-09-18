@@ -140,6 +140,7 @@ const authoredOnly = (text) => {
   return (shortcut ? linksGone.replace(shortcut, ' ') : linksGone)
     .replace(/^\s*>.*$/gm, ' ') // block quotes
     .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm, ' ') // reference-link definitions
+    .replace(/<blockquote\b[^>]*>[\s\S]*?<\/blockquote>/gi, ' ') // HTML block quotes, contents too
     .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ') // HTML/MDX anchors, element and text
     .replace(/<[^>]+>/g, ' ') // any other tag, so an attribute cannot donate a marker
     .replace(/https?:\/\/\S+/g, ' ') // bare URLs
@@ -215,12 +216,16 @@ const EN_CLOSER_FRAMES = [
 // example count as prose — inflating a length denominator and donating its URLs to the
 // citation guard. Shared so the three strip sites cannot drift apart again.
 const CODE_FENCE = /^(?:```|~~~)[\s\S]*?^(?:```|~~~)/gm;
+// CommonMark's other code form: a run of 4-space/tab-indented lines opening after a
+// blank line. Requiring the blank line is what keeps an indented list continuation
+// out of it. No post body currently indents at all, so this only guards future ones.
+const INDENTED_CODE = /(^|\n)[ \t]*\n((?:(?: {4}|\t).*(?:\n|$))+)/g;
+const stripCode = (text) => text.replace(CODE_FENCE, ' ').replace(INDENTED_CODE, '$1\n');
 const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
 const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
 const isProseBlock = (p) => !!p && !THEMATIC_BREAK.test(p) && !NON_PROSE_BLOCK.test(p);
 const proseParagraphs = (body) =>
-  body
-    .replace(CODE_FENCE, ' ')
+  stripCode(body)
     .replace(/^#+ .*$/gm, '')
     .split(/\n\s*\n/)
     .map((p) => p.trim())
@@ -407,9 +412,17 @@ function parseAtBase(base, path) {
 }
 
 // --- Index every post currently on disk (for pair lookups) -----------------
-const allFiles = existsSync(POSTS_DIR)
-  ? readdirSync(POSTS_DIR).filter((f) => POST_RE.test(f)).map((f) => join(POSTS_DIR, f))
-  : [];
+// Recursive, because the collection globs `**/*.{md,mdx}` (src/content.config.ts) and
+// a post in `posts/<topic>/` is as published as one at the root. A non-recursive read
+// made such a post invisible to every check keyed off this index — the bilingual pair
+// check as well as the closer comparison, and both fail silently by under-counting.
+const listPosts = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = join(dir, e.name);
+    if (e.isDirectory()) return listPosts(full);
+    return POST_RE.test(e.name) ? [full] : [];
+  });
+const allFiles = existsSync(POSTS_DIR) ? listPosts(POSTS_DIR) : [];
 const index = new Map(); // translationKey -> { en?, zh? }
 for (const f of allFiles) {
   const p = parse(f);
@@ -512,8 +525,7 @@ for (const file of targets) {
     // Block-level text keeps its line breaks (paragraph shape); `prose` is flat.
     // Headings are dropped, not inlined — an unterminated heading otherwise glues
     // itself to the sentence below it and reads as one long run-on.
-    const blocks = body
-      .replace(CODE_FENCE, ' ')
+    const blocks = stripCode(body)
       .replace(/`[^`]*`/g, ' ')
       .replace(/^#+ .*$/gm, '');
     // Emphasis markers come off before any sentence-level analysis: an italicised
@@ -756,7 +768,7 @@ for (const file of targets) {
     const glossary = existsSync('research/glossary.md')
       ? readFileSync('research/glossary.md', 'utf8').toLowerCase()
       : '';
-    const prose = body.replace(CODE_FENCE, ' ').replace(/`[^`]*`/g, ' ');
+    const prose = stripCode(body).replace(/`[^`]*`/g, ' ');
     const hanTotal = countHan(prose);
     const sentences = prose.split(/(?<=[。！？；\n])/).map((s) => s.trim()).filter(Boolean);
 
