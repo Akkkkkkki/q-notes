@@ -39,7 +39,11 @@ const LEGACY_POSTS = new Map([
 ]);
 // parseRaw keeps YAML scalars verbatim, so `editorialStatus: "active"` arrives with
 // its quotes. Anything compared against a fixed string has to come through here.
-const unquote = (v) => (v ?? '').trim().replace(/^["']|["']$/g, '');
+const unquote = (v) =>
+  (v ?? '')
+    .replace(/\s+#.*$/, '') // inline YAML comment: `active # keep on shelf`
+    .trim()
+    .replace(/^["']|["']$/g, '');
 const lifecycle = (fm) => unquote(fm?.editorialStatus) || 'active';
 const isLegacy = (name, fm) =>
   LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
@@ -178,7 +182,8 @@ const EN_CLOSER_FRAMES = [
     // list is a closed lexical class, not a widening knob: verbs that answer a
     // question rather than depend on one.
     postposed: /\b(?:if|unless)\b/i,
-    complementVerb: /\b(?:know|knows|see|sees|ask|asks|tell|tells|learn|learns|find|finds|determine|determines|discover|discovers|decide|decides|wonder|wonders|check|checks|understand|understands)\b[^.!?]{0,30}$/i,
+    complementVerb:
+      /\b(?:knows?|knowing|knew|sees?|seeing|saw|asks?|asking|asked|tells?|telling|told|learns?|learning|learned|finds?|finding|found|determines?|determining|determined|discovers?|discovering|discovered|decides?|deciding|decided|wonders?|wondering|wondered|checks?|checking|checked|understands?|understanding|understood)\b[^.!?]{0,30}$/i,
     label: 'an asserted forecast ("by the end of 20XX, X will Y")',
   },
 ];
@@ -218,6 +223,8 @@ const proseParagraphs = (body) =>
 //            "whether" is almost always an embedded complement ("debating whether X"),
 //            and so is an "if" governed by a verb of cognition ("teams will *know* if
 //            agents need owners" is a question, not a condition)
+// The complement test applies on both sides: "teams that *know* whether agents need
+// owners will standardize" is an assertion about informed teams, not a conditional.
 // That asymmetry is the whole rule; every sentence shape below falls out of it.
 //   "If by 2028 I still can't find that link…"                    → a real test
 //   "By 2027, if adoption continues, teams will…"                 → a real test
@@ -226,6 +233,16 @@ const proseParagraphs = (body) =>
 //   "By 2027, teams will know if agents need owners."              → the template
 //   "Whether X succeeds is beside the point; by 2027, teams will…" → the template
 //   "If this launch fails, we will revisit it, but by 2027 teams will…" → the template
+// Is there a conditional in `text` that actually governs, rather than sitting as the
+// complement of a verb of cognition? Checked per occurrence: one embedded complement
+// must not hide a second, genuinely governing condition elsewhere in the same window.
+const governingCondition = (text, frame, re) => {
+  for (const m of text.matchAll(new RegExp(re.source, 'gi'))) {
+    if (!frame.complementVerb.test(text.slice(0, m.index))) return true;
+  }
+  return false;
+};
+
 const usesCloserFrame = (closer, frame) =>
   closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
     const hit = s.match(frame.re);
@@ -235,11 +252,8 @@ const usesCloserFrame = (closer, frame) =>
     const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
     const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
     const clauseEnd = s.indexOf(';', modalAt) === -1 ? s.length : s.indexOf(';', modalAt);
-    const governsBefore = frame.conditional.test(s.slice(clauseStart, modalAt));
-    const after = s.slice(modalAt, clauseEnd);
-    const condAfter = after.match(frame.postposed);
-    const governsAfter =
-      !!condAfter && !frame.complementVerb.test(after.slice(0, condAfter.index));
+    const governsBefore = governingCondition(s.slice(clauseStart, modalAt), frame, frame.conditional);
+    const governsAfter = governingCondition(s.slice(modalAt, clauseEnd), frame, frame.postposed);
     return !(governsBefore || governsAfter);
   });
 
@@ -636,7 +650,13 @@ for (const file of targets) {
     // Counted over `blocks`, not `body`: a URL inside a fenced code example is a code
     // sample, not evidence, and the rest of this routine already reads code-stripped
     // text. A technical note whose only URLs sit in a snippet cites nothing.
-    const externalLinks = (blocks.match(/https?:\/\//g) || []).length;
+    // Distinct sources, not occurrences: linking one URL twice (a callback, an
+    // attribution repeated) is one source, and EN_RESEARCH_MIN_LINKS is a count of
+    // sources. Normalised on the URL up to the first quote, bracket or whitespace so
+    // the same target written two ways still collapses to one.
+    const externalLinks = new Set(
+      (blocks.match(/https?:\/\/[^\s"'<>)\]]+/g) || []).map((u) => u.replace(/[.,;:]+$/, ''))
+    ).size;
     // Length measured over prose, not the raw body: an 800-token code example must not
     // push a short field note into the long-piece branch, nor dilute its marker rate.
     // `words` keeps counting the raw body for the tier ceiling above, which is about

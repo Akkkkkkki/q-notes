@@ -314,6 +314,12 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nk.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('counts one URL linked twice as a single source', () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\nSee [the survey](https://example.com/a) and again [the survey](https://example.com/a).`;
+    expect(gate('nq.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('does not count a code example toward the length that triggers the check', () => {
     const code = Array.from({ length: 900 }, (_, i) => `token${i}`).join(' ');
     const body = `A short field note about one team. Nobody had a rule for it.\n\n\`\`\`js\n${code}\n\`\`\``;
@@ -426,6 +432,17 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a condition sitting between the date and the modal alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
     expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('flags a pre-modal complement, not a condition', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams that know whether agents need owners will standardize ownership.';
+    expect(gate('co.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('honours a lifecycle value with an inline YAML comment', () => {
+    const fm = `${EN_FM}\neditorialStatus: archived # withdrawn, kept for the URL`;
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('cp.en.md', fm, body)).not.toContain('template closer');
   });
 
   it('flags an "if" governed by a verb of cognition', () => {
