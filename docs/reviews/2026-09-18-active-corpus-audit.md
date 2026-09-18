@@ -28,13 +28,13 @@ draft existed.
 | wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | published post (rung 4) |
 | taste-is-judgment | 07-20 | 21.3 | 0% | 2026-07-17 inbox spark |
 | taste-is-a-bet | 07-31 | 12.9 | 10% | answered interview |
-| ai-native-game-is-a-test | 08-05 | 7.4 | 25%¹ | 2026-07-22 inbox spark |
+| ai-native-game-is-a-test | 08-05 | 5.9 | 25%¹ | 2026-07-22 inbox spark |
 | decisiveness-is-not-a-skill | 08-11 | 18.6 | 0% | 2026-08-11 inbox spark |
 | verification-gate-needs-a-name | 08-20 | 17.1 | 0% | answered interview |
 
 ¹ 2 of 8 paragraphs; too few paragraphs for the share to mean anything.
 
-The author-marker column runs 0.0–1.6 in the top group and 7.4–21.3 in the bottom
+The author-marker column runs 0.0–1.6 in the top group and 5.9–21.3 in the bottom
 one. Nothing lands in between. That is not a gradient with a judgment call in the
 middle; it is two populations.
 
@@ -92,10 +92,16 @@ person, and no amount of editing puts one there.
 node -e '
 const fs=require("fs");
 const M=/\b(?:I|I'"'"'m|I'"'"'ve|I'"'"'d|I'"'"'ll|me|my|mine|myself)\b/g;
+// same exclusions the gate applies: a source first person is not the author
+const authored = t => t
+  .replace(/^\s*>.*$/gm," ")
+  .replace(/\[[^\]]*\]\([^)]*\)/g," ")
+  .replace(/https?:\/\/\S+/g," ")
+  .replace(/[\u201c"][^\u201c\u201d"]{0,400}[\u201d"]/g," ");
 for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md")).sort()) {
   const b=fs.readFileSync("src/content/posts/"+f,"utf8").split(/^---$/m).slice(2).join("---");
   const w=b.trim().split(/\s+/).filter(Boolean).length;
-  const m=(b.replace(/```[\s\S]*?```/g," ").replace(/\*+/g,"").match(M)||[]).length;
+  const m=(authored(b.replace(/```[\s\S]*?```/g," ")).replace(/\n/g," ").match(M)||[]).length;
   console.log(f, (1000*m/w).toFixed(1));
 }'
 
@@ -106,10 +112,12 @@ grep -n 'Author hook' research/backlog.md          # which posts had author mate
 grep -n '2026-06-19' research/inbox.md             # the spark behind three of the nine
 ```
 
-The marker counts exclude block quotes and quoted spans. Somebody else's "I" is not
-the author's presence, and this corpus is full of it — Sternfels supplies two in one
-quoted sentence in `consulting-outcomes`, which is why that post reads 0.8 here and
-1.9 if you count naively.
+The marker counts exclude block quotes, quoted spans, and links (label and target
+both). Somebody else's "I" is not the author's presence, and this corpus is full of
+it — Sternfels supplies two in one quoted sentence in `consulting-outcomes`, which is
+why that post reads 0.8 rather than 1.9, and a PCGamer slug containing
+`gives-me-a-headache` donates a `me` to `ai-native-game-is-a-test` if you don't strip
+URLs, because a hyphen is a word boundary.
 
 ## 2. Two dialects of the same failure
 

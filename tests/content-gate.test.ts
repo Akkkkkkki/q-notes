@@ -299,6 +299,14 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('ne.en.md', EN_FM, research(600, 0))).toContain('Do NOT fix this by adding');
   });
 
+  it('does not count a link label or slug as the author', () => {
+    const filler = Array.from({ length: 580 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nSee [Why I built this for my team](https://example.com/a) ` +
+      'and [the survey](https://example.com/it-gives-me-a-headache-just-thinking-about-it).';
+    expect(gate('ng.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a quoted source\'s first person as the author', () => {
     const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
     const body =
@@ -337,6 +345,14 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a conditional test alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf by 2028 I still cannot find that link, the other piece was closer to right.';
     expect(gate('cb.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('counts only active posts, and says so', () => {
+    // Every corpus post sharing this frame is active today, so the count alone cannot
+    // prove the filter runs. The wording can: it is produced on the same code path as
+    // the editorialStatus check, so a regression that drops the filter drops this too.
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('cd.en.md', EN_FM, body)).toContain('other active posts also end on');
   });
 
   it('ignores the frame when it is not in the closer', () => {

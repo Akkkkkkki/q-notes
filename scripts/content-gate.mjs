@@ -93,19 +93,25 @@ const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 // review with a byline. The length arm exists because the three 2026 consulting posts
 // cite constantly and link almost never, so a link-only proxy would miss the three
 // emptiest pieces in the corpus. Corpus, with quoted speakers excluded: 0.0–1.6 across
-// the nine, 7.4–21.3 across the five. Nothing lands between.
+// the nine, 5.9–21.3 across the five. Nothing lands between.
 const EN_MIN_AUTHOR_PER_KWORDS = 3.0;
 const EN_RESEARCH_MIN_LINKS = 2;
 const EN_AUTHOR_LONG_WORDS = 800; // long enough that having no author is a choice
 const EN_AUTHOR_MIN_WORDS = 250; // below this the rate is noise
 const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|me|my|mine|myself)\b/g;
 // Somebody else's "I" is not the author's presence, and this corpus is full of it —
-// Sternfels alone supplies two in one quoted sentence. Block quotes and quoted spans
-// come out before the markers are counted, or a piece could clear a *provenance*
-// check on the strength of its sourcing, which is the exact failure being measured.
-const stripQuoted = (prose) =>
-  prose
+// Sternfels alone supplies two in one quoted sentence. Everything that belongs to a
+// source comes out before the markers are counted, or a piece could clear a
+// *provenance* check on the strength of its sourcing, which is the exact failure
+// being measured. Links go whole, label and target together: a headline can carry a
+// first person ("Why I built this for my team"), and so can a slug — this corpus
+// already has one, a PCGamer URL containing `gives-me-a-headache`, where `-me-`
+// matches `\bme\b` because a hyphen is a word boundary.
+const authoredOnly = (text) =>
+  text
     .replace(/^\s*>.*$/gm, ' ') // block quotes
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // markdown links, label and target
+    .replace(/https?:\/\/\S+/g, ' ') // bare URLs
     .replace(/[“"][^“”"]{0,400}[”"]/g, ' '); // quoted spans, straight or curly
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
@@ -120,6 +126,15 @@ const EN_SOLO_PARA_MIN_PARAS = 12; // below this the share swings on one paragra
 // last three posts"). The only rule in the playbook that cannot be checked inside one
 // file, and so the only one nothing checked at all. Corpus: five English posts close
 // on the same asserted forecast, all five on the same year.
+//
+// Deliberately stricter than §3.4's wording, and the warning says so rather than
+// claiming to be that rule. A three-post window lets a frame return every fourth
+// piece forever, which is the tic §3.4 exists to stop; a reader meets the archive as
+// a shelf, not as a sliding window, and five of fourteen is what they see. So the
+// comparison runs over the whole shelf — but only the part still on it. Non-active
+// posts are excluded: once a post is archived or superseded it is off the current
+// surfaces (#134), and a lint that kept counting it would contradict the lifecycle
+// and make the frame unreusable forever on the strength of a withdrawn piece.
 //
 // The frame is the assertion, not the date. "By the end of 2027, serious teams *will*
 // treat X as Y" is the template; "if by 2028 I still can't find that link, the other
@@ -540,7 +555,7 @@ for (const file of targets) {
       (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
     if (hasRoomForAuthor) {
       // `blocks`, not `prose`: stripQuoted needs the line breaks to find block quotes.
-      const authored = stripQuoted(blocks).replace(/\n/g, ' ');
+      const authored = authoredOnly(blocks).replace(/\n/g, ' ');
       const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
       const rate = (1000 * markers) / words.length;
       if (rate < EN_MIN_AUTHOR_PER_KWORDS) {
@@ -565,22 +580,26 @@ for (const file of targets) {
       }
     }
 
-    // 12. Template closers across the corpus (§3.4). Every other rule in the playbook
-    // can be checked inside one file; this one can only be seen by reading the shelf,
-    // which is why it went unchecked while eight posts converged on the same ending.
+    // 12. Template closers across the shelf (§3.4). Every other rule in the playbook
+    // can be checked inside one file; this one can only be seen by reading the
+    // archive, which is why it went unchecked while five posts converged on the same
+    // ending. Only active posts count — see the constant's note on why the comparison
+    // is the whole shelf rather than a three-post window, and why a withdrawn piece
+    // drops out of it.
     const closer = paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ');
     for (const frame of EN_CLOSER_FRAMES) {
       if (!usesCloserFrame(closer, frame)) continue;
       const others = [];
       for (const [key, pair] of index) {
         if (key === fm.translationKey || !pair.en) continue;
+        if ((pair.en.frontmatter?.editorialStatus ?? 'active') !== 'active') continue;
         const tail = proseParagraphs(pair.en.body).slice(-EN_CLOSER_PARAGRAPHS).join(' ');
         if (usesCloserFrame(tail, frame)) others.push(key);
       }
       if (others.length > EN_CLOSER_FRAME_MAX) {
         warn(
           name,
-          `template closer: ${others.length} other posts also end on ${frame.label} (${others.slice(0, 3).join(', ')}${others.length > 3 ? ', …' : ''}) — the framing has to differ from the last three posts (§3.4)`
+          `template closer: ${others.length} other active posts also end on ${frame.label} (${others.slice(0, 3).join(', ')}${others.length > 3 ? ', …' : ''}) — find a different framing (§3.4, applied across the live archive rather than the last three posts)`
         );
       }
     }
