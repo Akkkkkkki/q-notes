@@ -13,6 +13,8 @@
 // schema for every post; this script adds the things the schema can't express.
 
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { mdxFromMarkdown } from 'mdast-util-mdx';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import { execSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
@@ -222,11 +224,25 @@ const collectText = (node, skip, out) => {
   for (const child of node.children ?? []) collectText(child, skip, out);
   return out;
 };
-const parseBody = (body) => {
+// MDX is parsed with the renderer's extensions, because the collection accepts it
+// (src/content.config.ts). Without them a block component wraps its children in one
+// `html` node, so a post whose prose sits inside `<Callout>…</Callout>` would measure
+// as zero prose words and skip the provenance check entirely — a silent pass, the
+// failure direction that matters most for a gate.
+// Only .mdx gets the MDX extensions, and that split is load-bearing rather than tidy:
+// MDX deliberately drops support for indented code blocks, so parsing a .md file as MDX
+// would read a four-space snippet as ordinary prose and hand its sample URLs to the
+// citation guard. Each file is parsed as the dialect it is.
+const parseBody = (body, isMdx) => {
+  const options = isMdx ? { extensions: [mdxjs()], mdastExtensions: [mdxFromMarkdown()] } : undefined;
   try {
-    return fromMarkdown(body);
+    return fromMarkdown(body, options);
   } catch {
-    return null; // malformed input: fall back to the raw body rather than crashing CI
+    try {
+      return fromMarkdown(body); // JSX the MDX parser rejects: plain Markdown still reads
+    } catch {
+      return null; // malformed input: fall back to the raw body rather than crashing CI
+    }
   }
 };
 // Raw HTML is the one thing the AST does not model as structure: `<a href>Label</a>`
@@ -236,26 +252,32 @@ const parseBody = (body) => {
 const HTML_SOURCE_ELEMENT = /<(a|blockquote|figcaption|cite)\b[^>]*>[\s\S]*?<\/\1>/gi;
 const proseTextOf = (tree, body) =>
   tree ? collectText(tree, NON_PROSE_NODES, []).join(' ') : body;
-const authoredTextOf = (body) => {
+const authoredTextOf = (body, isMdx) => {
   const withoutHtmlSources = body.replace(HTML_SOURCE_ELEMENT, ' ');
-  const tree = parseBody(withoutHtmlSources);
+  const tree = parseBody(withoutHtmlSources, isMdx);
   return tree
     ? collectText(tree, new Set([...NON_PROSE_NODES, ...SOURCE_TEXT_NODES]), []).join(' ')
     : withoutHtmlSources;
 };
-// Every URL the post cites, however it is written: link and image nodes from the AST,
-// plus a scan of the raw body for bare URLs and HTML attributes the AST hides inside
-// `html` nodes. Code is excluded first — a URL in a snippet is a sample, not a source.
+// Every URL the post cites, however it is written. All of it comes off the AST, which
+// is the only thing that knows what is code: link and image targets, bare URLs left in
+// text, and hrefs inside `html` node values. Scanning the raw body for the last two
+// would undo the AST's own exclusion of code — the visitor skips a snippet and the scan
+// immediately puts its sample URLs back.
+const URL_IN_TEXT = /https?:\/\/[^\s"'<>)\]]+/g;
 const sourceUrlsOf = (tree, body) => {
   const urls = new Set();
   const add = (u) => urls.add(u.replace(/[.,;:]+$/, ''));
   const visit = (node) => {
-    if (NON_PROSE_NODES.has(node.type) && node.type !== 'html') return;
+    if (node.type === 'code' || node.type === 'inlineCode') return; // a sample, not a source
     if (typeof node.url === 'string' && /^https?:/i.test(node.url)) add(node.url);
+    if ((node.type === 'html' || node.type === 'text') && typeof node.value === 'string') {
+      for (const u of node.value.match(URL_IN_TEXT) ?? []) add(u);
+    }
     for (const child of node.children ?? []) visit(child);
   };
   if (tree) visit(tree);
-  for (const u of stripCode(body).match(/https?:\/\/[^\s"'<>)\]]+/g) ?? []) add(u);
+  else for (const u of stripCode(body).match(URL_IN_TEXT) ?? []) add(u); // unparseable body
   return urls;
 };
 
@@ -284,8 +306,13 @@ const stripIndentedCode = (text) => {
 };
 const stripCode = (text) => stripIndentedCode(text.replace(CODE_FENCE, ' '));
 const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
+// A block of reference definitions renders as nothing. Left in, three of them at the
+// end of a post occupy the whole closer window and push the real closing paragraph out
+// of comparison — another silent pass.
+const REFERENCE_DEFINITIONS = /^(?:\s*\[[^\]]+\]:\s*\S+.*(?:\n|$))+$/;
 const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
-const isProseBlock = (p) => !!p && !THEMATIC_BREAK.test(p) && !NON_PROSE_BLOCK.test(p);
+const isProseBlock = (p) =>
+  !!p && !THEMATIC_BREAK.test(p) && !REFERENCE_DEFINITIONS.test(p) && !NON_PROSE_BLOCK.test(p);
 const proseParagraphs = (body) =>
   stripCode(body)
     .replace(/^#+ .*$/gm, '')
@@ -756,7 +783,8 @@ for (const file of targets) {
     // text. A technical note whose only URLs sit in a snippet cites nothing.
     // All three provenance figures come from one parse of the body, so link syntax,
     // fence style and quote nesting stop being this check's problem.
-    const tree = parseBody(body);
+    const isMdx = /\.mdx$/.test(name);
+    const tree = parseBody(body, isMdx);
     const proseText = proseTextOf(tree, body);
     const externalLinks = sourceUrlsOf(tree, body).size;
     // Length measured over prose a reader reads — quotes and citations included, code
@@ -767,7 +795,7 @@ for (const file of targets) {
       proseWords >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || proseWords >= EN_AUTHOR_LONG_WORDS);
     if (hasRoomForAuthor) {
-      const authored = stripQuotedSpeech(authoredTextOf(body));
+      const authored = stripQuotedSpeech(authoredTextOf(body, isMdx));
       const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
       const rate = (1000 * markers) / proseWords;
       if (rate < EN_MIN_AUTHOR_PER_KWORDS) {

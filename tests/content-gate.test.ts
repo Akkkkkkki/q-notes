@@ -326,6 +326,19 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('np.en.md', EN_FM, body)).not.toContain('nobody home');
   });
 
+  it('reads prose inside an MDX block component', () => {
+    // Without the MDX extensions the whole component is one html node, proseWords is 0,
+    // and the check silently skips — a gate passing what it should question.
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body = `<Callout>\n${filler}\nSee [one](https://example.com/a) and [two](https://example.com/b).\n</Callout>`;
+    expect(gate('oa.en.mdx', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('does not count a URL in inline code as a source', () => {
+    const body = 'A short field note about one team. Nobody had a rule for it. Try `https://example.com/a` and `https://example.com/b`.';
+    expect(gate('ob.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('does not count a code block nested in a list as prose', () => {
     const code = Array.from({ length: 900 }, (_, i) => `token${i}`).join(' ');
     const body = `A short field note about one team. Nobody had a rule for it.\n\n- Example:\n\n      fetch("https://example.com/a");\n      fetch("https://example.com/b");\n      ${code}`;
@@ -531,6 +544,13 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('flags a forecast after a comma-coordinated clause', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf this launch fails, we will revisit it, but by 2027 serious teams will treat ownership as part of the process.';
     expect(gate('ck.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('does not let trailing reference definitions displace the closer', () => {
+    const body =
+      'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.\n\n' +
+      '[a]: https://example.com/a\n\n[b]: https://example.com/b\n\n[c]: https://example.com/c';
+    expect(gate('cs.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('keeps an emphasised paragraph in the comparison corpus', () => {
