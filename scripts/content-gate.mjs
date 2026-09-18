@@ -12,6 +12,9 @@
 // The build (npm run build) is the companion check that enforces the frontmatter
 // schema for every post; this script adds the things the schema can't express.
 
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { mdxFromMarkdown } from 'mdast-util-mdx';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import { execSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
@@ -37,6 +40,14 @@ const LEGACY_POSTS = new Map([
   ['consulting-coordination', '2026-05-02'],
   ['consulting-outcomes', '2026-04-25'],
 ]);
+// parseRaw keeps YAML scalars verbatim, so `editorialStatus: "active"` arrives with
+// its quotes. Anything compared against a fixed string has to come through here.
+const unquote = (v) =>
+  (v ?? '')
+    .replace(/\s+#.*$/, '') // inline YAML comment: `active # keep on shelf`
+    .trim()
+    .replace(/^["']|["']$/g, '');
+const lifecycle = (fm) => unquote(fm?.editorialStatus) || 'active';
 const isLegacy = (name, fm) =>
   LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
 // Ceilings only (docs/pipeline.md §11: length is an output, not a target — a piece
@@ -72,6 +83,375 @@ const EN_MIN_BURSTINESS = 0.45; // stddev/mean of sentence length. Corpus: 0.53�
 const EN_BURSTINESS_MIN_SENTENCES = 25; // below this, the statistic is noise
 const EN_MIN_PARAGRAPH_SPREAD = 3; // longest paragraph minus shortest, in sentences
 const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
+
+// --- Structural checks (the half the texture checks were blind to) ---------
+// The thresholds above were calibrated against the nine posts published before the
+// July 2026 voice pass, which is the right move for a texture rule and the wrong one
+// for a structural rule: if the corpus itself is the failure, calibrating to it
+// defines the failure as normal. Every check below was instead calibrated against
+// the *split* in the corpus — the posts whose argument is built on author material
+// versus the posts assembled from research with the author's contribution as a garnish
+// (docs/reviews/2026-09-18-active-corpus-audit.md §1, which works through why that is
+// the right axis and "had an inbox spark" is not). Each one separates those two groups
+// with no overlap; none of them fires on a borderline case, because there are no
+// borderline cases on this axis.
+
+// "Nobody home" (human-voice.md §1, §3.5). Author markers per 1,000 words, checked
+// only on a piece with room for the author: either it is carried by research (at
+// least EN_RESEARCH_MIN_LINKS external sources) or it simply runs long. That guard is
+// deliberate — a short field note with no citations and no "I" is a legitimate form,
+// while a cited or long-form argument with no author on the page is a literature
+// review with a byline. The length arm exists because the three 2026 consulting posts
+// cite constantly and link almost never, so a link-only proxy would miss the three
+// emptiest pieces in the corpus. Corpus, with source material excluded: 0.0–2.3 across
+// the nine, 5.9–21.3 across the five. Nothing lands between, and the threshold sits in
+// the gap with room on both sides.
+const EN_MIN_AUTHOR_PER_KWORDS = 3.0;
+const EN_RESEARCH_MIN_LINKS = 2;
+const EN_AUTHOR_LONG_WORDS = 800; // long enough that having no author is a choice
+const EN_AUTHOR_MIN_WORDS = 250; // below this the rate is noise
+// Capitalisation is spelled out rather than solved with /i: "I" and its contractions
+// are capital-only in English, but the others open sentences constantly, and this
+// corpus has three such markers ("My bet…", "My prediction…", "My claim is narrower…")
+// that a case-sensitive pattern was silently dropping. Undercounting is the dangerous
+// direction here — it manufactures the very warning the check exists to earn.
+const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself)\b/g;
+// Somebody else's "I" is not the author's presence, and this corpus is full of it —
+// Sternfels alone supplies two in one quoted sentence. Everything that belongs to a
+// source comes out before the markers are counted, or a piece could clear a
+// *provenance* check on the strength of its sourcing, which is the exact failure
+// being measured. Links go whole, label and target together: a headline can carry a
+// first person ("Why I built this for my team"), and so can a slug — this corpus
+// already has one, a PCGamer URL containing `gives-me-a-headache`, where `-me-`
+// matches `\bme\b` because a hyphen is a word boundary.
+// Quoted speech is the one thing the AST cannot separate for us: it lives inside a
+// text node, as punctuation rather than structure. Everything else — block quotes,
+// links of every form, code, HTML — is gone before this runs.
+// Bounded by the paragraph, not by a character count. A fixed cap meant a quotation
+// longer than it was not stripped *at all* — the whole speaker's "I" and "my" landed in
+// the author's column, and this corpus quotes people at length. The bound still has to
+// exist, because an unpaired quote mark would otherwise pair with the next real opener
+// and delete the author's own prose in between; a blank line is where that damage stops,
+// and no inline quotation crosses one.
+const stripQuotedSpeech = (text) =>
+  text
+    // `(?:[^…\n]|\n(?!\s*\n))*` is "anything up to a blank line".
+    .replace(/[“"](?:[^“”"\n]|\n(?!\s*\n))*[”"]/g, ' ') // straight or curly
+    // Curly single quotes only, and only a true open/close pair. A straight ' is an
+    // apostrophe far more often than a quote mark, and U+2019 doubles as the curly
+    // apostrophe in "don't" — anchoring on U+2018 is what keeps contractions intact.
+    .replace(/‘(?:[^‘’\n]|\n(?!\s*\n))*’/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' '); // a bare URL the parser left as text
+
+// The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
+// Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
+// not be the beat the whole piece is written on. The two form a band, they don't
+// conflict. Corpus: 0–18% across the posts that pass, 22–29% across the three that
+// do not. (These are counted with SENTENCE_END below, which treats a terminator
+// inside a quotation as ending a sentence; a naive counter reads several of these
+// higher.)
+const EN_MAX_SOLO_PARA_SHARE = 0.2;
+// Sentence terminators, counting a closing quote or bracket as part of the terminator
+// so quoted dialogue is not read as one long sentence. Shared by both paragraph checks
+// so the band they form is measured the same way on both sides.
+const SENTENCE_END = /[.!?]["'”’)\]]*(?:\s|$)/g;
+const EN_SOLO_PARA_MIN_PARAS = 12; // below this the share swings on one paragraph
+
+// Template closers (human-voice.md §3.4: "the framing sentence must differ from the
+// last three posts"). The only rule in the playbook that cannot be checked inside one
+// file, and so the only one nothing checked at all. Corpus: five English posts close
+// on the same asserted forecast, all five on the same year.
+//
+// Deliberately stricter than §3.4's wording, and the warning says so rather than
+// claiming to be that rule. A three-post window lets a frame return every fourth
+// piece forever, which is the tic §3.4 exists to stop; a reader meets the archive as
+// a shelf, not as a sliding window, and five of fourteen is what they see. So the
+// comparison runs over the whole shelf — but only the part still on it. Non-active
+// posts are excluded: once a post is archived or superseded it is off the current
+// surfaces (#134), and a lint that kept counting it would contradict the lifecycle
+// and make the frame unreusable forever on the strength of a withdrawn piece.
+//
+// The frame is the assertion, not the date. "By the end of 2027, serious teams *will*
+// treat X as Y" is the template; "if by 2028 I still can't find that link, the other
+// piece was closer to right" is a genuine conditional test and stays legal, which is
+// why the pattern requires the forecast verb and refuses a conditional clause.
+const EN_CLOSER_PARAGRAPHS = 3; // how much of the tail counts as "the closer"
+const EN_CLOSER_FRAME_MAX = 2; // other posts allowed to share the frame before it is a template
+const EN_CLOSER_FRAMES = [
+  {
+    // The modal is captured so the conditional can be positioned against *it*: the
+    // date is only the frame's opening, and a condition can legitimately sit between
+    // the two ("By 2027, if adoption continues, teams will…").
+    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(will|I\s+expect|I'd\s+expect|should)\b/id,
+    conditional: /\b(?:if|unless|whether)\b/i, // before the modal: all three subordinate
+    // After the modal: "if"/"unless" condition the forecast, unless a cognition verb
+    // governs the "if" — those take an interrogative complement, not a condition. The
+    // list is a closed lexical class, not a widening knob: verbs that answer a
+    // question rather than depend on one.
+    postposed: /\b(?:if|unless)\b/i,
+    complementVerb:
+      /\b(?:knows?|knowing|knew|sees?|seeing|saw|asks?|asking|asked|tells?|telling|told|learns?|learning|learned|finds?|finding|found|determines?|determining|determined|discovers?|discovering|discovered|decides?|deciding|decided|wonders?|wondering|wondered|checks?|checking|checked|understands?|understanding|understood)\b[^.!?]{0,30}$/i,
+    label: 'an asserted forecast ("by the end of 20XX, X will Y")',
+  },
+];
+// Split a body into the prose paragraphs a reader sees, dropping code, headings,
+// lists, and block quotes. Used by the closer check on *other* posts in the corpus.
+// What is not prose. Every marker here has to be distinguished from the ordinary
+// character it shares, because each confusion drops a real paragraph out of the
+// comparison corpus — and a dropped paragraph can only ever *lower* the shared-frame
+// count, so the failure is silent:
+//   `*` opens a list only before a space; `*Claim:*` and `**By 2027…**` are emphasis,
+//       and the three consulting posts' prediction trackers are written that way
+//   `-` likewise, except for a `---` thematic break, which is not prose either
+//   a digit opens a list only before `.` or `)`; "2026 exposed the bottleneck" is prose
+// Both fence forms CommonMark allows. Stripping only the backtick one let a tilde
+// example count as prose — inflating a length denominator and donating its URLs to the
+// citation guard. Shared so the three strip sites cannot drift apart again.
+// --- Reading a post the way the renderer does ------------------------------
+// Fifteen rounds of review on this file landed on one lesson: separating an author's
+// own words from a source's is block-level Markdown parsing, and hand-rolled patterns
+// lose to it. Every variant that got through — tilde and indented fences, fences with
+// leading spaces, code nested in a list, lazy blockquote continuation lines, shortcut
+// and reference links, HTML anchors and blockquotes — is a case the parser already
+// handles, and the two findings that arrived together in round 14 could not both be
+// satisfied by any single pattern. So the text these checks read now comes from the
+// same Markdown AST the site renders from.
+//
+// Two different questions, two different extracts:
+//   proseText    — everything a reader reads, quotes and citations included. The
+//                  denominator for a *rate*, so a heavily-quoting piece does not get a
+//                  flattering score by shrinking its own divisor.
+//   authoredText — the author's own words: prose minus block quotes, link and image
+//                  text. The numerator, because somebody else's "I" is not presence.
+const SOURCE_TEXT_NODES = new Set(['blockquote', 'link', 'linkReference', 'image', 'imageReference']);
+const NON_PROSE_NODES = new Set(['code', 'inlineCode', 'definition', 'yaml']);
+// What a raw-HTML node renders as. Markup out, text kept: the reader sees the text.
+// Comments go first because one may contain a `>` that would otherwise end a "tag",
+// and script/style bodies are markup's own code — never prose.
+const HTML_COMMENT = /<!--[\s\S]*?-->/g;
+const HTML_CODE_ELEMENT = /<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi;
+const HTML_TAG = /<[^>]*>/g;
+const htmlTextOf = (value) =>
+  value.replace(HTML_COMMENT, ' ').replace(HTML_CODE_ELEMENT, ' ').replace(HTML_TAG, ' ');
+// Where one block ends and the next begins. Without these the extracts are one
+// unbroken run of words, and the paragraph bound on quoted speech — the thing that
+// stops an unpaired quote mark eating the author's prose — has nothing to bite on.
+const BLOCK_NODES = new Set(['paragraph', 'heading', 'listItem', 'tableCell', 'blockquote']);
+const collectText = (node, skip, out) => {
+  if (skip.has(node.type)) return out;
+  if (node.type === 'text') out.push(node.value);
+  // Raw HTML is one opaque node, text and all: a `.md` post that wraps prose in a
+  // container with no blank line inside — `<div class="lede">…</div>` — is a single
+  // `html` node holding the whole passage. Skipping the node skipped the passage, so a
+  // post written that way measured zero prose words and bypassed the provenance check
+  // outright. Read its rendered text instead. Source elements (`<a>`, `<blockquote>`,
+  // …) are already off the body before the authored parse, so nothing leaks back in.
+  else if (node.type === 'html' && typeof node.value === 'string') out.push(htmlTextOf(node.value));
+  for (const child of node.children ?? []) collectText(child, skip, out);
+  if (BLOCK_NODES.has(node.type)) out.push('\n\n');
+  return out;
+};
+// MDX is parsed with the renderer's extensions, because the collection accepts it
+// (src/content.config.ts). Without them a block component wraps its children in one
+// `html` node, so a post whose prose sits inside `<Callout>…</Callout>` would measure
+// as zero prose words and skip the provenance check entirely — a silent pass, the
+// failure direction that matters most for a gate.
+// Only .mdx gets the MDX extensions, and that split is load-bearing rather than tidy:
+// MDX deliberately drops support for indented code blocks, so parsing a .md file as MDX
+// would read a four-space snippet as ordinary prose and hand its sample URLs to the
+// citation guard. Each file is parsed as the dialect it is.
+const parseBody = (body, isMdx) => {
+  const options = isMdx ? { extensions: [mdxjs()], mdastExtensions: [mdxFromMarkdown()] } : undefined;
+  try {
+    return fromMarkdown(body, options);
+  } catch {
+    try {
+      return fromMarkdown(body); // JSX the MDX parser rejects: plain Markdown still reads
+    } catch {
+      return null; // malformed input: fall back to the raw body rather than crashing CI
+    }
+  }
+};
+// Raw HTML is the one thing the AST does not model as structure: `<a href>Label</a>`
+// arrives as html, text, html — three siblings — so the label is just a text node and
+// an href is invisible as a link. Those elements are therefore removed from the body
+// *before* it is parsed for authored text, which is where their contents would leak.
+// The list is HTML's own vocabulary for attributed words, `<q>` included: it is the
+// inline half of `<blockquote>`, and its contents are somebody else's sentence whether
+// or not the surrounding markup ever reached the AST.
+const HTML_SOURCE_ELEMENT = /<(a|blockquote|q|figcaption|cite)\b[^>]*>[\s\S]*?<\/\1>/gi;
+const proseTextOf = (tree, body) =>
+  tree ? collectText(tree, NON_PROSE_NODES, []).join(' ') : body;
+const authoredTextOf = (body, isMdx) => {
+  const withoutHtmlSources = body.replace(HTML_SOURCE_ELEMENT, ' ');
+  const tree = parseBody(withoutHtmlSources, isMdx);
+  return tree
+    ? collectText(tree, new Set([...NON_PROSE_NODES, ...SOURCE_TEXT_NODES]), []).join(' ')
+    : withoutHtmlSources;
+};
+// Every URL the post cites, however it is written. All of it comes off the AST, which
+// is the only thing that knows what is code: link and image targets, bare URLs left in
+// text, and hrefs inside `html` node values. Scanning the raw body for the last two
+// would undo the AST's own exclusion of code — the visitor skips a snippet and the scan
+// immediately puts its sample URLs back.
+const URL_IN_TEXT = /https?:\/\/[^\s"'<>)\]]+/g;
+// A citation is markup with linking semantics, not any component configured with a
+// URL. JSX draws that line itself: a lowercase element name is an intrinsic HTML
+// element, a capitalised one is a component, and the distinction is the language's,
+// not a heuristic. These pairs are the HTML elements whose Markdown equivalents — a
+// link, an image, a cited quotation — the AST already counts as sources, so the MDX
+// path and the Markdown path agree. `<Demo endpoint="…">` and `<Image src="…">` are
+// configuration: a resource the page uses, not a source it cites.
+const LINK_ATTRIBUTES = new Map([
+  ['a', 'href'],
+  ['area', 'href'],
+  ['img', 'src'],
+  ['blockquote', 'cite'],
+  ['q', 'cite'],
+]);
+const sourceUrlsOf = (tree, body) => {
+  const urls = new Set();
+  // Distinct *sources*, not distinct link targets: `report#method` and `report#results`
+  // are one report, and counting them as two pushed a note citing a single document
+  // over the research threshold. The fragment addresses a place inside a document the
+  // post has already cited. (A hash-routed site would merge under this, which is the
+  // quieter error of the two and not a shape this corpus links to.)
+  const add = (u) => urls.add(u.replace(/[.,;:]+$/, '').replace(/#.*$/, ''));
+  const visit = (node) => {
+    if (node.type === 'code' || node.type === 'inlineCode') return; // a sample, not a source
+    if (typeof node.url === 'string' && /^https?:/i.test(node.url)) add(node.url);
+    if ((node.type === 'html' || node.type === 'text') && typeof node.value === 'string') {
+      // Read the same way the prose side reads it: a drafting note is not a citation,
+      // and neither is a URL inside `<script>` or `<style>`. Either one counted here
+      // made an uncited note look research-carried and earned it a warning for having
+      // no author in an argument it never made.
+      const cited = node.value.replace(HTML_COMMENT, ' ').replace(HTML_CODE_ELEMENT, ' ');
+      for (const u of cited.match(URL_IN_TEXT) ?? []) add(u);
+    }
+    // MDX keeps `<a href="…">` as a JSX element: the target is an attribute, so it is
+    // in neither `node.url` nor any node value, and an .mdx post citing its sources
+    // through JSX anchors counted zero links and skipped the provenance check. An
+    // attribute's value is a string, or an expression node carrying its own source.
+    // Element *and* attribute, per LINK_ATTRIBUTES: reading every attribute of every
+    // component turned `<Demo endpoint="…" backup="…" />` into two citations and made a
+    // short note look research-carried.
+    const linking = LINK_ATTRIBUTES.get(node.name);
+    for (const attr of linking ? node.attributes ?? [] : []) {
+      if (String(attr?.name ?? '').toLowerCase() !== linking) continue;
+      const value = typeof attr?.value === 'string' ? attr.value : attr?.value?.value;
+      if (typeof value === 'string') for (const u of value.match(URL_IN_TEXT) ?? []) add(u);
+    }
+    for (const child of node.children ?? []) visit(child);
+  };
+  if (tree) visit(tree);
+  else for (const u of stripCode(body).match(URL_IN_TEXT) ?? []) add(u); // unparseable body
+  return urls;
+};
+
+// Still needed for the paragraph-shape checks, which read line structure rather than
+// the AST. Fence delimiters may carry up to three leading spaces and still open a block.
+const CODE_FENCE = /^ {0,3}(?:```|~~~)[\s\S]*?^ {0,3}(?:```|~~~)/gm;
+const LIST_ITEM = /^ {0,3}(?:[-*+]|\d+[.)])\s/;
+const INDENTED = /^(?: {4}|\t)/;
+const stripIndentedCode = (text) => {
+  let inList = false;
+  return text
+    .split('\n')
+    .map((line) => {
+      if (!line.trim()) return line; // a blank line does not end a list
+      if (LIST_ITEM.test(line)) {
+        inList = true;
+        return line;
+      }
+      if (!INDENTED.test(line)) {
+        inList = false;
+        return line;
+      }
+      return inList ? line : ' '; // indented, and not continuing a list: code
+    })
+    .join('\n');
+};
+const stripCode = (text) => stripIndentedCode(text.replace(CODE_FENCE, ' '));
+const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
+// A block of reference definitions renders as nothing. Left in, three of them at the
+// end of a post occupy the whole closer window and push the real closing paragraph out
+// of comparison — another silent pass.
+const REFERENCE_DEFINITIONS = /^(?:\s*\[[^\]]+\]:\s*\S+.*(?:\n|$))+$/;
+const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
+const isProseBlock = (p) =>
+  !!p && !THEMATIC_BREAK.test(p) && !REFERENCE_DEFINITIONS.test(p) && !NON_PROSE_BLOCK.test(p);
+// Blocks a reader sees, comments removed first. An HTML comment renders as nothing, so
+// a block that is only comments is not a paragraph — three drafting notes after an
+// asserted forecast would otherwise fill the whole closer window and let the reused
+// closer through — and a comment beside real prose must not lend it sentences either.
+// One splitter for both callers, so the two cannot drift apart on what a paragraph is.
+const proseBlocks = (text) =>
+  text
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(HTML_COMMENT, ' ').trim())
+    .filter(isProseBlock);
+const proseParagraphs = (body) => proseBlocks(stripCode(body).replace(/^#+ .*$/gm, ''));
+// Does this closer use the frame? Checked sentence by sentence so a conditional
+// elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
+// conditional only counts when it precedes the *modal*, because that is what it means
+// to govern a forecast — and the modal, not the date, is where the forecast is
+// asserted. All three orderings fall out of that one comparison:
+//   "If by 2028 I still can't find that link…"      cond governs  → a real test
+//   "By 2027, if adoption continues, teams will…"   cond governs  → a real test
+//   "By 2027, teams will stop debating whether…"    cond follows  → the template
+//   "Whether X succeeds is beside the point; by     cond is in
+//    2027, teams will…"                             another clause → the template
+// A conditional exempts the forecast only when it *governs* it, which means being in
+// the forecast's own clause. A clause opens at a semicolon or at a comma followed by a
+// coordinating conjunction, and runs to the next semicolon or the end of the sentence.
+// Deliberately *not* boundaries: a bare comma, which would cut "By 2027, if adoption
+// continues, teams will…" apart, and an em dash, which usually wraps a parenthetical.
+//
+// Position relative to the modal decides which words count, because English puts
+// different things on each side of it:
+//   before — "if", "unless" and "whether" all subordinate the forecast
+//   after  — "if"/"unless" are a postposed condition ("teams will X if Y"), but
+//            "whether" is almost always an embedded complement ("debating whether X"),
+//            and so is an "if" governed by a verb of cognition ("teams will *know* if
+//            agents need owners" is a question, not a condition)
+// The complement test applies on both sides: "teams that *know* whether agents need
+// owners will standardize" is an assertion about informed teams, not a conditional.
+// That asymmetry is the whole rule; every sentence shape below falls out of it.
+//   "If by 2028 I still can't find that link…"                    → a real test
+//   "By 2027, if adoption continues, teams will…"                 → a real test
+//   "By 2027, teams will treat ownership… if adoption continues."  → a real test
+//   "By 2027, teams will stop debating whether agents need owners" → the template
+//   "By 2027, teams will know if agents need owners."              → the template
+//   "Whether X succeeds is beside the point; by 2027, teams will…" → the template
+//   "If this launch fails, we will revisit it, but by 2027 teams will…" → the template
+// Is there a conditional in `text` that actually governs, rather than sitting as the
+// complement of a verb of cognition? Checked per occurrence: one embedded complement
+// must not hide a second, genuinely governing condition elsewhere in the same window.
+const governingCondition = (text, frame, re) => {
+  for (const m of text.matchAll(new RegExp(re.source, 'gi'))) {
+    if (!frame.complementVerb.test(text.slice(0, m.index))) return true;
+  }
+  return false;
+};
+
+const usesCloserFrame = (closer, frame) =>
+  closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
+    const hit = s.match(frame.re);
+    if (!hit) return false;
+    const modalAt = hit.indices?.[1]?.[0] ?? hit.index;
+    const before = s.slice(0, modalAt);
+    const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
+    const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
+    // The post-modal window ends at the next clause boundary too, by the same rule the
+    // pre-modal window uses: "…teams will standardize ownership, but if this launch
+    // fails…" is a separate clause and cannot condition the forecast.
+    const afterAll = s.slice(modalAt);
+    const endMatch = afterAll.match(/;|,\s+(?:but|and|so|yet|while|though)\s/);
+    const clauseEnd = endMatch ? modalAt + endMatch.index : s.length;
+    const governsBefore = governingCondition(s.slice(clauseStart, modalAt), frame, frame.conditional);
+    const governsAfter = governingCondition(s.slice(modalAt, clauseEnd), frame, frame.postposed);
+    return !(governsBefore || governsAfter);
+  });
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
 // The corpus scores zero on all of these — the drafter already avoids them — so
@@ -198,9 +578,17 @@ function parseAtBase(base, path) {
 }
 
 // --- Index every post currently on disk (for pair lookups) -----------------
-const allFiles = existsSync(POSTS_DIR)
-  ? readdirSync(POSTS_DIR).filter((f) => POST_RE.test(f)).map((f) => join(POSTS_DIR, f))
-  : [];
+// Recursive, because the collection globs `**/*.{md,mdx}` (src/content.config.ts) and
+// a post in `posts/<topic>/` is as published as one at the root. A non-recursive read
+// made such a post invisible to every check keyed off this index — the bilingual pair
+// check as well as the closer comparison, and both fail silently by under-counting.
+const listPosts = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const full = join(dir, e.name);
+    if (e.isDirectory()) return listPosts(full);
+    return POST_RE.test(e.name) ? [full] : [];
+  });
+const allFiles = existsSync(POSTS_DIR) ? listPosts(POSTS_DIR) : [];
 const index = new Map(); // translationKey -> { en?, zh? }
 for (const f of allFiles) {
   const p = parse(f);
@@ -303,8 +691,7 @@ for (const file of targets) {
     // Block-level text keeps its line breaks (paragraph shape); `prose` is flat.
     // Headings are dropped, not inlined — an unterminated heading otherwise glues
     // itself to the sentence below it and reads as one long run-on.
-    const blocks = body
-      .replace(/```[\s\S]*?```/g, ' ')
+    const blocks = stripCode(body)
       .replace(/`[^`]*`/g, ' ')
       .replace(/^#+ .*$/gm, '');
     // Emphasis markers come off before any sentence-level analysis: an italicised
@@ -388,16 +775,13 @@ for (const file of targets) {
     }
 
     // 5. Paragraph shape — at least one very short paragraph and one long one (§3.3).
-    const paragraphs = blocks
-      .split(/\n\s*\n/)
-      .map((p) => p.trim())
-      .filter((p) => p && !/^[-*>|#\d]/.test(p));
+    const paragraphs = proseBlocks(blocks);
     // Measured as spread, not as a required shape. The first version demanded a
     // 1-sentence paragraph *and* a 5-sentence one, which flagged three posts that
     // read fine — it was enforcing one particular rhythm rather than the absence of
     // uniformity. §3.3 asks for lumpiness, so that is what this measures.
     if (paragraphs.length >= 6) {
-      const counts = paragraphs.map((p) => (p.match(/[.!?](?:\s|$)/g) || []).length || 1);
+      const counts = paragraphs.map((p) => (p.match(SENTENCE_END) || []).length || 1);
       const spread = Math.max(...counts) - Math.min(...counts);
       if (spread < EN_MIN_PARAGRAPH_SPREAD || !counts.some((n) => n <= 2)) {
         warn(
@@ -451,6 +835,91 @@ for (const file of targets) {
         warn(name, `mental-history claim "${s.slice(0, 60)}${s.length > 60 ? '…' : ''}" — must trace to author material (pipeline §10), not narrative glue`);
       }
     }
+
+    // 10. Nobody home — a cited argument with no author on the page. Reported as a
+    // provenance finding, not a style one, and the remedy is deliberately *not* a
+    // sentence: §3.5 is explicit that a first-person moment must trace to author
+    // input and is never invented to fill a slot. A hit means go back and check
+    // whether the Author Kernel had anything in it.
+    // Count URLs, not link syntax. The essay-source check on line ~378 accepts any
+    // https:// occurrence, and a piece that cites with bare URLs, reference
+    // definitions or an MDX <a href> is as research-carried as one that cites with
+    // brackets — it would be arbitrary for two checks in this file to disagree about
+    // that on punctuation. Counting the scheme itself also counts each source once,
+    // however it is written, where summing per-syntax patterns risked double-counting.
+    // Counted over `blocks`, not `body`: a URL inside a fenced code example is a code
+    // sample, not evidence, and the rest of this routine already reads code-stripped
+    // text. A technical note whose only URLs sit in a snippet cites nothing.
+    // All three provenance figures come from one parse of the body, so link syntax,
+    // fence style and quote nesting stop being this check's problem.
+    const isMdx = /\.mdx$/.test(name);
+    const tree = parseBody(body, isMdx);
+    const proseText = proseTextOf(tree, body);
+    const externalLinks = sourceUrlsOf(tree, body).size;
+    // Length measured over prose a reader reads — quotes and citations included, code
+    // excluded. `words` keeps counting the raw body for the tier ceiling above, which
+    // asks how much is on the page; this asks how much of it is prose.
+    const proseWords = proseText.trim().split(/\s+/).filter(Boolean).length;
+    const hasRoomForAuthor =
+      proseWords >= EN_AUTHOR_MIN_WORDS &&
+      (externalLinks >= EN_RESEARCH_MIN_LINKS || proseWords >= EN_AUTHOR_LONG_WORDS);
+    if (hasRoomForAuthor) {
+      const authored = stripQuotedSpeech(authoredTextOf(body, isMdx));
+      const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
+      const rate = (1000 * markers) / proseWords;
+      if (rate < EN_MIN_AUTHOR_PER_KWORDS) {
+        warn(
+          name,
+          `nobody home: ${markers} author marker(s) in ${proseWords} words (${rate.toFixed(1)}/1k, want ≥ ${EN_MIN_AUTHOR_PER_KWORDS}) — a literature review with a byline. Do NOT fix this by adding "I think": check whether the Author Kernel had material, and if it did not, that is an interview gap for the PR body (§3.5)`
+        );
+      }
+    }
+
+    // 11. The punchline metronome. Not "is there a short paragraph" (check 5 asks
+    // that) but "is the short paragraph the beat" — an aphorism dropped every third
+    // paragraph reads as a tic, and none of them lands.
+    if (paragraphs.length >= EN_SOLO_PARA_MIN_PARAS) {
+      // Closing quotes and brackets may sit between the terminator and the space, as
+      // the sentence splitter above already allows. Without that, `He said "It
+      // worked." She disagreed.` counts zero terminators and reads as a punchline.
+      const solo = paragraphs.filter((p) => (p.match(SENTENCE_END) || []).length <= 1).length;
+      const share = solo / paragraphs.length;
+      if (share > EN_MAX_SOLO_PARA_SHARE) {
+        warn(
+          name,
+          `punchline metronome: ${solo} of ${paragraphs.length} paragraphs (${Math.round(100 * share)}%) are a single sentence — save the punch for the one place it matters and let the rest carry information (§1, §3.2)`
+        );
+      }
+    }
+
+    // 12. Template closers across the shelf (§3.4). Every other rule in the playbook
+    // can be checked inside one file; this one can only be seen by reading the
+    // archive, which is why it went unchecked while five posts converged on the same
+    // ending. Only active posts count — see the constant's note on why the comparison
+    // is the whole shelf rather than a three-post window, and why a withdrawn piece
+    // drops out of it.
+    // A withdrawn post is off the shelf, so its framing is nobody's to reuse or to
+    // rewrite: asking it to find a different closer would be asking for an edit to a
+    // piece the site no longer presents. Both sides of the comparison are active-only.
+    const closer = lifecycle(fm) === 'active'
+      ? paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ')
+      : '';
+    for (const frame of EN_CLOSER_FRAMES) {
+      if (!usesCloserFrame(closer, frame)) continue;
+      const others = [];
+      for (const [key, pair] of index) {
+        if (key === fm.translationKey || !pair.en) continue;
+        if (lifecycle(pair.en.frontmatter) !== 'active') continue;
+        const tail = proseParagraphs(pair.en.body).slice(-EN_CLOSER_PARAGRAPHS).join(' ');
+        if (usesCloserFrame(tail, frame)) others.push(key);
+      }
+      if (others.length > EN_CLOSER_FRAME_MAX) {
+        warn(
+          name,
+          `template closer: ${others.length} other active posts also end on ${frame.label} (${others.slice(0, 3).join(', ')}${others.length > 3 ? ', …' : ''}) — find a different framing (§3.4, applied across the live archive rather than the last three posts)`
+        );
+      }
+    }
   }
 
   // Chinese style warnings (advisory) — the gate used to be silent on zh, which
@@ -459,7 +928,7 @@ for (const file of targets) {
     const glossary = existsSync('research/glossary.md')
       ? readFileSync('research/glossary.md', 'utf8').toLowerCase()
       : '';
-    const prose = body.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]*`/g, ' ');
+    const prose = stripCode(body).replace(/`[^`]*`/g, ' ');
     const hanTotal = countHan(prose);
     const sentences = prose.split(/(?<=[。！？；\n])/).map((s) => s.trim()).filter(Boolean);
 
