@@ -115,7 +115,7 @@ const quoted = t => t
   .replace(/https?:\/\/\S+/g," ");
 for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md")).sort()) {
   const b = fs.readFileSync("src/content/posts/"+f,"utf8").split(/^---$/m).slice(2).join("---");
-  const tree = fromMarkdown(b.replace(/<(a|blockquote)\b[^>]*>[\s\S]*?<\/\1>/gi," "));
+  const tree = fromMarkdown(b.replace(/<(a|blockquote|q)\b[^>]*>[\s\S]*?<\/\1>/gi," "));
   const prose = collect(fromMarkdown(b), NONPROSE, []).join(" ");
   const authored = quoted(collect(tree, new Set([...NONPROSE, ...SOURCE]), []).join(" "));
   const w = prose.trim().split(/\s+/).filter(Boolean).length;

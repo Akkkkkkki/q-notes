@@ -261,10 +261,13 @@ const parseBody = (body, isMdx) => {
   }
 };
 // Raw HTML is the one thing the AST does not model as structure: `<a href>Label</a>`
-// arrives as html, text, html, so the label survives as ordinary text and an href is
-// invisible as a link. Those elements are therefore removed from the body *before* it
-// is parsed for authored text, which is where their contents would otherwise leak.
-const HTML_SOURCE_ELEMENT = /<(a|blockquote|figcaption|cite)\b[^>]*>[\s\S]*?<\/\1>/gi;
+// arrives as html, text, html — three siblings — so the label is just a text node and
+// an href is invisible as a link. Those elements are therefore removed from the body
+// *before* it is parsed for authored text, which is where their contents would leak.
+// The list is HTML's own vocabulary for attributed words, `<q>` included: it is the
+// inline half of `<blockquote>`, and its contents are somebody else's sentence whether
+// or not the surrounding markup ever reached the AST.
+const HTML_SOURCE_ELEMENT = /<(a|blockquote|q|figcaption|cite)\b[^>]*>[\s\S]*?<\/\1>/gi;
 const proseTextOf = (tree, body) =>
   tree ? collectText(tree, NON_PROSE_NODES, []).join(' ') : body;
 const authoredTextOf = (body, isMdx) => {
@@ -280,6 +283,7 @@ const authoredTextOf = (body, isMdx) => {
 // would undo the AST's own exclusion of code — the visitor skips a snippet and the scan
 // immediately puts its sample URLs back.
 const URL_IN_TEXT = /https?:\/\/[^\s"'<>)\]]+/g;
+const LINK_ATTRIBUTES = new Set(['href', 'src', 'cite']);
 const sourceUrlsOf = (tree, body) => {
   const urls = new Set();
   const add = (u) => urls.add(u.replace(/[.,;:]+$/, ''));
@@ -287,13 +291,22 @@ const sourceUrlsOf = (tree, body) => {
     if (node.type === 'code' || node.type === 'inlineCode') return; // a sample, not a source
     if (typeof node.url === 'string' && /^https?:/i.test(node.url)) add(node.url);
     if ((node.type === 'html' || node.type === 'text') && typeof node.value === 'string') {
-      for (const u of node.value.match(URL_IN_TEXT) ?? []) add(u);
+      // Comments first: a drafting note is not a citation, and a post whose only two
+      // URLs sit in `<!-- check these -->` would otherwise be read as research-carried
+      // and warned for having no author in an argument it never made.
+      for (const u of node.value.replace(HTML_COMMENT, ' ').match(URL_IN_TEXT) ?? []) add(u);
     }
     // MDX keeps `<a href="…">` as a JSX element: the target is an attribute, so it is
     // in neither `node.url` nor any node value, and an .mdx post citing its sources
     // through JSX anchors counted zero links and skipped the provenance check. An
     // attribute's value is a string, or an expression node carrying its own source.
+    // Only the attributes that actually address a resource count. Reading every
+    // attribute turned `<Demo endpoint="…" backup="…" />` into two citations and made a
+    // short note look research-carried — a URL in a component's configuration is a
+    // setting, not a source. These three are the ones whose Markdown equivalents
+    // (`link`, `image`, a cited quotation) the AST already treats as sources.
     for (const attr of node.attributes ?? []) {
+      if (!LINK_ATTRIBUTES.has(String(attr?.name ?? '').toLowerCase())) continue;
       const value = typeof attr?.value === 'string' ? attr.value : attr?.value?.value;
       if (typeof value === 'string') for (const u of value.match(URL_IN_TEXT) ?? []) add(u);
     }

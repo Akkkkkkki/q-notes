@@ -366,6 +366,29 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('of.en.mdx', EN_FM, body)).toContain('nobody home');
   });
 
+  it('does not count a component setting as a citation', () => {
+    // A URL in a component's configuration addresses a resource, not a source. Reading
+    // every JSX attribute made a short note look research-carried.
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n<Demo endpoint="https://example.com/a" backup="https://example.com/b" />`;
+    expect(gate('og.en.mdx', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('does not count a URL in an HTML comment as a citation', () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n<!-- check https://example.com/a and https://example.com/b -->`;
+    expect(gate('oh.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('does not count an inline HTML quotation as the author', () => {
+    // `<q>` is the inline half of `<blockquote>`: somebody else's sentence, and this
+    // corpus quotes people who say "I" and "my" constantly.
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const mine = Array.from({ length: 6 }, () => 'One of them said <q>I built this for my own team.</q>').join(' ');
+    const body = `${mine} ${filler}\n\nSee [one](https://example.com/a) and [two](https://example.com/b).`;
+    expect(gate('oi.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a URL in inline code as a source', () => {
     const body = 'A short field note about one team. Nobody had a rule for it. Try `https://example.com/a` and `https://example.com/b`.';
     expect(gate('ob.en.md', EN_FM, body)).not.toContain('nobody home');
