@@ -17,12 +17,12 @@ draft existed.
 
 | Post | Date | Author markers /1k | Single-sentence paragraphs | What the piece was drafted from |
 |---|---|---|---|---|
-| consulting-barbell | 04-18 | 0.5 | 4% | research only (pre-backlog) |
-| consulting-outcomes | 04-25 | 0.8 | 14% | research only (pre-backlog) |
+| consulting-barbell | 04-18 | 0.5 | 0% | research only (pre-backlog) |
+| consulting-outcomes | 04-25 | 0.8 | 10% | research only (pre-backlog) |
 | consulting-coordination | 05-02 | **0.0** | 4% | research only (pre-backlog) |
 | helpful-agents-authorization-bug | 06-23 | 0.9 | 17% | scout find, no author hook |
-| agent-coordination-debt | 06-26 | 2.3 | 27% | 2026-06-19 inbox spark |
-| pull-requests-are-knowledge-imports | 07-03 | 1.6 | **37%** | 2026-06-19 spark, "extends" |
+| agent-coordination-debt | 06-26 | 2.3 | 24% | 2026-06-19 inbox spark |
+| pull-requests-are-knowledge-imports | 07-03 | 1.6 | **29%** | 2026-06-19 spark, "extends" |
 | codebase-maps-are-agent-interfaces | 07-07 | 1.2 | 22% | published post (rung 4) |
 | agent-prs-need-traffic-control | 07-10 | 2.0 | 13% | 2026-06-19 spark, "extends" |
 | wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | published post (rung 4) |
@@ -143,9 +143,9 @@ a disclosure is inserted rather than a perspective held.
 **The staccato explainer** (the agent posts, June–July). Everything the research
 memo isn't: two-sentence paragraphs, a punchline every third one, and a section
 whose entire job is walking through four arXiv abstracts in a row.
-`pull-requests-are-knowledge-imports` is 37% single-sentence
+`pull-requests-are-knowledge-imports` is 29% single-sentence
 paragraphs — "Agents break that signal." / "Those questions didn't get cheaper just
-because the first patch did." / "Some speed is fake." Each is fine alone. Fourteen
+because the first patch did." / "Some speed is fake." Each is fine alone. Eleven
 of them in 38 paragraphs is a drum machine, and §1 of the playbook already predicted
 exactly this: "when every second paragraph closes with a mic-drop line, none of them
 drops."

@@ -123,14 +123,18 @@ const authoredOnly = (text) =>
     .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm, ' ') // reference-link definitions
     .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // inline links, label and target
     .replace(/\[[^\]]*\]\[[^\]]*\]/g, ' ') // reference-style links, label and key
+    .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ') // HTML/MDX anchors, element and text
+    .replace(/<[^>]+>/g, ' ') // any other tag, so an attribute cannot donate a marker
     .replace(/https?:\/\/\S+/g, ' ') // bare URLs
     .replace(/[“"][^“”"]{0,400}[”"]/g, ' '); // quoted spans, straight or curly
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
 // Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
 // not be the beat the whole piece is written on. The two form a band, they don't
-// conflict. Corpus: 0–14% across the posts that read as written, 22–34% across the
-// three worst offenders.
+// conflict. Corpus: 0–17% across the posts that pass, 22–29% across the three that
+// do not. (These are counted with SENTENCE_END below, which treats a terminator
+// inside a quotation as ending a sentence; a naive counter reads several of these
+// higher.)
 const EN_MAX_SOLO_PARA_SHARE = 0.2;
 // Sentence terminators, counting a closing quote or bracket as part of the terminator
 // so quoted dialogue is not read as one long sentence. Shared by both paragraph checks
@@ -182,16 +186,22 @@ const proseParagraphs = (body) =>
 // conditional only counts when it precedes the *modal*, because that is what it means
 // to govern a forecast — and the modal, not the date, is where the forecast is
 // asserted. All three orderings fall out of that one comparison:
-//   "If by 2028 I still can't find that link…"      cond < modal  → a real test
-//   "By 2027, if adoption continues, teams will…"   cond < modal  → a real test
-//   "By 2027, teams will stop debating whether…"    cond > modal  → the template
+//   "If by 2028 I still can't find that link…"      cond governs  → a real test
+//   "By 2027, if adoption continues, teams will…"   cond governs  → a real test
+//   "By 2027, teams will stop debating whether…"    cond follows  → the template
+//   "Whether X succeeds is beside the point; by     cond is in
+//    2027, teams will…"                             another clause → the template
+// The search window is the forecast's own clause — from the semicolon that opens it
+// to the modal — so a conditional belonging to a different independent clause cannot
+// launder an assertion. Only ';' splits clauses here: an em dash usually wraps a
+// parenthetical, and cutting there would strip a governing "if" out of its own clause.
 const usesCloserFrame = (closer, frame) =>
   closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
     const hit = s.match(frame.re);
     if (!hit) return false;
     const modalAt = hit.indices?.[1]?.[0] ?? hit.index;
-    const cond = s.match(frame.conditional);
-    return !(cond && cond.index < modalAt);
+    const clauseStart = s.lastIndexOf(';', modalAt) + 1;
+    return !frame.conditional.test(s.slice(clauseStart, modalAt));
   });
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.

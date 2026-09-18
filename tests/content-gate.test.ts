@@ -300,6 +300,14 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nj.en.md', EN_FM, body)).not.toContain('nobody home');
   });
 
+  it('does not count an HTML anchor label as the author', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\n<a href="https://example.com/a">Why I built my tool</a> and ` +
+      '<a href="https://example.com/b">What my team learned</a>';
+    expect(gate('nl.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('treats an HTML href as a citation', () => {
     const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
     const body = `${filler}\n\n<a href="https://example.com/a">one</a> and <a href="https://example.com/b">two</a>`;
@@ -388,6 +396,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a condition sitting between the date and the modal alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
     expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('flags a forecast whose only conditional is in another clause', () => {
+    const body = 'Agents make the bottleneck visible.\n\nWhether this launch succeeds is beside the point; by 2027, teams will treat ownership as part of the process.';
+    expect(gate('cj.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('flags an asserted forecast that merely embeds "whether"', () => {
