@@ -37,6 +37,10 @@ const LEGACY_POSTS = new Map([
   ['consulting-coordination', '2026-05-02'],
   ['consulting-outcomes', '2026-04-25'],
 ]);
+// parseRaw keeps YAML scalars verbatim, so `editorialStatus: "active"` arrives with
+// its quotes. Anything compared against a fixed string has to come through here.
+const unquote = (v) => (v ?? '').trim().replace(/^["']|["']$/g, '');
+const lifecycle = (fm) => unquote(fm?.editorialStatus) || 'active';
 const isLegacy = (name, fm) =>
   LEGACY_POSTS.get(name.replace(/\.(en|zh)\.mdx?$/, '')) === fm.date;
 // Ceilings only (docs/pipeline.md §11: length is an output, not a target — a piece
@@ -110,7 +114,9 @@ const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|me|my|mine|myself)\b/g;
 const authoredOnly = (text) =>
   text
     .replace(/^\s*>.*$/gm, ' ') // block quotes
-    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // markdown links, label and target
+    .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm, ' ') // reference-link definitions
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // inline links, label and target
+    .replace(/\[[^\]]*\]\[[^\]]*\]/g, ' ') // reference-style links, label and key
     .replace(/https?:\/\/\S+/g, ' ') // bare URLs
     .replace(/[“"][^“”"]{0,400}[”"]/g, ' '); // quoted spans, straight or curly
 
@@ -120,6 +126,10 @@ const authoredOnly = (text) =>
 // conflict. Corpus: 0–14% across the posts that read as written, 22–34% across the
 // three worst offenders.
 const EN_MAX_SOLO_PARA_SHARE = 0.2;
+// Sentence terminators, counting a closing quote or bracket as part of the terminator
+// so quoted dialogue is not read as one long sentence. Shared by both paragraph checks
+// so the band they form is measured the same way on both sides.
+const SENTENCE_END = /[.!?]["'”’)\]]*(?:\s|$)/g;
 const EN_SOLO_PARA_MIN_PARAS = 12; // below this the share swings on one paragraph
 
 // Template closers (human-voice.md §3.4: "the framing sentence must differ from the
@@ -144,7 +154,10 @@ const EN_CLOSER_PARAGRAPHS = 3; // how much of the tail counts as "the closer"
 const EN_CLOSER_FRAME_MAX = 2; // other posts allowed to share the frame before it is a template
 const EN_CLOSER_FRAMES = [
   {
-    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(?:will|I\s+expect|I'd\s+expect|should)\b/i,
+    // The modal is captured so the conditional can be positioned against *it*: the
+    // date is only the frame's opening, and a condition can legitimately sit between
+    // the two ("By 2027, if adoption continues, teams will…").
+    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(will|I\s+expect|I'd\s+expect|should)\b/id,
     conditional: /\b(?:if|unless|whether)\b/i,
     label: 'an asserted forecast ("by the end of 20XX, X will Y")',
   },
@@ -160,16 +173,19 @@ const proseParagraphs = (body) =>
     .filter((p) => p && !/^[-*>|#\d]/.test(p));
 // Does this closer use the frame? Checked sentence by sentence so a conditional
 // elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
-// conditional only counts when it *precedes* the forecast, because that is what it
-// means to govern one: "if by 2028 I still can't find that link…" is a real test,
-// while "by 2027, teams will stop debating whether agents need owners" is the
-// template with an embedded complement after it. Position is the difference.
+// conditional only counts when it precedes the *modal*, because that is what it means
+// to govern a forecast — and the modal, not the date, is where the forecast is
+// asserted. All three orderings fall out of that one comparison:
+//   "If by 2028 I still can't find that link…"      cond < modal  → a real test
+//   "By 2027, if adoption continues, teams will…"   cond < modal  → a real test
+//   "By 2027, teams will stop debating whether…"    cond > modal  → the template
 const usesCloserFrame = (closer, frame) =>
-  closer.split(/(?<=[.!?])\s+/).some((s) => {
+  closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
     const hit = s.match(frame.re);
     if (!hit) return false;
+    const modalAt = hit.indices?.[1]?.[0] ?? hit.index;
     const cond = s.match(frame.conditional);
-    return !(cond && cond.index < hit.index);
+    return !(cond && cond.index < modalAt);
   });
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
@@ -496,7 +512,7 @@ for (const file of targets) {
     // read fine — it was enforcing one particular rhythm rather than the absence of
     // uniformity. §3.3 asks for lumpiness, so that is what this measures.
     if (paragraphs.length >= 6) {
-      const counts = paragraphs.map((p) => (p.match(/[.!?](?:\s|$)/g) || []).length || 1);
+      const counts = paragraphs.map((p) => (p.match(SENTENCE_END) || []).length || 1);
       const spread = Math.max(...counts) - Math.min(...counts);
       if (spread < EN_MIN_PARAGRAPH_SPREAD || !counts.some((n) => n <= 2)) {
         warn(
@@ -583,7 +599,10 @@ for (const file of targets) {
     // that) but "is the short paragraph the beat" — an aphorism dropped every third
     // paragraph reads as a tic, and none of them lands.
     if (paragraphs.length >= EN_SOLO_PARA_MIN_PARAS) {
-      const solo = paragraphs.filter((p) => (p.match(/[.!?](?:\s|$)/g) || []).length <= 1).length;
+      // Closing quotes and brackets may sit between the terminator and the space, as
+      // the sentence splitter above already allows. Without that, `He said "It
+      // worked." She disagreed.` counts zero terminators and reads as a punchline.
+      const solo = paragraphs.filter((p) => (p.match(SENTENCE_END) || []).length <= 1).length;
       const share = solo / paragraphs.length;
       if (share > EN_MAX_SOLO_PARA_SHARE) {
         warn(
@@ -602,7 +621,7 @@ for (const file of targets) {
     // A withdrawn post is off the shelf, so its framing is nobody's to reuse or to
     // rewrite: asking it to find a different closer would be asking for an edit to a
     // piece the site no longer presents. Both sides of the comparison are active-only.
-    const closer = (fm.editorialStatus ?? 'active') === 'active'
+    const closer = lifecycle(fm) === 'active'
       ? paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ')
       : '';
     for (const frame of EN_CLOSER_FRAMES) {
@@ -610,7 +629,7 @@ for (const file of targets) {
       const others = [];
       for (const [key, pair] of index) {
         if (key === fm.translationKey || !pair.en) continue;
-        if ((pair.en.frontmatter?.editorialStatus ?? 'active') !== 'active') continue;
+        if (lifecycle(pair.en.frontmatter) !== 'active') continue;
         const tail = proseParagraphs(pair.en.body).slice(-EN_CLOSER_PARAGRAPHS).join(' ');
         if (usesCloserFrame(tail, frame)) others.push(key);
       }

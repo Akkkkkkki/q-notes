@@ -208,6 +208,13 @@ After: 9 of 14 posts trip at least one of the three, and the 5 that clear all th
 are exactly the 5 whose argument is built on author material. The gate now reproduces
 the split in §1 without being told about it.
 
+Fixing the sentence counter these checks share (it was missing a terminator that sits
+inside a quotation) also woke the gate's existing paragraph-shape check on
+`wallet-is-not-a-conscience`: with quoted dialogue counted correctly, no paragraph in
+that post runs shorter than three sentences. That is a true positive the old counter
+was hiding, and it is the fourth warning on the one post published after the voice pass
+that skipped the interview step.
+
 The "nobody home" check carries a deliberate hazard, and its warning text addresses
 it directly: **the remedy is never a first-person sentence.** §3.5 and
 `material-form.md` §5 both say a person on the page must trace to author input and

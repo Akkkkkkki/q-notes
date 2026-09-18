@@ -305,6 +305,14 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('ne.en.md', EN_FM, research(600, 0))).toContain('Do NOT fix this by adding');
   });
 
+  it('does not count a reference-style link label as the author', () => {
+    const filler = Array.from({ length: 580 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nSee [Why I built this for my team][one] and [the survey][two].\n\n` +
+      '[one]: https://example.com/a\n[two]: https://example.com/b';
+    expect(gate('ni.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a link label or slug as the author', () => {
     const filler = Array.from({ length: 580 }, (_, i) => `word${i}`).join(' ');
     const body =
@@ -337,6 +345,15 @@ describe('punchline metronome (human-voice §1, §3.2)', () => {
     expect(gate('mb.en.md', EN_FM, paras(20, 2))).not.toContain('punchline metronome');
   });
 
+  it('counts a sentence that ends inside a quotation', () => {
+    // Each paragraph is two sentences, both ending in a closing quote. Counting the
+    // terminator alone would read every one as a single-sentence punchline.
+    const body = Array.from({ length: 20 }, (_, i) =>
+      `The founder said "It worked in ${i}." The customer said "It failed."`
+    ).join('\n\n');
+    expect(gate('md.en.md', EN_FM, body)).not.toContain('punchline metronome');
+  });
+
   it('does not judge the share on a handful of paragraphs', () => {
     expect(gate('mc.en.md', EN_FM, paras(8, 5))).not.toContain('punchline metronome');
   });
@@ -353,6 +370,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
     expect(gate('cb.en.md', EN_FM, body)).not.toContain('template closer');
   });
 
+  it('leaves a condition sitting between the date and the modal alone', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
+    expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
   it('flags an asserted forecast that merely embeds "whether"', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, teams will stop debating whether agents need owners.';
     expect(gate('ce.en.md', EN_FM, body)).toContain('template closer');
@@ -361,6 +383,12 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a conditional that governs the forecast alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf by 2028 the metric still will not appear, the other piece was closer to right.';
     expect(gate('cf.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('honours a quoted lifecycle value', () => {
+    const fm = `${EN_FM}\neditorialStatus: "archived"\narchiveReason: "withdrawn"`;
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('ci.en.md', fm, body)).not.toContain('template closer');
   });
 
   it('does not ask a withdrawn post to rewrite its closer', () => {
