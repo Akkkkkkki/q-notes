@@ -344,6 +344,24 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('ng.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('does not count curly single-quoted speech as the author', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nThe founder said \u2018I built this because my team needed it.\u2019\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nm.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('does not treat a contraction apostrophe as a quote delimiter', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    // Curly apostrophes in contractions must not swallow the author's own markers.
+    const body =
+      `I don\u2019t think that\u2019s right, and my read is that it isn\u2019t close. ` +
+      `I wouldn\u2019t ship it. ${filler}\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nn.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('does not count a quoted source\'s first person as the author', () => {
     const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
     const body =
@@ -396,6 +414,18 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a condition sitting between the date and the modal alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
     expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('flags a forecast after a comma-coordinated clause', () => {
+    const body = 'Agents make the bottleneck visible.\n\nIf this launch fails, we will revisit it, but by 2027 serious teams will treat ownership as part of the process.';
+    expect(gate('ck.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('keeps a year-led paragraph in the comparison corpus', () => {
+    // The closer is the last paragraph either way; this asserts the year-led one
+    // before it is treated as prose rather than dropped as a list item.
+    const body = 'Agents make the bottleneck visible.\n\n2026 exposed the bottleneck.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('cl.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('flags a forecast whose only conditional is in another clause', () => {

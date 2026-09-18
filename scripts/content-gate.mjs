@@ -126,7 +126,11 @@ const authoredOnly = (text) =>
     .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ') // HTML/MDX anchors, element and text
     .replace(/<[^>]+>/g, ' ') // any other tag, so an attribute cannot donate a marker
     .replace(/https?:\/\/\S+/g, ' ') // bare URLs
-    .replace(/[“"][^“”"]{0,400}[”"]/g, ' '); // quoted spans, straight or curly
+    .replace(/[“"][^“”"]{0,400}[”"]/g, ' ') // double-quoted spans, straight or curly
+    // Curly single quotes only, and only a true open/close pair. A straight ' is an
+    // apostrophe far more often than a quote mark, and U+2019 doubles as the curly
+    // apostrophe in "don't" — anchoring on U+2018 is what keeps contractions intact.
+    .replace(/‘[^‘’]{0,400}’/g, ' ');
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
 // Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
@@ -174,13 +178,17 @@ const EN_CLOSER_FRAMES = [
 ];
 // Split a body into the prose paragraphs a reader sees, dropping code, headings,
 // lists, and block quotes. Used by the closer check on *other* posts in the corpus.
+// A paragraph that opens with a year is prose, not a list item: `\d` alone dropped
+// "2026 exposed the bottleneck. By 2027, teams will…" out of the comparison corpus,
+// which could silently take the shared-frame count below its threshold.
+const NON_PROSE_BLOCK = /^(?:[-*>|#]|\d+[.)]\s)/;
 const proseParagraphs = (body) =>
   body
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/^#+ .*$/gm, '')
     .split(/\n\s*\n/)
     .map((p) => p.trim())
-    .filter((p) => p && !/^[-*>|#\d]/.test(p));
+    .filter((p) => p && !NON_PROSE_BLOCK.test(p));
 // Does this closer use the frame? Checked sentence by sentence so a conditional
 // elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
 // conditional only counts when it precedes the *modal*, because that is what it means
@@ -191,16 +199,21 @@ const proseParagraphs = (body) =>
 //   "By 2027, teams will stop debating whether…"    cond follows  → the template
 //   "Whether X succeeds is beside the point; by     cond is in
 //    2027, teams will…"                             another clause → the template
-// The search window is the forecast's own clause — from the semicolon that opens it
-// to the modal — so a conditional belonging to a different independent clause cannot
-// launder an assertion. Only ';' splits clauses here: an em dash usually wraps a
-// parenthetical, and cutting there would strip a governing "if" out of its own clause.
+// The search window is the forecast's own clause, so a conditional belonging to a
+// different independent clause cannot launder an assertion:
+//   "If this launch fails, we will revisit it, but by 2027 teams will…"  → the template
+// A clause opens at a semicolon or at a comma followed by a coordinating conjunction.
+// Deliberately *not* boundaries: a bare comma, which would cut "By 2027, if adoption
+// continues, teams will…" apart, and an em dash, which usually wraps a parenthetical.
+// Both would strip a genuinely governing "if" out of its own clause.
 const usesCloserFrame = (closer, frame) =>
   closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
     const hit = s.match(frame.re);
     if (!hit) return false;
     const modalAt = hit.indices?.[1]?.[0] ?? hit.index;
-    const clauseStart = s.lastIndexOf(';', modalAt) + 1;
+    const before = s.slice(0, modalAt);
+    const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
+    const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
     return !frame.conditional.test(s.slice(clauseStart, modalAt));
   });
 
@@ -522,7 +535,7 @@ for (const file of targets) {
     const paragraphs = blocks
       .split(/\n\s*\n/)
       .map((p) => p.trim())
-      .filter((p) => p && !/^[-*>|#\d]/.test(p));
+      .filter((p) => p && !NON_PROSE_BLOCK.test(p));
     // Measured as spread, not as a required shape. The first version demanded a
     // 1-sentence paragraph *and* a 5-sentence one, which flagged three posts that
     // read fine — it was enforcing one particular rhythm rather than the absence of
