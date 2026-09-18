@@ -73,6 +73,73 @@ const EN_BURSTINESS_MIN_SENTENCES = 25; // below this, the statistic is noise
 const EN_MIN_PARAGRAPH_SPREAD = 3; // longest paragraph minus shortest, in sentences
 const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 
+// --- Structural checks (the half the texture checks were blind to) ---------
+// The thresholds above were calibrated against the nine posts published before the
+// July 2026 voice pass, which is the right move for a texture rule and the wrong one
+// for a structural rule: if the corpus itself is the failure, calibrating to it
+// defines the failure as normal. Every check below was instead calibrated against
+// the *split* in the corpus — the posts drafted with author material behind them
+// versus the posts drafted from research alone (docs/reviews/2026-09-18-active-corpus-audit.md).
+// Each one separates those two groups with no overlap; none of them fires on a
+// borderline case, because there are no borderline cases on this axis.
+
+// "Nobody home" (human-voice.md §1, §3.5). Author markers per 1,000 words, checked
+// only on a piece with room for the author: either it is carried by research (at
+// least EN_RESEARCH_MIN_LINKS external sources) or it simply runs long. That guard is
+// deliberate — a short field note with no citations and no "I" is a legitimate form,
+// while a cited or long-form argument with no author on the page is a literature
+// review with a byline. The length arm exists because the three 2026 consulting posts
+// cite constantly and link almost never, so a link-only proxy would miss the three
+// emptiest pieces in the corpus. Corpus: 0.0–1.9 for the nine research-drafted posts,
+// 5.9–21.4 for the five with author material behind them. Nothing lands between.
+const EN_MIN_AUTHOR_PER_KWORDS = 3.0;
+const EN_RESEARCH_MIN_LINKS = 2;
+const EN_AUTHOR_LONG_WORDS = 800; // long enough that having no author is a choice
+const EN_AUTHOR_MIN_WORDS = 250; // below this the rate is noise
+const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|me|my|mine|myself)\b/g;
+
+// The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
+// Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
+// not be the beat the whole piece is written on. The two form a band, they don't
+// conflict. Corpus: 0–14% across the posts that read as written, 22–34% across the
+// three worst offenders.
+const EN_MAX_SOLO_PARA_SHARE = 0.2;
+const EN_SOLO_PARA_MIN_PARAS = 12; // below this the share swings on one paragraph
+
+// Template closers (human-voice.md §3.4: "the framing sentence must differ from the
+// last three posts"). The only rule in the playbook that cannot be checked inside one
+// file, and so the only one nothing checked at all. Corpus: five English posts close
+// on the same asserted forecast, all five on the same year.
+//
+// The frame is the assertion, not the date. "By the end of 2027, serious teams *will*
+// treat X as Y" is the template; "if by 2028 I still can't find that link, the other
+// piece was closer to right" is a genuine conditional test and stays legal, which is
+// why the pattern requires the forecast verb and refuses a conditional clause.
+const EN_CLOSER_PARAGRAPHS = 3; // how much of the tail counts as "the closer"
+const EN_CLOSER_FRAME_MAX = 2; // other posts allowed to share the frame before it is a template
+const EN_CLOSER_FRAMES = [
+  {
+    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(?:will|I\s+expect|I'd\s+expect|should)\b/i,
+    conditional: /\b(?:if|unless|whether)\b/i,
+    label: 'an asserted forecast ("by the end of 20XX, X will Y")',
+  },
+];
+// Split a body into the prose paragraphs a reader sees, dropping code, headings,
+// lists, and block quotes. Used by the closer check on *other* posts in the corpus.
+const proseParagraphs = (body) =>
+  body
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/^#+ .*$/gm, '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p && !/^[-*>|#\d]/.test(p));
+// Does this closer use the frame? Checked sentence by sentence so a conditional
+// elsewhere in the tail cannot excuse an asserted forecast, and vice versa.
+const usesCloserFrame = (closer, frame) =>
+  closer
+    .split(/(?<=[.!?])\s+/)
+    .some((s) => frame.re.test(s) && !frame.conditional.test(s));
+
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
 // The corpus scores zero on all of these — the drafter already avoids them — so
 // this is a regression guard, not a source of routine warnings.
@@ -449,6 +516,60 @@ for (const file of targets) {
       if (EN_MENTAL_HISTORY.some((re) => re.test(s))) {
         mentalHits++;
         warn(name, `mental-history claim "${s.slice(0, 60)}${s.length > 60 ? '…' : ''}" — must trace to author material (pipeline §10), not narrative glue`);
+      }
+    }
+
+    // 10. Nobody home — a cited argument with no author on the page. Reported as a
+    // provenance finding, not a style one, and the remedy is deliberately *not* a
+    // sentence: §3.5 is explicit that a first-person moment must trace to author
+    // input and is never invented to fill a slot. A hit means go back and check
+    // whether the Author Kernel had anything in it.
+    const externalLinks = (body.match(/\]\(https?:\/\//g) || []).length;
+    const hasRoomForAuthor =
+      words.length >= EN_AUTHOR_MIN_WORDS &&
+      (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
+    if (hasRoomForAuthor) {
+      const markers = (prose.match(EN_AUTHOR_MARKER) || []).length;
+      const rate = (1000 * markers) / words.length;
+      if (rate < EN_MIN_AUTHOR_PER_KWORDS) {
+        warn(
+          name,
+          `nobody home: ${markers} author marker(s) in ${words.length} words (${rate.toFixed(1)}/1k, want ≥ ${EN_MIN_AUTHOR_PER_KWORDS}) — a literature review with a byline. Do NOT fix this by adding "I think": check whether the Author Kernel had material, and if it did not, that is an interview gap for the PR body (§3.5)`
+        );
+      }
+    }
+
+    // 11. The punchline metronome. Not "is there a short paragraph" (check 5 asks
+    // that) but "is the short paragraph the beat" — an aphorism dropped every third
+    // paragraph reads as a tic, and none of them lands.
+    if (paragraphs.length >= EN_SOLO_PARA_MIN_PARAS) {
+      const solo = paragraphs.filter((p) => (p.match(/[.!?](?:\s|$)/g) || []).length <= 1).length;
+      const share = solo / paragraphs.length;
+      if (share > EN_MAX_SOLO_PARA_SHARE) {
+        warn(
+          name,
+          `punchline metronome: ${solo} of ${paragraphs.length} paragraphs (${Math.round(100 * share)}%) are a single sentence — save the punch for the one place it matters and let the rest carry information (§1, §3.2)`
+        );
+      }
+    }
+
+    // 12. Template closers across the corpus (§3.4). Every other rule in the playbook
+    // can be checked inside one file; this one can only be seen by reading the shelf,
+    // which is why it went unchecked while eight posts converged on the same ending.
+    const closer = paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ');
+    for (const frame of EN_CLOSER_FRAMES) {
+      if (!usesCloserFrame(closer, frame)) continue;
+      const others = [];
+      for (const [key, pair] of index) {
+        if (key === fm.translationKey || !pair.en) continue;
+        const tail = proseParagraphs(pair.en.body).slice(-EN_CLOSER_PARAGRAPHS).join(' ');
+        if (usesCloserFrame(tail, frame)) others.push(key);
+      }
+      if (others.length > EN_CLOSER_FRAME_MAX) {
+        warn(
+          name,
+          `template closer: ${others.length} other posts also end on ${frame.label} (${others.slice(0, 3).join(', ')}${others.length > 3 ? ', …' : ''}) — the framing has to differ from the last three posts (§3.4)`
+        );
       }
     }
   }

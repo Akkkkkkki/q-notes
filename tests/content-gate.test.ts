@@ -268,3 +268,72 @@ describe('fabricated intellectual autobiography (docs/pipeline.md §10)', () => 
     expect(gate('u.zh.md', ZH_FM, body)).not.toContain('mental-history claim');
   });
 });
+
+describe('nobody home (human-voice §1, §3.5)', () => {
+  /** A cited argument of `words` length with `authorMarkers` first-person markers. */
+  const research = (words: number, authorMarkers: number) => {
+    const filler = Array.from({ length: words - authorMarkers * 4 }, (_, i) => `word${i}`).join(' ');
+    const mine = Array.from({ length: authorMarkers }, () => 'I have seen this.').join(' ');
+    return `${mine} ${filler}\n\nSee [one](https://example.com/a) and [two](https://example.com/b).`;
+  };
+
+  it('flags a research-carried piece with no author on the page', () => {
+    expect(gate('na.en.md', EN_FM, research(600, 0))).toContain('nobody home');
+  });
+
+  it('passes the same length once the author is actually in it', () => {
+    expect(gate('nb.en.md', EN_FM, research(600, 6))).not.toContain('nobody home');
+  });
+
+  it('leaves a short uncited field note alone', () => {
+    const body = 'A colleague turned in some work and said upfront that AI wrote it. Nobody had a rule for it.';
+    expect(gate('nc.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('still flags a long piece that cites nothing and contains no author', () => {
+    const body = Array.from({ length: 900 }, (_, i) => `word${i}`).join(' ');
+    expect(gate('nd.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('never tells the drafter to add first person', () => {
+    expect(gate('ne.en.md', EN_FM, research(600, 0))).toContain('Do NOT fix this by adding');
+  });
+});
+
+describe('punchline metronome (human-voice §1, §3.2)', () => {
+  const paras = (n: number, solo: number) =>
+    Array.from({ length: n }, (_, i) =>
+      i < solo ? `Some speed is fake number ${i}.` : `The team shipped the change on ${i}. Review took a week. Nobody owned the result.`
+    ).join('\n\n');
+
+  it('flags an aphorism dropped every third paragraph', () => {
+    expect(gate('ma.en.md', EN_FM, paras(20, 8))).toContain('punchline metronome');
+  });
+
+  it('leaves a piece with a couple of short paragraphs alone', () => {
+    expect(gate('mb.en.md', EN_FM, paras(20, 2))).not.toContain('punchline metronome');
+  });
+
+  it('does not judge the share on a handful of paragraphs', () => {
+    expect(gate('mc.en.md', EN_FM, paras(8, 5))).not.toContain('punchline metronome');
+  });
+});
+
+describe('template closers across the corpus (human-voice §3.4)', () => {
+  it('flags a closer the published corpus already uses', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('ca.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('leaves a conditional test alone', () => {
+    const body = 'Agents make the bottleneck visible.\n\nIf by 2028 I still cannot find that link, the other piece was closer to right.';
+    expect(gate('cb.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('ignores the frame when it is not in the closer', () => {
+    const body =
+      'By the end of 2027, serious teams will treat ownership as part of the process.\n\n' +
+      Array.from({ length: 5 }, (_, i) => `A paragraph about the mechanism, number ${i}. It runs two sentences.`).join('\n\n');
+    expect(gate('cc.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+});

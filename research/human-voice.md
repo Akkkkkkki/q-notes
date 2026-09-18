@@ -224,9 +224,32 @@ published posts so a hit means something real rather than background noise.
 | One name for one thing | a coined term is reused, not just defined | all passed |
 | 长句 / 万能动词 / 翻译腔模板 (§11–13) | see the zh thresholds in the script | 9 hits across 5 zh posts |
 | Mental-history claim ("I used to think...", 我以前认为…) | flag every hit, capped at 3 | 1 post (`taste-is-a-bet`, a real author correction) |
+| **Nobody home (§1)** | ≥ 3 author markers / 1,000 words, on a cited or long piece | 9 of 14 posts fail (0.0–1.9) |
+| **Punchline metronome (§1, §3.2)** | ≤ 20% of paragraphs are a single sentence | 3 posts fail (22–37%) |
+| **Template closer (§3.4)** | ≤ 2 other posts share the closer's frame | 5 posts fail, all on "by the end of 2027, X will Y" |
 
-Every one of those is now clear. That pass is the "after" column: 26 style warnings across the
-eighteen published files, down to zero, with every number and source link byte-identical.
+Every rule above the bold rows is now clear. That pass is the "after" column: 26 style warnings
+across the eighteen published files, down to zero, with every number and source link
+byte-identical.
+
+The three bold rows were added on 2026-09-18 and are not clear — they are the
+`docs/reviews/2026-09-18-active-corpus-audit.md` findings made mechanical, and 9 of the 14
+active English posts trip at least one. They are deliberately calibrated differently from
+everything above them. The older thresholds were tuned against the published corpus so a
+warning would mean "unusual for us," which is the right instinct for a texture rule and the
+wrong one for a structural one: if the corpus itself is the failure, calibrating to it
+defines the failure as normal. That is exactly what happened — the lint certified as clean
+a set of posts that read as machine-written, because it was measuring the sentences and the
+problem was in the sourcing. The new rows are instead calibrated against the *split* in the
+corpus, between posts drafted with author material behind them and posts drafted from
+research alone. On that axis there are no borderline cases, so none of the three needed a
+judgment call about where to put the line.
+
+The "nobody home" row is the one to be careful with, and its warning text says so: the
+remedy is never a first-person sentence. §3.5 governs. A hit means go back and look at what
+the Author Kernel actually held, and if it held nothing, that is an interview gap for the PR
+body — the one thing that must not happen is the drafter reading this row as a quota and
+salting "I think" through a piece it has no standing to write in the first person.
 
 **Why these thresholds are trusted.** Commit `Apply the human pass to the two most
 recent posts` (2026-07-17) ran §4 by hand over two posts and nothing else, which makes
