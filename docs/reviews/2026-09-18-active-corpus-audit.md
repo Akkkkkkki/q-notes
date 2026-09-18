@@ -15,41 +15,74 @@ line between them is not when the voice pass ran, not length, not tier, and not
 topic. It is whether the author had said anything about the subject before the
 draft existed.
 
-| Post | Date | Author markers /1k | Single-sentence paragraphs | Author material behind it |
+| Post | Date | Author markers /1k | Single-sentence paragraphs | What the piece was drafted from |
 |---|---|---|---|---|
-| consulting-barbell | 04-18 | 1.0 | 4% | none |
-| consulting-outcomes | 04-25 | 1.9 | 14% | none |
-| consulting-coordination | 05-02 | **0.0** | 4% | none |
-| helpful-agents-authorization-bug | 06-23 | 0.9 | 17% | none |
-| agent-coordination-debt | 06-26 | 1.5 | 27% | none |
-| pull-requests-are-knowledge-imports | 07-03 | 1.6 | **37%** | none |
-| codebase-maps-are-agent-interfaces | 07-07 | 1.2 | 22% | none |
-| agent-prs-need-traffic-control | 07-10 | 1.0 | 13% | none |
-| wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | none (rung 4) |
-| taste-is-judgment | 07-20 | 21.3 | 0% | inbox spark |
+| consulting-barbell | 04-18 | 0.5 | 4% | research only (pre-backlog) |
+| consulting-outcomes | 04-25 | 0.8 | 14% | research only (pre-backlog) |
+| consulting-coordination | 05-02 | **0.0** | 4% | research only (pre-backlog) |
+| helpful-agents-authorization-bug | 06-23 | 0.9 | 17% | scout find, no author hook |
+| agent-coordination-debt | 06-26 | 1.5 | 27% | 2026-06-19 inbox spark |
+| pull-requests-are-knowledge-imports | 07-03 | 1.6 | **37%** | 2026-06-19 spark, "extends" |
+| codebase-maps-are-agent-interfaces | 07-07 | 1.2 | 22% | published post (rung 4) |
+| agent-prs-need-traffic-control | 07-10 | 1.0 | 13% | 2026-06-19 spark, "extends" |
+| wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | published post (rung 4) |
+| taste-is-judgment | 07-20 | 21.3 | 0% | 2026-07-17 inbox spark |
 | taste-is-a-bet | 07-31 | 12.9 | 10% | answered interview |
-| ai-native-game-is-a-test | 08-05 | 7.4 | 25%¹ | inbox spark |
-| decisiveness-is-not-a-skill | 08-11 | 18.6 | 0% | inbox spark |
+| ai-native-game-is-a-test | 08-05 | 7.4 | 25%¹ | 2026-07-22 inbox spark |
+| decisiveness-is-not-a-skill | 08-11 | 18.6 | 0% | 2026-08-11 inbox spark |
 | verification-gate-needs-a-name | 08-20 | 17.1 | 0% | answered interview |
 
 ¹ 2 of 8 paragraphs; too few paragraphs for the share to mean anything.
 
-The author-marker column runs 0.0–1.9 in the top group and 7.4–21.3 in the bottom
+The author-marker column runs 0.0–1.6 in the top group and 7.4–21.3 in the bottom
 one. Nothing lands in between. That is not a gradient with a judgment call in the
 middle; it is two populations.
 
-`research/interviews/` begins on 2026-07-20. Every post above that date line was
-drafted with no interview to draft from, and `research/voice.md` was — and still
-is — empty scaffolding, with every entry under `## Stances` and `## Signature moves`
-commented out. `research/positions.md` has no live entries at all. The drafter had
-nothing author-owned to carry, so it did the only thing it could: wrote a very good
-literature review and put a byline on it. The August gardener retro reaches the same
-conclusion from the other end, classifying `wallet-is-not-a-conscience` as
-fallback-ladder rung 4 and citing `codebase-maps-are-agent-interfaces` as the
-precedent. Those are the two posts in this table whose origination is least
-defensible, and they are the two that score 0.0 and 1.2.
+### It is not "had a spark" versus "didn't"
 
-**This is a supply problem wearing a style problem's clothes.** The prose is not
+The obvious explanation is that the top group had no author input to draft from. That
+explanation is wrong, and checking it is what makes the real one visible.
+
+Three of the nine — `agent-coordination-debt`, `pull-requests-are-knowledge-imports`,
+`agent-prs-need-traffic-control` — trace to an author hook in `research/backlog.md`.
+All three trace to the **same** hook: the 2026-06-19 inbox spark, a long, specific,
+firsthand account of visiting software companies where developers shipped high-value
+proofs of concept into an org shape that hadn't moved. It is the best raw material in
+the inbox.
+
+What each piece did with it is the whole finding:
+
+- `agent-coordination-debt` quotes it near-verbatim, in one paragraph, out of 37. That
+  paragraph ("I keep coming back to a blunter version of this…") is the only place in
+  the essay where anyone is present. The other five sections are OpenAI, DeepMind, and
+  arXiv synthesis.
+- `pull-requests-are-knowledge-imports` and `agent-prs-need-traffic-control` don't
+  quote it at all. Their backlog hooks say they "extend" it — which here means the
+  spark picked the topic and contributed no sentence, no example, and no observation to
+  either piece.
+
+The backlog itself already caught this. The 2026-08-28 candidate carries a
+self-novelty caveat in its own Author hook: that spark "has already been used once,
+quoted near-verbatim in the published `agent-coordination-debt` essay, so this
+candidate has to earn a second use." One spark, stretched over three essays and a
+fourth candidate.
+
+So the line isn't whether author material existed. It's whether the piece was **built
+on it or decorated with it.** Every post in the bottom group is built on its material:
+take the interview answers out of `taste-is-a-bet` or `verification-gate-needs-a-name`
+and there is no piece left. Every post in the top group survives its source material
+being removed, because the argument was assembled from research and the author's
+contribution — where there was one — is a garnish. That is the same
+irreplaceable-material test `docs/material-form.md` §2 already specifies, applied
+after the fact to nine posts that predate it.
+
+Two supporting facts, both still true: `research/interviews/` begins on 2026-07-20, so
+every post in the top group was drafted with no interview available; and
+`research/voice.md` is still empty scaffolding, with every entry under `## Stances` and
+`## Signature moves` commented out and `research/positions.md` carrying no live
+entries.
+
+**This is a sourcing problem wearing a style problem's clothes.** The prose is not
 bad. `consulting-outcomes` is genuinely well-reported. What's missing from it is a
 person, and no amount of editing puts one there.
 
@@ -69,7 +102,14 @@ for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md
 ls research/interviews/    # earliest brief: 2026-07-20
 sed -n '/^## Adopted/,$p' research/positions.md    # one commented-out line; 0 live
 sed -n '/^## Stances/,/^## Never/p' research/voice.md | grep -c '^- '    # 0
+grep -n 'Author hook' research/backlog.md          # which posts had author material
+grep -n '2026-06-19' research/inbox.md             # the spark behind three of the nine
 ```
+
+The marker counts exclude block quotes and quoted spans. Somebody else's "I" is not
+the author's presence, and this corpus is full of it — Sternfels supplies two in one
+quoted sentence in `consulting-outcomes`, which is why that post reads 0.8 here and
+1.9 if you count naively.
 
 ## 2. Two dialects of the same failure
 
@@ -144,7 +184,10 @@ can't was also not running. Both halves of the check failed on the same pieces.
 ## 4. What this PR changes
 
 Three checks added to `scripts/content-gate.mjs`, each calibrated against the *split*
-in the corpus rather than against the corpus. Tests in `tests/content-gate.test.ts`;
+in the corpus rather than against the corpus. The split they are calibrated against is
+the one in §1 as corrected — pieces built on author material versus pieces assembled
+from research — not a simple "had a spark" binary, which three of the nine would
+falsify. Tests in `tests/content-gate.test.ts`;
 table rows in `human-voice.md` §5.
 
 | Check | Threshold | Fires on |
@@ -154,8 +197,8 @@ table rows in `human-voice.md` §5.
 | Template closer | ≤ 2 other posts share the closer's frame | 5 posts |
 
 After: 9 of 14 posts trip at least one of the three, and the 5 that clear all three
-are exactly the 5 with author material behind them. The gate now reproduces the
-split in §1 without being told about it.
+are exactly the 5 whose argument is built on author material. The gate now reproduces
+the split in §1 without being told about it.
 
 The "nobody home" check carries a deliberate hazard, and its warning text addresses
 it directly: **the remedy is never a first-person sentence.** §3.5 and
@@ -214,9 +257,14 @@ should do that on its own.
 The nine posts are a symptom with a date range attached: they stop the week
 `research/interviews/` starts. The pipeline already fixed the supply problem for new
 work — that's what the interview loop is — and the fix held everywhere it ran. All
-five clean posts came from an inbox spark or an answered interview. The one post
-published since July that skipped that step is `wallet-is-not-a-conscience`, and it
-is in the other group.
+five clean posts came from an inbox spark or an answered interview.
+
+But the loop is not sufficient on its own, and §1 says why: three of the nine also came
+from an inbox spark, the richest one in the file, and still read as machine-written,
+because the spark set the topic instead of carrying the argument. What changed around
+2026-07-20 was not that author material started existing — it was that the interview
+step started producing enough of it to build on, and `material-form.md` §2 started
+demanding that the draft actually do so.
 
 Two things still leak:
 

@@ -298,6 +298,15 @@ describe('nobody home (human-voice §1, §3.5)', () => {
   it('never tells the drafter to add first person', () => {
     expect(gate('ne.en.md', EN_FM, research(600, 0))).toContain('Do NOT fix this by adding');
   });
+
+  it('does not count a quoted source\'s first person as the author', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\n> "I built this because my team needed it," the vendor said.\n\n` +
+      'The founder added that "I would not ship my own code that way."\n\n' +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nf.en.md', EN_FM, body)).toContain('nobody home');
+  });
 });
 
 describe('punchline metronome (human-voice §1, §3.2)', () => {

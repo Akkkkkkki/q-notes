@@ -78,10 +78,12 @@ const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 // July 2026 voice pass, which is the right move for a texture rule and the wrong one
 // for a structural rule: if the corpus itself is the failure, calibrating to it
 // defines the failure as normal. Every check below was instead calibrated against
-// the *split* in the corpus — the posts drafted with author material behind them
-// versus the posts drafted from research alone (docs/reviews/2026-09-18-active-corpus-audit.md).
-// Each one separates those two groups with no overlap; none of them fires on a
-// borderline case, because there are no borderline cases on this axis.
+// the *split* in the corpus — the posts whose argument is built on author material
+// versus the posts assembled from research with the author's contribution as a garnish
+// (docs/reviews/2026-09-18-active-corpus-audit.md §1, which works through why that is
+// the right axis and "had an inbox spark" is not). Each one separates those two groups
+// with no overlap; none of them fires on a borderline case, because there are no
+// borderline cases on this axis.
 
 // "Nobody home" (human-voice.md §1, §3.5). Author markers per 1,000 words, checked
 // only on a piece with room for the author: either it is carried by research (at
@@ -90,13 +92,21 @@ const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 // while a cited or long-form argument with no author on the page is a literature
 // review with a byline. The length arm exists because the three 2026 consulting posts
 // cite constantly and link almost never, so a link-only proxy would miss the three
-// emptiest pieces in the corpus. Corpus: 0.0–1.9 for the nine research-drafted posts,
-// 5.9–21.4 for the five with author material behind them. Nothing lands between.
+// emptiest pieces in the corpus. Corpus, with quoted speakers excluded: 0.0–1.6 across
+// the nine, 7.4–21.3 across the five. Nothing lands between.
 const EN_MIN_AUTHOR_PER_KWORDS = 3.0;
 const EN_RESEARCH_MIN_LINKS = 2;
 const EN_AUTHOR_LONG_WORDS = 800; // long enough that having no author is a choice
 const EN_AUTHOR_MIN_WORDS = 250; // below this the rate is noise
 const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|me|my|mine|myself)\b/g;
+// Somebody else's "I" is not the author's presence, and this corpus is full of it —
+// Sternfels alone supplies two in one quoted sentence. Block quotes and quoted spans
+// come out before the markers are counted, or a piece could clear a *provenance*
+// check on the strength of its sourcing, which is the exact failure being measured.
+const stripQuoted = (prose) =>
+  prose
+    .replace(/^\s*>.*$/gm, ' ') // block quotes
+    .replace(/[“"][^“”"]{0,400}[”"]/g, ' '); // quoted spans, straight or curly
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
 // Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
@@ -529,7 +539,9 @@ for (const file of targets) {
       words.length >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
     if (hasRoomForAuthor) {
-      const markers = (prose.match(EN_AUTHOR_MARKER) || []).length;
+      // `blocks`, not `prose`: stripQuoted needs the line breaks to find block quotes.
+      const authored = stripQuoted(blocks).replace(/\n/g, ' ');
+      const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
       const rate = (1000 * markers) / words.length;
       if (rate < EN_MIN_AUTHOR_PER_KWORDS) {
         warn(
