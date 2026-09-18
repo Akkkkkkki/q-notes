@@ -133,7 +133,9 @@ const authoredOnly = (text) => {
   // ordinary bracketed prose survives.
   const defined = [...linksGone.matchAll(/^\s*\[([^\]]+)\]:\s*\S+/gm)].map((m) => m[1]);
   const shortcut = defined.length
-    ? new RegExp(`\\[(?:${defined.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\]`, 'g')
+    // Reference labels are case-insensitive in Markdown, so the lookup has to be too:
+    // `[Source title]` pairs with `[SOURCE TITLE]: https://…`.
+    ? new RegExp(`\\[(?:${defined.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\]`, 'gi')
     : null;
   return (shortcut ? linksGone.replace(shortcut, ' ') : linksGone)
     .replace(/^\s*>.*$/gm, ' ') // block quotes
@@ -209,12 +211,16 @@ const EN_CLOSER_FRAMES = [
 //       and the three consulting posts' prediction trackers are written that way
 //   `-` likewise, except for a `---` thematic break, which is not prose either
 //   a digit opens a list only before `.` or `)`; "2026 exposed the bottleneck" is prose
+// Both fence forms CommonMark allows. Stripping only the backtick one let a tilde
+// example count as prose — inflating a length denominator and donating its URLs to the
+// citation guard. Shared so the three strip sites cannot drift apart again.
+const CODE_FENCE = /^(?:```|~~~)[\s\S]*?^(?:```|~~~)/gm;
 const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
 const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
 const isProseBlock = (p) => !!p && !THEMATIC_BREAK.test(p) && !NON_PROSE_BLOCK.test(p);
 const proseParagraphs = (body) =>
   body
-    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(CODE_FENCE, ' ')
     .replace(/^#+ .*$/gm, '')
     .split(/\n\s*\n/)
     .map((p) => p.trim())
@@ -507,7 +513,7 @@ for (const file of targets) {
     // Headings are dropped, not inlined — an unterminated heading otherwise glues
     // itself to the sentence below it and reads as one long run-on.
     const blocks = body
-      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(CODE_FENCE, ' ')
       .replace(/`[^`]*`/g, ' ')
       .replace(/^#+ .*$/gm, '');
     // Emphasis markers come off before any sentence-level analysis: an italicised
@@ -750,7 +756,7 @@ for (const file of targets) {
     const glossary = existsSync('research/glossary.md')
       ? readFileSync('research/glossary.md', 'utf8').toLowerCase()
       : '';
-    const prose = body.replace(/```[\s\S]*?```/g, ' ').replace(/`[^`]*`/g, ' ');
+    const prose = body.replace(CODE_FENCE, ' ').replace(/`[^`]*`/g, ' ');
     const hanTotal = countHan(prose);
     const sentences = prose.split(/(?<=[。！？；\n])/).map((s) => s.trim()).filter(Boolean);
 
