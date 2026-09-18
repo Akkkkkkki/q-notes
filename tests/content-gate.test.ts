@@ -417,6 +417,30 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('ol.en.md', EN_FM, body)).not.toContain('nobody home');
   });
 
+  it('does not count a URL inside a raw script block as a citation', () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\n<script>\nfetch("https://example.com/a");\nfetch("https://example.com/b");\n</script>`;
+    expect(gate('om.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('counts two anchors on one document as one source', () => {
+    // Distinct sources, not distinct link targets.
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nSee [the method](https://example.com/report#method) and ` +
+      '[the results](https://example.com/report#results).';
+    expect(gate('on.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('still counts two genuinely different documents', () => {
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nSee [one](https://example.com/report-a#method) and ` +
+      '[two](https://example.com/report-b#method).';
+    expect(gate('oo.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a URL in inline code as a source', () => {
     const body = 'A short field note about one team. Nobody had a rule for it. Try `https://example.com/a` and `https://example.com/b`.';
     expect(gate('ob.en.md', EN_FM, body)).not.toContain('nobody home');

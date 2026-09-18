@@ -311,15 +311,22 @@ const LINK_ATTRIBUTES = new Map([
 ]);
 const sourceUrlsOf = (tree, body) => {
   const urls = new Set();
-  const add = (u) => urls.add(u.replace(/[.,;:]+$/, ''));
+  // Distinct *sources*, not distinct link targets: `report#method` and `report#results`
+  // are one report, and counting them as two pushed a note citing a single document
+  // over the research threshold. The fragment addresses a place inside a document the
+  // post has already cited. (A hash-routed site would merge under this, which is the
+  // quieter error of the two and not a shape this corpus links to.)
+  const add = (u) => urls.add(u.replace(/[.,;:]+$/, '').replace(/#.*$/, ''));
   const visit = (node) => {
     if (node.type === 'code' || node.type === 'inlineCode') return; // a sample, not a source
     if (typeof node.url === 'string' && /^https?:/i.test(node.url)) add(node.url);
     if ((node.type === 'html' || node.type === 'text') && typeof node.value === 'string') {
-      // Comments first: a drafting note is not a citation, and a post whose only two
-      // URLs sit in `<!-- check these -->` would otherwise be read as research-carried
-      // and warned for having no author in an argument it never made.
-      for (const u of node.value.replace(HTML_COMMENT, ' ').match(URL_IN_TEXT) ?? []) add(u);
+      // Read the same way the prose side reads it: a drafting note is not a citation,
+      // and neither is a URL inside `<script>` or `<style>`. Either one counted here
+      // made an uncited note look research-carried and earned it a warning for having
+      // no author in an argument it never made.
+      const cited = node.value.replace(HTML_COMMENT, ' ').replace(HTML_CODE_ELEMENT, ' ');
+      for (const u of cited.match(URL_IN_TEXT) ?? []) add(u);
     }
     // MDX keeps `<a href="…">` as a JSX element: the target is an attribute, so it is
     // in neither `node.url` nor any node value, and an .mdx post citing its sources
