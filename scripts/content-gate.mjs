@@ -217,10 +217,25 @@ const EN_CLOSER_FRAMES = [
 //   authoredText — the author's own words: prose minus block quotes, link and image
 //                  text. The numerator, because somebody else's "I" is not presence.
 const SOURCE_TEXT_NODES = new Set(['blockquote', 'link', 'linkReference', 'image', 'imageReference']);
-const NON_PROSE_NODES = new Set(['code', 'inlineCode', 'html', 'definition', 'yaml']);
+const NON_PROSE_NODES = new Set(['code', 'inlineCode', 'definition', 'yaml']);
+// What a raw-HTML node renders as. Markup out, text kept: the reader sees the text.
+// Comments go first because one may contain a `>` that would otherwise end a "tag",
+// and script/style bodies are markup's own code — never prose.
+const HTML_COMMENT = /<!--[\s\S]*?-->/g;
+const HTML_CODE_ELEMENT = /<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi;
+const HTML_TAG = /<[^>]*>/g;
+const htmlTextOf = (value) =>
+  value.replace(HTML_COMMENT, ' ').replace(HTML_CODE_ELEMENT, ' ').replace(HTML_TAG, ' ');
 const collectText = (node, skip, out) => {
   if (skip.has(node.type)) return out;
   if (node.type === 'text') out.push(node.value);
+  // Raw HTML is one opaque node, text and all: a `.md` post that wraps prose in a
+  // container with no blank line inside — `<div class="lede">…</div>` — is a single
+  // `html` node holding the whole passage. Skipping the node skipped the passage, so a
+  // post written that way measured zero prose words and bypassed the provenance check
+  // outright. Read its rendered text instead. Source elements (`<a>`, `<blockquote>`,
+  // …) are already off the body before the authored parse, so nothing leaks back in.
+  else if (node.type === 'html' && typeof node.value === 'string') out.push(htmlTextOf(node.value));
   for (const child of node.children ?? []) collectText(child, skip, out);
   return out;
 };
@@ -274,6 +289,14 @@ const sourceUrlsOf = (tree, body) => {
     if ((node.type === 'html' || node.type === 'text') && typeof node.value === 'string') {
       for (const u of node.value.match(URL_IN_TEXT) ?? []) add(u);
     }
+    // MDX keeps `<a href="…">` as a JSX element: the target is an attribute, so it is
+    // in neither `node.url` nor any node value, and an .mdx post citing its sources
+    // through JSX anchors counted zero links and skipped the provenance check. An
+    // attribute's value is a string, or an expression node carrying its own source.
+    for (const attr of node.attributes ?? []) {
+      const value = typeof attr?.value === 'string' ? attr.value : attr?.value?.value;
+      if (typeof value === 'string') for (const u of value.match(URL_IN_TEXT) ?? []) add(u);
+    }
     for (const child of node.children ?? []) visit(child);
   };
   if (tree) visit(tree);
@@ -313,12 +336,17 @@ const REFERENCE_DEFINITIONS = /^(?:\s*\[[^\]]+\]:\s*\S+.*(?:\n|$))+$/;
 const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
 const isProseBlock = (p) =>
   !!p && !THEMATIC_BREAK.test(p) && !REFERENCE_DEFINITIONS.test(p) && !NON_PROSE_BLOCK.test(p);
-const proseParagraphs = (body) =>
-  stripCode(body)
-    .replace(/^#+ .*$/gm, '')
+// Blocks a reader sees, comments removed first. An HTML comment renders as nothing, so
+// a block that is only comments is not a paragraph — three drafting notes after an
+// asserted forecast would otherwise fill the whole closer window and let the reused
+// closer through — and a comment beside real prose must not lend it sentences either.
+// One splitter for both callers, so the two cannot drift apart on what a paragraph is.
+const proseBlocks = (text) =>
+  text
     .split(/\n\s*\n/)
-    .map((p) => p.trim())
+    .map((p) => p.replace(HTML_COMMENT, ' ').trim())
     .filter(isProseBlock);
+const proseParagraphs = (body) => proseBlocks(stripCode(body).replace(/^#+ .*$/gm, ''));
 // Does this closer use the frame? Checked sentence by sentence so a conditional
 // elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
 // conditional only counts when it precedes the *modal*, because that is what it means
@@ -703,10 +731,7 @@ for (const file of targets) {
     }
 
     // 5. Paragraph shape — at least one very short paragraph and one long one (§3.3).
-    const paragraphs = blocks
-      .split(/\n\s*\n/)
-      .map((p) => p.trim())
-      .filter(isProseBlock);
+    const paragraphs = proseBlocks(blocks);
     // Measured as spread, not as a required shape. The first version demanded a
     // 1-sentence paragraph *and* a 5-sentence one, which flagged three posts that
     // read fine — it was enforcing one particular rhythm rather than the absence of

@@ -98,11 +98,13 @@ person, and no amount of editing puts one there.
 node --input-type=module -e '
 import {fromMarkdown} from "mdast-util-from-markdown";
 import fs from "node:fs";
-const NONPROSE = new Set(["code","inlineCode","html","definition","yaml"]);
+const NONPROSE = new Set(["code","inlineCode","definition","yaml"]);
 const SOURCE   = new Set(["blockquote","link","linkReference","image","imageReference"]);
+const html = v => v.replace(/<!--[\s\S]*?-->/g," ").replace(/<[^>]*>/g," ");
 const collect = (n, skip, out) => {
   if (skip.has(n.type)) return out;
   if (n.type === "text") out.push(n.value);
+  else if (n.type === "html" && typeof n.value === "string") out.push(html(n.value));
   for (const c of n.children ?? []) collect(c, skip, out);
   return out;
 };

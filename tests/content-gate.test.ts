@@ -334,6 +334,38 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('oa.en.mdx', EN_FM, body)).toContain('nobody home');
   });
 
+  it('reads prose wrapped in a raw HTML container', () => {
+    // A `.md` block element with no blank line inside is one html node, text and all.
+    // Dropping the node dropped the post: zero prose words, and the check skipped.
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body = `<div class="lede">\n${filler}\nSources: https://example.com/a and https://example.com/b\n</div>`;
+    expect(gate('oc.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('counts the author inside a raw HTML container', () => {
+    const filler = Array.from({ length: 536 }, (_, i) => `word${i}`).join(' ');
+    const mine = Array.from({ length: 6 }, () => 'I have seen this.').join(' ');
+    const body = `<div class="lede">\n${mine} ${filler}\nSources: https://example.com/a and https://example.com/b\n</div>`;
+    expect(gate('od.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('still keeps an anchor label out of the author count inside that container', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `<div class="lede">\n${filler}\n` +
+      '<a href="https://example.com/a">Why I built my tool</a>\n' +
+      '<a href="https://example.com/b">What my team learned</a>\n</div>';
+    expect(gate('oe.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('treats an MDX JSX href as a citation', () => {
+    // In .mdx an anchor is a JSX element: the target is an attribute, so it is in no
+    // node url and no node value. Missing it skipped the check on a cited post.
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n<a href="https://example.com/a">one</a> and <a href="https://example.com/b">two</a>`;
+    expect(gate('of.en.mdx', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a URL in inline code as a source', () => {
     const body = 'A short field note about one team. Nobody had a rule for it. Try `https://example.com/a` and `https://example.com/b`.';
     expect(gate('ob.en.md', EN_FM, body)).not.toContain('nobody home');
@@ -551,6 +583,13 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
       'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.\n\n' +
       '[a]: https://example.com/a\n\n[b]: https://example.com/b\n\n[c]: https://example.com/c';
     expect(gate('cs.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('does not let trailing HTML comments displace the closer', () => {
+    const body =
+      'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.\n\n' +
+      '<!-- todo: revisit after the next launch -->\n\n<!-- note: check the numbers -->\n\n<!-- and one more -->';
+    expect(gate('ct.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('keeps an emphasised paragraph in the comparison corpus', () => {
