@@ -101,17 +101,19 @@ import fs from "node:fs";
 const NONPROSE = new Set(["code","inlineCode","definition","yaml"]);
 const SOURCE   = new Set(["blockquote","link","linkReference","image","imageReference"]);
 const html = v => v.replace(/<!--[\s\S]*?-->/g," ").replace(/<[^>]*>/g," ");
+const BLOCK = new Set(["paragraph","heading","listItem","tableCell","blockquote"]);
 const collect = (n, skip, out) => {
   if (skip.has(n.type)) return out;
   if (n.type === "text") out.push(n.value);
   else if (n.type === "html" && typeof n.value === "string") out.push(html(n.value));
   for (const c of n.children ?? []) collect(c, skip, out);
+  if (BLOCK.has(n.type)) out.push("\n\n");
   return out;
 };
 const M = /\b(?:I|I.m|I.ve|I.d|I.ll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself)\b/g;
 const quoted = t => t
-  .replace(/[\u201c"][^\u201c\u201d"]{0,400}[\u201d"]/g," ")
-  .replace(/\u2018[^\u2018\u2019]{0,400}\u2019/g," ")
+  .replace(/[\u201c"](?:[^\u201c\u201d"\n]|\n(?!\s*\n))*[\u201d"]/g," ")
+  .replace(/\u2018(?:[^\u2018\u2019\n]|\n(?!\s*\n))*\u2019/g," ")
   .replace(/https?:\/\/\S+/g," ");
 for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md")).sort()) {
   const b = fs.readFileSync("src/content/posts/"+f,"utf8").split(/^---$/m).slice(2).join("---");

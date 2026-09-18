@@ -127,13 +127,20 @@ const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself
 // Quoted speech is the one thing the AST cannot separate for us: it lives inside a
 // text node, as punctuation rather than structure. Everything else — block quotes,
 // links of every form, code, HTML — is gone before this runs.
+// Bounded by the paragraph, not by a character count. A fixed cap meant a quotation
+// longer than it was not stripped *at all* — the whole speaker's "I" and "my" landed in
+// the author's column, and this corpus quotes people at length. The bound still has to
+// exist, because an unpaired quote mark would otherwise pair with the next real opener
+// and delete the author's own prose in between; a blank line is where that damage stops,
+// and no inline quotation crosses one.
 const stripQuotedSpeech = (text) =>
   text
-    .replace(/[“"][^“”"]{0,400}[”"]/g, ' ') // double-quoted spans, straight or curly
+    // `(?:[^…\n]|\n(?!\s*\n))*` is "anything up to a blank line".
+    .replace(/[“"](?:[^“”"\n]|\n(?!\s*\n))*[”"]/g, ' ') // straight or curly
     // Curly single quotes only, and only a true open/close pair. A straight ' is an
     // apostrophe far more often than a quote mark, and U+2019 doubles as the curly
     // apostrophe in "don't" — anchoring on U+2018 is what keeps contractions intact.
-    .replace(/‘[^‘’]{0,400}’/g, ' ')
+    .replace(/‘(?:[^‘’\n]|\n(?!\s*\n))*’/g, ' ')
     .replace(/https?:\/\/\S+/g, ' '); // a bare URL the parser left as text
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
@@ -226,6 +233,10 @@ const HTML_CODE_ELEMENT = /<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi;
 const HTML_TAG = /<[^>]*>/g;
 const htmlTextOf = (value) =>
   value.replace(HTML_COMMENT, ' ').replace(HTML_CODE_ELEMENT, ' ').replace(HTML_TAG, ' ');
+// Where one block ends and the next begins. Without these the extracts are one
+// unbroken run of words, and the paragraph bound on quoted speech — the thing that
+// stops an unpaired quote mark eating the author's prose — has nothing to bite on.
+const BLOCK_NODES = new Set(['paragraph', 'heading', 'listItem', 'tableCell', 'blockquote']);
 const collectText = (node, skip, out) => {
   if (skip.has(node.type)) return out;
   if (node.type === 'text') out.push(node.value);
@@ -237,6 +248,7 @@ const collectText = (node, skip, out) => {
   // …) are already off the body before the authored parse, so nothing leaks back in.
   else if (node.type === 'html' && typeof node.value === 'string') out.push(htmlTextOf(node.value));
   for (const child of node.children ?? []) collectText(child, skip, out);
+  if (BLOCK_NODES.has(node.type)) out.push('\n\n');
   return out;
 };
 // MDX is parsed with the renderer's extensions, because the collection accepts it
@@ -283,7 +295,20 @@ const authoredTextOf = (body, isMdx) => {
 // would undo the AST's own exclusion of code — the visitor skips a snippet and the scan
 // immediately puts its sample URLs back.
 const URL_IN_TEXT = /https?:\/\/[^\s"'<>)\]]+/g;
-const LINK_ATTRIBUTES = new Set(['href', 'src', 'cite']);
+// A citation is markup with linking semantics, not any component configured with a
+// URL. JSX draws that line itself: a lowercase element name is an intrinsic HTML
+// element, a capitalised one is a component, and the distinction is the language's,
+// not a heuristic. These pairs are the HTML elements whose Markdown equivalents — a
+// link, an image, a cited quotation — the AST already counts as sources, so the MDX
+// path and the Markdown path agree. `<Demo endpoint="…">` and `<Image src="…">` are
+// configuration: a resource the page uses, not a source it cites.
+const LINK_ATTRIBUTES = new Map([
+  ['a', 'href'],
+  ['area', 'href'],
+  ['img', 'src'],
+  ['blockquote', 'cite'],
+  ['q', 'cite'],
+]);
 const sourceUrlsOf = (tree, body) => {
   const urls = new Set();
   const add = (u) => urls.add(u.replace(/[.,;:]+$/, ''));
@@ -300,13 +325,12 @@ const sourceUrlsOf = (tree, body) => {
     // in neither `node.url` nor any node value, and an .mdx post citing its sources
     // through JSX anchors counted zero links and skipped the provenance check. An
     // attribute's value is a string, or an expression node carrying its own source.
-    // Only the attributes that actually address a resource count. Reading every
-    // attribute turned `<Demo endpoint="…" backup="…" />` into two citations and made a
-    // short note look research-carried — a URL in a component's configuration is a
-    // setting, not a source. These three are the ones whose Markdown equivalents
-    // (`link`, `image`, a cited quotation) the AST already treats as sources.
-    for (const attr of node.attributes ?? []) {
-      if (!LINK_ATTRIBUTES.has(String(attr?.name ?? '').toLowerCase())) continue;
+    // Element *and* attribute, per LINK_ATTRIBUTES: reading every attribute of every
+    // component turned `<Demo endpoint="…" backup="…" />` into two citations and made a
+    // short note look research-carried.
+    const linking = LINK_ATTRIBUTES.get(node.name);
+    for (const attr of linking ? node.attributes ?? [] : []) {
+      if (String(attr?.name ?? '').toLowerCase() !== linking) continue;
       const value = typeof attr?.value === 'string' ? attr.value : attr?.value?.value;
       if (typeof value === 'string') for (const u of value.match(URL_IN_TEXT) ?? []) add(u);
     }

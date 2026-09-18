@@ -389,6 +389,34 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('oi.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('does not count a component resource as a citation', () => {
+    // JSX's own line: a lowercase name is an intrinsic HTML element, a capitalised one
+    // is a component. `<Image src>` configures a resource; `<a href>` cites a source.
+    const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n<Image src="https://example.com/a" />\n\n<Image src="https://example.com/b" />`;
+    expect(gate('oj.en.mdx', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('strips a quotation longer than a sentence or two', () => {
+    // A fixed character cap meant a long quotation was not stripped at all, and the
+    // speaker's first person landed in the author's column.
+    const long = Array.from({ length: 120 }, (_, i) => `said${i}`).join(' ');
+    const filler = Array.from({ length: 420 }, (_, i) => `word${i}`).join(' ');
+    const quote = `One of them told me: "I ${long} and my team saw it too, I think, and I still do."`;
+    const body = `${quote} ${filler}\n\nSee [one](https://example.com/a) and [two](https://example.com/b).`;
+    expect(gate('ok.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
+  it('does not let an unpaired quote mark eat the author across a paragraph break', () => {
+    const filler = Array.from({ length: 540 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `They called it a "productivity story.\n\n` +
+      `I have watched this happen twice. My own team shipped it. I would not do it again. ` +
+      `I said so at the time, and I was right." ${filler}\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('ol.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('does not count a URL in inline code as a source', () => {
     const body = 'A short field note about one team. Nobody had a rule for it. Try `https://example.com/a` and `https://example.com/b`.';
     expect(gate('ob.en.md', EN_FM, body)).not.toContain('nobody home');
