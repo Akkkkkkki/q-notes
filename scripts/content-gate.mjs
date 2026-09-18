@@ -215,12 +215,34 @@ const EN_CLOSER_FRAMES = [
 // Both fence forms CommonMark allows. Stripping only the backtick one let a tilde
 // example count as prose — inflating a length denominator and donating its URLs to the
 // citation guard. Shared so the three strip sites cannot drift apart again.
-const CODE_FENCE = /^(?:```|~~~)[\s\S]*?^(?:```|~~~)/gm;
-// CommonMark's other code form: a run of 4-space/tab-indented lines opening after a
-// blank line. Requiring the blank line is what keeps an indented list continuation
-// out of it. No post body currently indents at all, so this only guards future ones.
-const INDENTED_CODE = /(^|\n)[ \t]*\n((?:(?: {4}|\t).*(?:\n|$))+)/g;
-const stripCode = (text) => text.replace(CODE_FENCE, ' ').replace(INDENTED_CODE, '$1\n');
+// Fence delimiters may carry up to three leading spaces and still open a block.
+const CODE_FENCE = /^ {0,3}(?:```|~~~)[\s\S]*?^ {0,3}(?:```|~~~)/gm;
+// CommonMark's other code form. A blank line is *not* enough to tell it apart from a
+// list continuation — "- Context", blank, then a four-space-indented paragraph is prose
+// inside the list, and stripping it would delete the author's own words and manufacture
+// the very warning this file exists to earn. That direction of error is the dangerous
+// one, so this tracks list state line by line instead of pattern-matching a run.
+const LIST_ITEM = /^ {0,3}(?:[-*+]|\d+[.)])\s/;
+const INDENTED = /^(?: {4}|\t)/;
+const stripIndentedCode = (text) => {
+  let inList = false;
+  return text
+    .split('\n')
+    .map((line) => {
+      if (!line.trim()) return line; // a blank line does not end a list
+      if (LIST_ITEM.test(line)) {
+        inList = true;
+        return line;
+      }
+      if (!INDENTED.test(line)) {
+        inList = false;
+        return line;
+      }
+      return inList ? line : ' '; // indented, and not continuing a list: code
+    })
+    .join('\n');
+};
+const stripCode = (text) => stripIndentedCode(text.replace(CODE_FENCE, ' '));
 const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
 const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
 const isProseBlock = (p) => !!p && !THEMATIC_BREAK.test(p) && !NON_PROSE_BLOCK.test(p);

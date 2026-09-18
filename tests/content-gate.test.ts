@@ -326,6 +326,23 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('np.en.md', EN_FM, body)).not.toContain('nobody home');
   });
 
+  it('keeps an indented list continuation, which is prose', () => {
+    // The dangerous direction: stripping this deletes the author's own words and
+    // manufactures the very warning the check exists to earn.
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `- Context\n\n    My experience with this was different, and I would not ship it. ` +
+      `I watched my team hit it twice.\n\n${filler}\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nw.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('strips an indented fence delimiter too', () => {
+    const code = Array.from({ length: 900 }, (_, i) => `token${i}`).join(' ');
+    const body = `A short field note about one team. Nobody had a rule for it.\n\n   ~~~js\n   fetch("https://example.com/a");\n   fetch("https://example.com/b");\n   ${code}\n   ~~~`;
+    expect(gate('nx.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('strips a four-space indented code block too', () => {
     const code = Array.from({ length: 900 }, (_, i) => `    token${i}`).join('\n');
     const body = `A short field note about one team. Nobody had a rule for it.\n\n${code}\n    fetch("https://example.com/a");\n    fetch("https://example.com/b");`;
