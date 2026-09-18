@@ -159,11 +159,18 @@ const proseParagraphs = (body) =>
     .map((p) => p.trim())
     .filter((p) => p && !/^[-*>|#\d]/.test(p));
 // Does this closer use the frame? Checked sentence by sentence so a conditional
-// elsewhere in the tail cannot excuse an asserted forecast, and vice versa.
+// elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
+// conditional only counts when it *precedes* the forecast, because that is what it
+// means to govern one: "if by 2028 I still can't find that link…" is a real test,
+// while "by 2027, teams will stop debating whether agents need owners" is the
+// template with an embedded complement after it. Position is the difference.
 const usesCloserFrame = (closer, frame) =>
-  closer
-    .split(/(?<=[.!?])\s+/)
-    .some((s) => frame.re.test(s) && !frame.conditional.test(s));
+  closer.split(/(?<=[.!?])\s+/).some((s) => {
+    const hit = s.match(frame.re);
+    if (!hit) return false;
+    const cond = s.match(frame.conditional);
+    return !(cond && cond.index < hit.index);
+  });
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
 // The corpus scores zero on all of these — the drafter already avoids them — so
@@ -549,7 +556,13 @@ for (const file of targets) {
     // sentence: §3.5 is explicit that a first-person moment must trace to author
     // input and is never invented to fill a slot. A hit means go back and check
     // whether the Author Kernel had anything in it.
-    const externalLinks = (body.match(/\]\(https?:\/\//g) || []).length;
+    // Every link form the essay-source check on line ~378 already accepts, not just
+    // the inline markdown one: a piece that cites with bare URLs or reference
+    // definitions is as research-carried as one that cites with brackets, and it
+    // would be arbitrary for the two checks in this file to disagree about that.
+    const externalLinks =
+      (body.match(/\]\(https?:\/\//g) || []).length +
+      (body.match(/(?:^|\s)<?https?:\/\/\S+/g) || []).length;
     const hasRoomForAuthor =
       words.length >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
@@ -586,7 +599,12 @@ for (const file of targets) {
     // ending. Only active posts count — see the constant's note on why the comparison
     // is the whole shelf rather than a three-post window, and why a withdrawn piece
     // drops out of it.
-    const closer = paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ');
+    // A withdrawn post is off the shelf, so its framing is nobody's to reuse or to
+    // rewrite: asking it to find a different closer would be asking for an edit to a
+    // piece the site no longer presents. Both sides of the comparison are active-only.
+    const closer = (fm.editorialStatus ?? 'active') === 'active'
+      ? paragraphs.slice(-EN_CLOSER_PARAGRAPHS).join(' ')
+      : '';
     for (const frame of EN_CLOSER_FRAMES) {
       if (!usesCloserFrame(closer, frame)) continue;
       const others = [];

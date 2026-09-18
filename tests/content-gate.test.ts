@@ -285,6 +285,12 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nb.en.md', EN_FM, research(600, 6))).not.toContain('nobody home');
   });
 
+  it('treats bare URLs as citations, like the essay source check does', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\nSources: https://example.com/a and https://example.com/b`;
+    expect(gate('nh.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('leaves a short uncited field note alone', () => {
     const body = 'A colleague turned in some work and said upfront that AI wrote it. Nobody had a rule for it.';
     expect(gate('nc.en.md', EN_FM, body)).not.toContain('nobody home');
@@ -345,6 +351,22 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a conditional test alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf by 2028 I still cannot find that link, the other piece was closer to right.';
     expect(gate('cb.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('flags an asserted forecast that merely embeds "whether"', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, teams will stop debating whether agents need owners.';
+    expect(gate('ce.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('leaves a conditional that governs the forecast alone', () => {
+    const body = 'Agents make the bottleneck visible.\n\nIf by 2028 the metric still will not appear, the other piece was closer to right.';
+    expect(gate('cf.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('does not ask a withdrawn post to rewrite its closer', () => {
+    const fm = `${EN_FM}\neditorialStatus: archived\narchiveReason: "superseded by the interview"`;
+    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('cg.en.md', fm, body)).not.toContain('template closer');
   });
 
   it('counts only active posts, and says so', () => {
