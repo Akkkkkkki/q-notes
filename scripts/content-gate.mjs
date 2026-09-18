@@ -12,6 +12,7 @@
 // The build (npm run build) is the companion check that enforces the frontmatter
 // schema for every post; this script adds the things the schema can't express.
 
+import { fromMarkdown } from 'mdast-util-from-markdown';
 import { execSync } from 'node:child_process';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
@@ -121,35 +122,17 @@ const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself
 // first person ("Why I built this for my team"), and so can a slug — this corpus
 // already has one, a PCGamer URL containing `gives-me-a-headache`, where `-me-`
 // matches `\bme\b` because a hyphen is a word boundary.
-const authoredOnly = (text) => {
-  // Order matters. The paired forms go first, because stripping a shortcut label like
-  // `[one]` out from under `[Why I built this][one]` would leave the source title
-  // stranded as apparent author prose — which is exactly the leak being closed.
-  const linksGone = text
-    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // inline links, label and target
-    .replace(/\[[^\]]*\]\[[^\]]*\]/g, ' '); // reference-style links, label and key
-  // What is left of `[Source title]` is a shortcut reference: a source's words with no
-  // syntax around them. Only labels that actually have a definition are removed, so
-  // ordinary bracketed prose survives.
-  const defined = [...linksGone.matchAll(/^\s*\[([^\]]+)\]:\s*\S+/gm)].map((m) => m[1]);
-  const shortcut = defined.length
-    // Reference labels are case-insensitive in Markdown, so the lookup has to be too:
-    // `[Source title]` pairs with `[SOURCE TITLE]: https://…`.
-    ? new RegExp(`\\[(?:${defined.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\]`, 'gi')
-    : null;
-  return (shortcut ? linksGone.replace(shortcut, ' ') : linksGone)
-    .replace(/^\s*>.*$/gm, ' ') // block quotes
-    .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm, ' ') // reference-link definitions
-    .replace(/<blockquote\b[^>]*>[\s\S]*?<\/blockquote>/gi, ' ') // HTML block quotes, contents too
-    .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ') // HTML/MDX anchors, element and text
-    .replace(/<[^>]+>/g, ' ') // any other tag, so an attribute cannot donate a marker
-    .replace(/https?:\/\/\S+/g, ' ') // bare URLs
+// Quoted speech is the one thing the AST cannot separate for us: it lives inside a
+// text node, as punctuation rather than structure. Everything else — block quotes,
+// links of every form, code, HTML — is gone before this runs.
+const stripQuotedSpeech = (text) =>
+  text
     .replace(/[“"][^“”"]{0,400}[”"]/g, ' ') // double-quoted spans, straight or curly
     // Curly single quotes only, and only a true open/close pair. A straight ' is an
     // apostrophe far more often than a quote mark, and U+2019 doubles as the curly
     // apostrophe in "don't" — anchoring on U+2018 is what keeps contractions intact.
-    .replace(/‘[^‘’]{0,400}’/g, ' ');
-};
+    .replace(/‘[^‘’]{0,400}’/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' '); // a bare URL the parser left as text
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
 // Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
@@ -215,13 +198,70 @@ const EN_CLOSER_FRAMES = [
 // Both fence forms CommonMark allows. Stripping only the backtick one let a tilde
 // example count as prose — inflating a length denominator and donating its URLs to the
 // citation guard. Shared so the three strip sites cannot drift apart again.
-// Fence delimiters may carry up to three leading spaces and still open a block.
+// --- Reading a post the way the renderer does ------------------------------
+// Fifteen rounds of review on this file landed on one lesson: separating an author's
+// own words from a source's is block-level Markdown parsing, and hand-rolled patterns
+// lose to it. Every variant that got through — tilde and indented fences, fences with
+// leading spaces, code nested in a list, lazy blockquote continuation lines, shortcut
+// and reference links, HTML anchors and blockquotes — is a case the parser already
+// handles, and the two findings that arrived together in round 14 could not both be
+// satisfied by any single pattern. So the text these checks read now comes from the
+// same Markdown AST the site renders from.
+//
+// Two different questions, two different extracts:
+//   proseText    — everything a reader reads, quotes and citations included. The
+//                  denominator for a *rate*, so a heavily-quoting piece does not get a
+//                  flattering score by shrinking its own divisor.
+//   authoredText — the author's own words: prose minus block quotes, link and image
+//                  text. The numerator, because somebody else's "I" is not presence.
+const SOURCE_TEXT_NODES = new Set(['blockquote', 'link', 'linkReference', 'image', 'imageReference']);
+const NON_PROSE_NODES = new Set(['code', 'inlineCode', 'html', 'definition', 'yaml']);
+const collectText = (node, skip, out) => {
+  if (skip.has(node.type)) return out;
+  if (node.type === 'text') out.push(node.value);
+  for (const child of node.children ?? []) collectText(child, skip, out);
+  return out;
+};
+const parseBody = (body) => {
+  try {
+    return fromMarkdown(body);
+  } catch {
+    return null; // malformed input: fall back to the raw body rather than crashing CI
+  }
+};
+// Raw HTML is the one thing the AST does not model as structure: `<a href>Label</a>`
+// arrives as html, text, html, so the label survives as ordinary text and an href is
+// invisible as a link. Those elements are therefore removed from the body *before* it
+// is parsed for authored text, which is where their contents would otherwise leak.
+const HTML_SOURCE_ELEMENT = /<(a|blockquote|figcaption|cite)\b[^>]*>[\s\S]*?<\/\1>/gi;
+const proseTextOf = (tree, body) =>
+  tree ? collectText(tree, NON_PROSE_NODES, []).join(' ') : body;
+const authoredTextOf = (body) => {
+  const withoutHtmlSources = body.replace(HTML_SOURCE_ELEMENT, ' ');
+  const tree = parseBody(withoutHtmlSources);
+  return tree
+    ? collectText(tree, new Set([...NON_PROSE_NODES, ...SOURCE_TEXT_NODES]), []).join(' ')
+    : withoutHtmlSources;
+};
+// Every URL the post cites, however it is written: link and image nodes from the AST,
+// plus a scan of the raw body for bare URLs and HTML attributes the AST hides inside
+// `html` nodes. Code is excluded first — a URL in a snippet is a sample, not a source.
+const sourceUrlsOf = (tree, body) => {
+  const urls = new Set();
+  const add = (u) => urls.add(u.replace(/[.,;:]+$/, ''));
+  const visit = (node) => {
+    if (NON_PROSE_NODES.has(node.type) && node.type !== 'html') return;
+    if (typeof node.url === 'string' && /^https?:/i.test(node.url)) add(node.url);
+    for (const child of node.children ?? []) visit(child);
+  };
+  if (tree) visit(tree);
+  for (const u of stripCode(body).match(/https?:\/\/[^\s"'<>)\]]+/g) ?? []) add(u);
+  return urls;
+};
+
+// Still needed for the paragraph-shape checks, which read line structure rather than
+// the AST. Fence delimiters may carry up to three leading spaces and still open a block.
 const CODE_FENCE = /^ {0,3}(?:```|~~~)[\s\S]*?^ {0,3}(?:```|~~~)/gm;
-// CommonMark's other code form. A blank line is *not* enough to tell it apart from a
-// list continuation — "- Context", blank, then a four-space-indented paragraph is prose
-// inside the list, and stripping it would delete the author's own words and manufacture
-// the very warning this file exists to earn. That direction of error is the dangerous
-// one, so this tracks list state line by line instead of pattern-matching a run.
 const LIST_ITEM = /^ {0,3}(?:[-*+]|\d+[.)])\s/;
 const INDENTED = /^(?: {4}|\t)/;
 const stripIndentedCode = (text) => {
@@ -303,7 +343,12 @@ const usesCloserFrame = (closer, frame) =>
     const before = s.slice(0, modalAt);
     const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
     const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
-    const clauseEnd = s.indexOf(';', modalAt) === -1 ? s.length : s.indexOf(';', modalAt);
+    // The post-modal window ends at the next clause boundary too, by the same rule the
+    // pre-modal window uses: "…teams will standardize ownership, but if this launch
+    // fails…" is a separate clause and cannot condition the forecast.
+    const afterAll = s.slice(modalAt);
+    const endMatch = afterAll.match(/;|,\s+(?:but|and|so|yet|while|though)\s/);
+    const clauseEnd = endMatch ? modalAt + endMatch.index : s.length;
     const governsBefore = governingCondition(s.slice(clauseStart, modalAt), frame, frame.conditional);
     const governsAfter = governingCondition(s.slice(modalAt, clauseEnd), frame, frame.postposed);
     return !(governsBefore || governsAfter);
@@ -709,24 +754,20 @@ for (const file of targets) {
     // Counted over `blocks`, not `body`: a URL inside a fenced code example is a code
     // sample, not evidence, and the rest of this routine already reads code-stripped
     // text. A technical note whose only URLs sit in a snippet cites nothing.
-    // Distinct sources, not occurrences: linking one URL twice (a callback, an
-    // attribution repeated) is one source, and EN_RESEARCH_MIN_LINKS is a count of
-    // sources. Normalised on the URL up to the first quote, bracket or whitespace so
-    // the same target written two ways still collapses to one.
-    const externalLinks = new Set(
-      (blocks.match(/https?:\/\/[^\s"'<>)\]]+/g) || []).map((u) => u.replace(/[.,;:]+$/, ''))
-    ).size;
-    // Length measured over prose, not the raw body: an 800-token code example must not
-    // push a short field note into the long-piece branch, nor dilute its marker rate.
-    // `words` keeps counting the raw body for the tier ceiling above, which is about
-    // how much is on the page; this is about how much of it the author wrote.
-    const proseWords = blocks.trim().split(/\s+/).filter(Boolean).length;
+    // All three provenance figures come from one parse of the body, so link syntax,
+    // fence style and quote nesting stop being this check's problem.
+    const tree = parseBody(body);
+    const proseText = proseTextOf(tree, body);
+    const externalLinks = sourceUrlsOf(tree, body).size;
+    // Length measured over prose a reader reads — quotes and citations included, code
+    // excluded. `words` keeps counting the raw body for the tier ceiling above, which
+    // asks how much is on the page; this asks how much of it is prose.
+    const proseWords = proseText.trim().split(/\s+/).filter(Boolean).length;
     const hasRoomForAuthor =
       proseWords >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || proseWords >= EN_AUTHOR_LONG_WORDS);
     if (hasRoomForAuthor) {
-      // `blocks`, not `prose`: stripQuoted needs the line breaks to find block quotes.
-      const authored = authoredOnly(blocks).replace(/\n/g, ' ');
+      const authored = stripQuotedSpeech(authoredTextOf(body));
       const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
       const rate = (1000 * markers) / proseWords;
       if (rate < EN_MIN_AUTHOR_PER_KWORDS) {

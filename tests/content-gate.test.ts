@@ -326,6 +326,20 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('np.en.md', EN_FM, body)).not.toContain('nobody home');
   });
 
+  it('does not count a code block nested in a list as prose', () => {
+    const code = Array.from({ length: 900 }, (_, i) => `token${i}`).join(' ');
+    const body = `A short field note about one team. Nobody had a rule for it.\n\n- Example:\n\n      fetch("https://example.com/a");\n      fetch("https://example.com/b");\n      ${code}`;
+    expect(gate('ny.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('does not count a lazy blockquote continuation as the author', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\n> The founder said\nI built this because my team needed it\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nz.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('keeps an indented list continuation, which is prose', () => {
     // The dangerous direction: stripping this deletes the author's own words and
     // manufactures the very warning the check exists to earn.
@@ -497,6 +511,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
     const fm = `${EN_FM}\neditorialStatus: archived # withdrawn, kept for the URL`;
     const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
     expect(gate('cp.en.md', fm, body)).not.toContain('template closer');
+  });
+
+  it('flags a forecast whose condition is in a later coordinated clause', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will standardize ownership, but if this launch fails, we will revisit tooling.';
+    expect(gate('cr.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('flags an "if" governed by a verb of cognition', () => {
