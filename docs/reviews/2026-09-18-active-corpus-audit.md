@@ -17,9 +17,9 @@ draft existed.
 
 | Post | Date | Author markers /1k | Single-sentence paragraphs | What the piece was drafted from |
 |---|---|---|---|---|
-| consulting-barbell | 04-18 | 0.5 | 0% | research only (pre-backlog) |
-| consulting-outcomes | 04-25 | 0.8 | 10% | research only (pre-backlog) |
-| consulting-coordination | 05-02 | **0.0** | 4% | research only (pre-backlog) |
+| consulting-barbell | 04-18 | 0.5 | 11% | research only (pre-backlog) |
+| consulting-outcomes | 04-25 | 0.8 | 18% | research only (pre-backlog) |
+| consulting-coordination | 05-02 | **0.0** | 10% | research only (pre-backlog) |
 | helpful-agents-authorization-bug | 06-23 | 0.9 | 17% | scout find, no author hook |
 | agent-coordination-debt | 06-26 | 2.3 | 24% | 2026-06-19 inbox spark |
 | pull-requests-are-knowledge-imports | 07-03 | 1.6 | **29%** | 2026-06-19 spark, "extends" |
@@ -27,9 +27,9 @@ draft existed.
 | agent-prs-need-traffic-control | 07-10 | 2.0 | 13% | 2026-06-19 spark, "extends" |
 | wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | published post (rung 4) |
 | taste-is-judgment | 07-20 | 21.3 | 0% | 2026-07-17 inbox spark |
-| taste-is-a-bet | 07-31 | 12.9 | 10% | answered interview |
+| taste-is-a-bet | 07-31 | 13.3 | 10% | answered interview |
 | ai-native-game-is-a-test | 08-05 | 5.9 | 25%¹ | 2026-07-22 inbox spark |
-| decisiveness-is-not-a-skill | 08-11 | 18.6 | 0% | 2026-08-11 inbox spark |
+| decisiveness-is-not-a-skill | 08-11 | 19.4 | 0% | 2026-08-11 inbox spark |
 | verification-gate-needs-a-name | 08-20 | 20.5 | 0% | answered interview |
 
 ¹ 2 of 8 paragraphs; too few paragraphs for the share to mean anything.
@@ -102,12 +102,16 @@ const authored = t => t
   .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm," ")
   .replace(/\[[^\]]*\]\([^)]*\)/g," ")
   .replace(/\[[^\]]*\]\[[^\]]*\]/g," ")
+  .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi," ")
+  .replace(/<[^>]+>/g," ")
   .replace(/https?:\/\/\S+/g," ")
-  .replace(/[\u201c"][^\u201c\u201d"]{0,400}[\u201d"]/g," ");
+  .replace(/[\u201c"][^\u201c\u201d"]{0,400}[\u201d"]/g," ")
+  .replace(/\u2018[^\u2018\u2019]{0,400}\u2019/g," ");
 for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md")).sort()) {
   const b=fs.readFileSync("src/content/posts/"+f,"utf8").split(/^---$/m).slice(2).join("---");
-  const w=b.trim().split(/\s+/).filter(Boolean).length;
-  const m=(authored(b.replace(/```[\s\S]*?```/g," ")).replace(/\n/g," ").match(M)||[]).length;
+  const blocks=b.replace(/```[\s\S]*?```/g," ").replace(/`[^`]*`/g," ").replace(/^#+ .*$/gm,"");
+  const w=blocks.trim().split(/\s+/).filter(Boolean).length;   // prose words, as the gate counts them
+  const m=(authored(blocks).replace(/\n/g," ").match(M)||[]).length;
   console.log(f, (1000*m/w).toFixed(1));
 }'
 

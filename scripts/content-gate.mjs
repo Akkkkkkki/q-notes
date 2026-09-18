@@ -121,12 +121,23 @@ const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself
 // first person ("Why I built this for my team"), and so can a slug — this corpus
 // already has one, a PCGamer URL containing `gives-me-a-headache`, where `-me-`
 // matches `\bme\b` because a hyphen is a word boundary.
-const authoredOnly = (text) =>
-  text
+const authoredOnly = (text) => {
+  // Order matters. The paired forms go first, because stripping a shortcut label like
+  // `[one]` out from under `[Why I built this][one]` would leave the source title
+  // stranded as apparent author prose — which is exactly the leak being closed.
+  const linksGone = text
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // inline links, label and target
+    .replace(/\[[^\]]*\]\[[^\]]*\]/g, ' '); // reference-style links, label and key
+  // What is left of `[Source title]` is a shortcut reference: a source's words with no
+  // syntax around them. Only labels that actually have a definition are removed, so
+  // ordinary bracketed prose survives.
+  const defined = [...linksGone.matchAll(/^\s*\[([^\]]+)\]:\s*\S+/gm)].map((m) => m[1]);
+  const shortcut = defined.length
+    ? new RegExp(`\\[(?:${defined.map((l) => l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\]`, 'g')
+    : null;
+  return (shortcut ? linksGone.replace(shortcut, ' ') : linksGone)
     .replace(/^\s*>.*$/gm, ' ') // block quotes
     .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm, ' ') // reference-link definitions
-    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ') // inline links, label and target
-    .replace(/\[[^\]]*\]\[[^\]]*\]/g, ' ') // reference-style links, label and key
     .replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ' ') // HTML/MDX anchors, element and text
     .replace(/<[^>]+>/g, ' ') // any other tag, so an attribute cannot donate a marker
     .replace(/https?:\/\/\S+/g, ' ') // bare URLs
@@ -135,11 +146,12 @@ const authoredOnly = (text) =>
     // apostrophe far more often than a quote mark, and U+2019 doubles as the curly
     // apostrophe in "don't" — anchoring on U+2018 is what keeps contractions intact.
     .replace(/‘[^‘’]{0,400}’/g, ' ');
+};
 
 // The punchline metronome (human-voice.md §1 "Every paragraph lands an aphorism").
 // Check 5 below asks that *some* paragraph run short; this asks that short paragraphs
 // not be the beat the whole piece is written on. The two form a band, they don't
-// conflict. Corpus: 0–17% across the posts that pass, 22–29% across the three that
+// conflict. Corpus: 0–18% across the posts that pass, 22–29% across the three that
 // do not. (These are counted with SENTENCE_END below, which treats a terminator
 // inside a quotation as ending a sentence; a naive counter reads several of these
 // higher.)
@@ -189,17 +201,24 @@ const EN_CLOSER_FRAMES = [
 ];
 // Split a body into the prose paragraphs a reader sees, dropping code, headings,
 // lists, and block quotes. Used by the closer check on *other* posts in the corpus.
-// A paragraph that opens with a year is prose, not a list item: `\d` alone dropped
-// "2026 exposed the bottleneck. By 2027, teams will…" out of the comparison corpus,
-// which could silently take the shared-frame count below its threshold.
-const NON_PROSE_BLOCK = /^(?:[-*>|#]|\d+[.)]\s)/;
+// What is not prose. Every marker here has to be distinguished from the ordinary
+// character it shares, because each confusion drops a real paragraph out of the
+// comparison corpus — and a dropped paragraph can only ever *lower* the shared-frame
+// count, so the failure is silent:
+//   `*` opens a list only before a space; `*Claim:*` and `**By 2027…**` are emphasis,
+//       and the three consulting posts' prediction trackers are written that way
+//   `-` likewise, except for a `---` thematic break, which is not prose either
+//   a digit opens a list only before `.` or `)`; "2026 exposed the bottleneck" is prose
+const THEMATIC_BREAK = /^(?:-{3,}|\*{3,}|_{3,})$/;
+const NON_PROSE_BLOCK = /^(?:[>|#]|[-*+]\s|\d+[.)]\s)/;
+const isProseBlock = (p) => !!p && !THEMATIC_BREAK.test(p) && !NON_PROSE_BLOCK.test(p);
 const proseParagraphs = (body) =>
   body
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/^#+ .*$/gm, '')
     .split(/\n\s*\n/)
     .map((p) => p.trim())
-    .filter((p) => p && !NON_PROSE_BLOCK.test(p));
+    .filter(isProseBlock);
 // Does this closer use the frame? Checked sentence by sentence so a conditional
 // elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
 // conditional only counts when it precedes the *modal*, because that is what it means
@@ -575,7 +594,7 @@ for (const file of targets) {
     const paragraphs = blocks
       .split(/\n\s*\n/)
       .map((p) => p.trim())
-      .filter((p) => p && !NON_PROSE_BLOCK.test(p));
+      .filter(isProseBlock);
     // Measured as spread, not as a required shape. The first version demanded a
     // 1-sentence paragraph *and* a 5-sentence one, which flagged three posts that
     // read fine — it was enforcing one particular rhythm rather than the absence of

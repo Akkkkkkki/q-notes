@@ -346,6 +346,14 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('ne.en.md', EN_FM, research(600, 0))).toContain('Do NOT fix this by adding');
   });
 
+  it('does not count a shortcut reference label as the author', () => {
+    const filler = Array.from({ length: 580 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `${filler}\n\nSee [Why I built this for my team] and [What my team learned].\n\n` +
+      '[Why I built this for my team]: https://example.com/a\n[What my team learned]: https://example.com/b';
+    expect(gate('nr.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('does not count a reference-style link label as the author', () => {
     const filler = Array.from({ length: 580 }, (_, i) => `word${i}`).join(' ');
     const body =
@@ -458,6 +466,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('flags a forecast after a comma-coordinated clause', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf this launch fails, we will revisit it, but by 2027 serious teams will treat ownership as part of the process.';
     expect(gate('ck.en.md', EN_FM, body)).toContain('template closer');
+  });
+
+  it('keeps an emphasised paragraph in the comparison corpus', () => {
+    const body = 'Agents make the bottleneck visible.\n\n---\n\n**Prediction tracker**\n\n*Claim:* By the end of 2027, serious teams will treat ownership as part of the process.';
+    expect(gate('cq.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('keeps a year-led paragraph in the comparison corpus', () => {
