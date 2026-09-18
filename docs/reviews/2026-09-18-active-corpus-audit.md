@@ -21,22 +21,26 @@ draft existed.
 | consulting-outcomes | 04-25 | 0.8 | 14% | research only (pre-backlog) |
 | consulting-coordination | 05-02 | **0.0** | 4% | research only (pre-backlog) |
 | helpful-agents-authorization-bug | 06-23 | 0.9 | 17% | scout find, no author hook |
-| agent-coordination-debt | 06-26 | 1.5 | 27% | 2026-06-19 inbox spark |
+| agent-coordination-debt | 06-26 | 2.3 | 27% | 2026-06-19 inbox spark |
 | pull-requests-are-knowledge-imports | 07-03 | 1.6 | **37%** | 2026-06-19 spark, "extends" |
 | codebase-maps-are-agent-interfaces | 07-07 | 1.2 | 22% | published post (rung 4) |
-| agent-prs-need-traffic-control | 07-10 | 1.0 | 13% | 2026-06-19 spark, "extends" |
+| agent-prs-need-traffic-control | 07-10 | 2.0 | 13% | 2026-06-19 spark, "extends" |
 | wallet-is-not-a-conscience | 08-18 | **0.0** | 0% | published post (rung 4) |
 | taste-is-judgment | 07-20 | 21.3 | 0% | 2026-07-17 inbox spark |
 | taste-is-a-bet | 07-31 | 12.9 | 10% | answered interview |
 | ai-native-game-is-a-test | 08-05 | 5.9 | 25%¹ | 2026-07-22 inbox spark |
 | decisiveness-is-not-a-skill | 08-11 | 18.6 | 0% | 2026-08-11 inbox spark |
-| verification-gate-needs-a-name | 08-20 | 17.1 | 0% | answered interview |
+| verification-gate-needs-a-name | 08-20 | 20.5 | 0% | answered interview |
 
 ¹ 2 of 8 paragraphs; too few paragraphs for the share to mean anything.
 
-The author-marker column runs 0.0–1.6 in the top group and 5.9–21.3 in the bottom
+The author-marker column runs 0.0–2.3 in the top group and 5.9–21.3 in the bottom
 one. Nothing lands in between. That is not a gradient with a judgment call in the
-middle; it is two populations.
+middle; it is two populations. The gap is a factor of 2.5 at its narrowest, with the
+warning threshold sitting inside it at 3.0 — comfortable, but worth knowing that the
+nearest post on the machine-written side is 2.3 and not 1.6, as an earlier draft of
+this file said before the marker pattern was corrected to count sentence-initial
+"My".
 
 ### It is not "had a spark" versus "didn't"
 
@@ -91,11 +95,13 @@ person, and no amount of editing puts one there.
 ```sh
 node -e '
 const fs=require("fs");
-const M=/\b(?:I|I'"'"'m|I'"'"'ve|I'"'"'d|I'"'"'ll|me|my|mine|myself)\b/g;
+const M=/\b(?:I|I'"'"'m|I'"'"'ve|I'"'"'d|I'"'"'ll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself)\b/g;
 // same exclusions the gate applies: a source first person is not the author
 const authored = t => t
   .replace(/^\s*>.*$/gm," ")
+  .replace(/^\s*\[[^\]]+\]:\s*\S+.*$/gm," ")
   .replace(/\[[^\]]*\]\([^)]*\)/g," ")
+  .replace(/\[[^\]]*\]\[[^\]]*\]/g," ")
   .replace(/https?:\/\/\S+/g," ")
   .replace(/[\u201c"][^\u201c\u201d"]{0,400}[\u201d"]/g," ");
 for (const f of fs.readdirSync("src/content/posts").filter(f=>f.endsWith(".en.md")).sort()) {

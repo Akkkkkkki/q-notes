@@ -96,13 +96,19 @@ const EN_MAX_REPORTED = 3; // mirror ZH_MAX_REPORTED
 // while a cited or long-form argument with no author on the page is a literature
 // review with a byline. The length arm exists because the three 2026 consulting posts
 // cite constantly and link almost never, so a link-only proxy would miss the three
-// emptiest pieces in the corpus. Corpus, with quoted speakers excluded: 0.0–1.6 across
-// the nine, 5.9–21.3 across the five. Nothing lands between.
+// emptiest pieces in the corpus. Corpus, with source material excluded: 0.0–2.3 across
+// the nine, 5.9–21.3 across the five. Nothing lands between, and the threshold sits in
+// the gap with room on both sides.
 const EN_MIN_AUTHOR_PER_KWORDS = 3.0;
 const EN_RESEARCH_MIN_LINKS = 2;
 const EN_AUTHOR_LONG_WORDS = 800; // long enough that having no author is a choice
 const EN_AUTHOR_MIN_WORDS = 250; // below this the rate is noise
-const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|me|my|mine|myself)\b/g;
+// Capitalisation is spelled out rather than solved with /i: "I" and its contractions
+// are capital-only in English, but the others open sentences constantly, and this
+// corpus has three such markers ("My bet…", "My prediction…", "My claim is narrower…")
+// that a case-sensitive pattern was silently dropping. Undercounting is the dangerous
+// direction here — it manufactures the very warning the check exists to earn.
+const EN_AUTHOR_MARKER = /\b(?:I|I'm|I've|I'd|I'll|[Mm]e|[Mm]y|[Mm]ine|[Mm]yself)\b/g;
 // Somebody else's "I" is not the author's presence, and this corpus is full of it —
 // Sternfels alone supplies two in one quoted sentence. Everything that belongs to a
 // source comes out before the markers are counted, or a piece could clear a
@@ -572,13 +578,13 @@ for (const file of targets) {
     // sentence: §3.5 is explicit that a first-person moment must trace to author
     // input and is never invented to fill a slot. A hit means go back and check
     // whether the Author Kernel had anything in it.
-    // Every link form the essay-source check on line ~378 already accepts, not just
-    // the inline markdown one: a piece that cites with bare URLs or reference
-    // definitions is as research-carried as one that cites with brackets, and it
-    // would be arbitrary for the two checks in this file to disagree about that.
-    const externalLinks =
-      (body.match(/\]\(https?:\/\//g) || []).length +
-      (body.match(/(?:^|\s)<?https?:\/\/\S+/g) || []).length;
+    // Count URLs, not link syntax. The essay-source check on line ~378 accepts any
+    // https:// occurrence, and a piece that cites with bare URLs, reference
+    // definitions or an MDX <a href> is as research-carried as one that cites with
+    // brackets — it would be arbitrary for two checks in this file to disagree about
+    // that on punctuation. Counting the scheme itself also counts each source once,
+    // however it is written, where summing per-syntax patterns risked double-counting.
+    const externalLinks = (body.match(/https?:\/\//g) || []).length;
     const hasRoomForAuthor =
       words.length >= EN_AUTHOR_MIN_WORDS &&
       (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);

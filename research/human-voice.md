@@ -224,7 +224,7 @@ published posts so a hit means something real rather than background noise.
 | One name for one thing | a coined term is reused, not just defined | all passed |
 | 长句 / 万能动词 / 翻译腔模板 (§11–13) | see the zh thresholds in the script | 9 hits across 5 zh posts |
 | Mental-history claim ("I used to think...", 我以前认为…) | flag every hit, capped at 3 | 1 post (`taste-is-a-bet`, a real author correction) |
-| **Nobody home (§1)** | ≥ 3 author markers / 1,000 words, on a cited or long piece | 9 of 14 posts fail (0.0–1.6; quotes, links and slugs excluded) |
+| **Nobody home (§1)** | ≥ 3 author markers / 1,000 words, on a cited or long piece | 9 of 14 posts fail (0.0–2.3; quotes, links and slugs excluded) |
 | **Punchline metronome (§1, §3.2)** | ≤ 20% of paragraphs are a single sentence | 3 posts fail (22–37%) |
 | **Template closer (§3.4)** | ≤ 2 other *active* posts share the closer's frame | 5 posts fail, all on "by the end of 2027, X will Y" |
 

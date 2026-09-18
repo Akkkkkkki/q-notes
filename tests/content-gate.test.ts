@@ -291,6 +291,21 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nh.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('counts a sentence-initial My as the author', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body =
+      `My bet is that this holds. My claim is narrower than it sounds. ` +
+      `Me, though, I would not ship it. ${filler}\n\n` +
+      'See [one](https://example.com/a) and [two](https://example.com/b).';
+    expect(gate('nj.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
+  it('treats an HTML href as a citation', () => {
+    const filler = Array.from({ length: 560 }, (_, i) => `word${i}`).join(' ');
+    const body = `${filler}\n\n<a href="https://example.com/a">one</a> and <a href="https://example.com/b">two</a>`;
+    expect(gate('nk.en.md', EN_FM, body)).toContain('nobody home');
+  });
+
   it('leaves a short uncited field note alone', () => {
     const body = 'A colleague turned in some work and said upfront that AI wrote it. Nobody had a rule for it.';
     expect(gate('nc.en.md', EN_FM, body)).not.toContain('nobody home');
