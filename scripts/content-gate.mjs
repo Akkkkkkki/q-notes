@@ -173,7 +173,12 @@ const EN_CLOSER_FRAMES = [
     // the two ("By 2027, if adoption continues, teams will…").
     re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(will|I\s+expect|I'd\s+expect|should)\b/id,
     conditional: /\b(?:if|unless|whether)\b/i, // before the modal: all three subordinate
-    postposed: /\b(?:if|unless)\b/i, // after it: "whether" is a complement, not a condition
+    // After the modal: "if"/"unless" condition the forecast, unless a cognition verb
+    // governs the "if" — those take an interrogative complement, not a condition. The
+    // list is a closed lexical class, not a widening knob: verbs that answer a
+    // question rather than depend on one.
+    postposed: /\b(?:if|unless)\b/i,
+    complementVerb: /\b(?:know|knows|see|sees|ask|asks|tell|tells|learn|learns|find|finds|determine|determines|discover|discovers|decide|decides|wonder|wonders|check|checks|understand|understands)\b[^.!?]{0,30}$/i,
     label: 'an asserted forecast ("by the end of 20XX, X will Y")',
   },
 ];
@@ -210,12 +215,15 @@ const proseParagraphs = (body) =>
 // different things on each side of it:
 //   before — "if", "unless" and "whether" all subordinate the forecast
 //   after  — "if"/"unless" are a postposed condition ("teams will X if Y"), but
-//            "whether" is almost always an embedded complement ("debating whether X")
+//            "whether" is almost always an embedded complement ("debating whether X"),
+//            and so is an "if" governed by a verb of cognition ("teams will *know* if
+//            agents need owners" is a question, not a condition)
 // That asymmetry is the whole rule; every sentence shape below falls out of it.
 //   "If by 2028 I still can't find that link…"                    → a real test
 //   "By 2027, if adoption continues, teams will…"                 → a real test
 //   "By 2027, teams will treat ownership… if adoption continues."  → a real test
 //   "By 2027, teams will stop debating whether agents need owners" → the template
+//   "By 2027, teams will know if agents need owners."              → the template
 //   "Whether X succeeds is beside the point; by 2027, teams will…" → the template
 //   "If this launch fails, we will revisit it, but by 2027 teams will…" → the template
 const usesCloserFrame = (closer, frame) =>
@@ -228,7 +236,10 @@ const usesCloserFrame = (closer, frame) =>
     const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
     const clauseEnd = s.indexOf(';', modalAt) === -1 ? s.length : s.indexOf(';', modalAt);
     const governsBefore = frame.conditional.test(s.slice(clauseStart, modalAt));
-    const governsAfter = frame.postposed.test(s.slice(modalAt, clauseEnd));
+    const after = s.slice(modalAt, clauseEnd);
+    const condAfter = after.match(frame.postposed);
+    const governsAfter =
+      !!condAfter && !frame.complementVerb.test(after.slice(0, condAfter.index));
     return !(governsBefore || governsAfter);
   });
 
@@ -626,18 +637,23 @@ for (const file of targets) {
     // sample, not evidence, and the rest of this routine already reads code-stripped
     // text. A technical note whose only URLs sit in a snippet cites nothing.
     const externalLinks = (blocks.match(/https?:\/\//g) || []).length;
+    // Length measured over prose, not the raw body: an 800-token code example must not
+    // push a short field note into the long-piece branch, nor dilute its marker rate.
+    // `words` keeps counting the raw body for the tier ceiling above, which is about
+    // how much is on the page; this is about how much of it the author wrote.
+    const proseWords = blocks.trim().split(/\s+/).filter(Boolean).length;
     const hasRoomForAuthor =
-      words.length >= EN_AUTHOR_MIN_WORDS &&
-      (externalLinks >= EN_RESEARCH_MIN_LINKS || words.length >= EN_AUTHOR_LONG_WORDS);
+      proseWords >= EN_AUTHOR_MIN_WORDS &&
+      (externalLinks >= EN_RESEARCH_MIN_LINKS || proseWords >= EN_AUTHOR_LONG_WORDS);
     if (hasRoomForAuthor) {
       // `blocks`, not `prose`: stripQuoted needs the line breaks to find block quotes.
       const authored = authoredOnly(blocks).replace(/\n/g, ' ');
       const markers = (authored.match(EN_AUTHOR_MARKER) || []).length;
-      const rate = (1000 * markers) / words.length;
+      const rate = (1000 * markers) / proseWords;
       if (rate < EN_MIN_AUTHOR_PER_KWORDS) {
         warn(
           name,
-          `nobody home: ${markers} author marker(s) in ${words.length} words (${rate.toFixed(1)}/1k, want ≥ ${EN_MIN_AUTHOR_PER_KWORDS}) — a literature review with a byline. Do NOT fix this by adding "I think": check whether the Author Kernel had material, and if it did not, that is an interview gap for the PR body (§3.5)`
+          `nobody home: ${markers} author marker(s) in ${proseWords} words (${rate.toFixed(1)}/1k, want ≥ ${EN_MIN_AUTHOR_PER_KWORDS}) — a literature review with a byline. Do NOT fix this by adding "I think": check whether the Author Kernel had material, and if it did not, that is an interview gap for the PR body (§3.5)`
         );
       }
     }

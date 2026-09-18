@@ -314,6 +314,12 @@ describe('nobody home (human-voice §1, §3.5)', () => {
     expect(gate('nk.en.md', EN_FM, body)).toContain('nobody home');
   });
 
+  it('does not count a code example toward the length that triggers the check', () => {
+    const code = Array.from({ length: 900 }, (_, i) => `token${i}`).join(' ');
+    const body = `A short field note about one team. Nobody had a rule for it.\n\n\`\`\`js\n${code}\n\`\`\``;
+    expect(gate('np.en.md', EN_FM, body)).not.toContain('nobody home');
+  });
+
   it('does not treat a URL in a code sample as a citation', () => {
     const filler = Array.from({ length: 300 }, (_, i) => `word${i}`).join(' ');
     const body = `${filler}\n\n\`\`\`js\nfetch("https://example.com/a");\nfetch("https://example.com/b");\n\`\`\``;
@@ -420,6 +426,11 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
   it('leaves a condition sitting between the date and the modal alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
     expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
+  });
+
+  it('flags an "if" governed by a verb of cognition', () => {
+    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will know if agents need owners.';
+    expect(gate('cn.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('leaves a postposed condition alone', () => {
