@@ -1164,7 +1164,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-09-07 — The humanoid data moat lasted about as long as the marketing slide
 
-**Status:** Backlog
+**Status:** Interviewing since 2026-09-22
 
 **One-line thesis:** A venture-investor consensus formed this summer that robot hardware is commoditizing while training data and safety remain the durable moat; a marketplace that opened days later, selling graded, licensed demonstration data at checkout, is already commoditizing the exact asset that consensus just named as scarce.
 
