@@ -1,5 +1,13 @@
 # Voiceprint
 
+> Current workflow (#147): confirmed preferences and explicit author adoption remain in
+> force. Automated mining/retelling, target entry counts, timed deletion, and conversion
+> of a single correction into a permanent rule are deferred. Preserve existing records.
+> Legacy Desk endpoints may still append raw choices; this prompt change does not alter
+> those endpoints. They are records, not automatically adopted rules. Private examples
+> must follow #142 rather than being stored in public Git. The current pipeline and
+> routines 03/04/05 take precedence over historical maintenance instructions below.
+
 How the author actually sounds and what they actually believe — the file that keeps
 "easy to publish" from drifting into "generic to read." Defined in
 [`docs/companion-vision.md`](../docs/companion-vision.md) §4.1.
