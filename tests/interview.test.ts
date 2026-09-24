@@ -274,12 +274,28 @@ describe('POST /api/brief/close', () => {
     expect(gh.files.get(BACKLOG)).toBe(drafted);
   });
 
-  it('still closes the brief and reports it when the backlog cannot be updated', async () => {
+  it('keeps the brief open when the backlog cannot be released, so declining can be retried', async () => {
     gh.seedFile(BRIEF_PATH, sourcedBrief); // no backlog file seeded
-    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/brief/close', { path: BRIEF_PATH });
-    expect(status).toBe(200);
-    expect(data.backlog).toBe('failed');
+    const failed = await call(worker, makeEnv(), 'POST', '/api/brief/close', { path: BRIEF_PATH });
+    expect(failed.status).toBe(502);
+    expect(gh.files.get(BRIEF_PATH)).toContain('**Status:** Awaiting answers');
+    expect((await call(worker, makeEnv(), 'GET', '/api/brief')).data.brief.closed).toBe(false);
+
+    gh.seedFile(BACKLOG, backlogWith('Interviewing since 2026-06-09'));
+    const retried = await call(worker, makeEnv(), 'POST', '/api/brief/close', { path: BRIEF_PATH });
+    expect(retried.status).toBe(200);
+    expect(retried.data.backlog).toBe('released');
     expect(gh.files.get(BRIEF_PATH)).toMatch(/\*\*Status:\*\* Closed \(not this topic/);
+  });
+
+  it('can be retried after the topic was already released', async () => {
+    gh.seedFile(BRIEF_PATH, sourcedBrief);
+    gh.seedFile(BACKLOG, backlogWith('Interviewing since 2026-06-09'));
+    await call(worker, makeEnv(), 'POST', '/api/brief/close', { path: BRIEF_PATH });
+    const again = await call(worker, makeEnv(), 'POST', '/api/brief/close', { path: BRIEF_PATH });
+    expect(again.status).toBe(200);
+    expect(again.data.backlog).toBe('unchanged');
+    expect(gh.files.get(BACKLOG)).toMatch(/Rejected \(\d{4}-\d{2}-\d{2}, declined in interview/);
   });
 
   it('touches no backlog when the brief has no backlog source', async () => {
