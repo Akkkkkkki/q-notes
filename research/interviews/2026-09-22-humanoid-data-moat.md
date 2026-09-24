@@ -25,3 +25,61 @@ A venture-investor consensus formed this summer that robot hardware is commoditi
 
 ## Author answers
 _Answer in English, 中文, or both mixed. Fragments and voice-dump quality are exactly right — the drafter will do the structuring. 15–30 minutes is enough._
+
+## Drafter run report — 2026-09-24
+
+Walked `automations/03-drafter.md`'s fallback ladder in order. **Rung 1:** the only
+`Ready to draft` brief remains `2026-09-01-embodied-intelligence-is-measured-by-the-loop`
+(marked ready 2026-09-04), and it already produced a draft — PR #149
+(`embodied-intelligence-not-the-body`, opened 2026-09-17), a bilingual Note built from
+that same Author Kernel. That PR is still open today: CI green (content-gate/build,
+Cloudflare Workers build, GitGuardian all passing), every Codex review nit already fixed
+in a follow-up commit, and blocked purely on Routine 03b — the 2026-09-18 ship-gate
+comment on that PR found no `## Editorial critic` comment on its head and stopped there,
+not on any drafting gap. Opening a second, competing draft of the same interview would
+break `docs/pipeline.md` design principle 5 ("one PR per piece") and duplicate live work
+instead of adding anything; `docs/material-form.md`'s remedy order for a stalled piece is
+trim/downgrade/send-back, never a parallel redraft. No fresher `Ready to draft` brief
+exists: `2026-09-08-opening-a-repo-became-remote-code-execution`,
+`2026-09-15-industry-buys-identity-not-containment`, and this file all still have a
+completely empty `## Author answers` section. **Rung 2:** none of those three has any
+partial answer to use as unsigned Note material — all three sections are the blank
+template text only. **Rung 3:** re-audited every line in `research/inbox.md`; each
+already carries a `→` pointer into completed work, and the one line with no onward path
+(2026-07-22, "Agent rollouts spread through coworkers before policy catches up") is the
+author's own explicit decline ("we don't have much to say about it that is new"). No new
+spark has been added since the 2026-08-29 具身智能 line, which is already the material
+behind PR #149. **Rung 4:** the two formal tracked predictions
+(`agent-coordination-debt`, due end of 2027; `taste-is-a-bet`, due end of 2028) are not
+due, and there is no new evidence sufficient to score either — scoring now would be the
+premature "too early" filler `docs/material-form.md` §2 forbids. The two strongest
+published-post-connector candidates are exactly the subjects of the still-unanswered
+`industry-buys-identity-not-containment` (a named CrowdStrike executive's identity-vs-intent
+distinction, against `wallet-is-not-a-conscience`) and this file's own humanoid-data-moat
+idea (against the author's coding-agent "the scarce thing keeps sliding downstream"
+pattern) — both interviews exist precisely to extract the author's judgment on those
+connections, and under the strict-v1 provenance override (`AGENTS.md`; `docs/pipeline.md`
+§10) the prior published post bodies cannot by themselves authorize a current
+`Q-explicit` position for a new piece. No current author input, `research/positions.md`
+entry, or promoted `research/voice.md ## Stances` entry exists to supply that judgment
+instead (both files remain fully empty/commented). Drafting either connection now would
+mean the model supplying the author's point of view, which the ownership model forbids.
+**Rung 5** applies for new material this week, but not in the "nothing shipped" sense:
+PR #149 already carries this week's only available rung-1 candidate, remains open and
+mechanically clean, and simply hasn't had Routine 03b run against it yet. No new
+artifact from today's run; this report is appended per the never-go-silent rule.
+
+**What the human should review:** PR #149 turns 7 days old today (opened 2026-09-17) —
+the `docs/pipeline.md` §4.4 threshold at which Routine 04 starts asking whether to trim
+it — but the real block is upstream: no `## Editorial critic` comment has ever been
+posted on it, so Routine 03b appears not to have run at all last week. Worth checking
+that routine's scheduler entry against §8 before the PR ages further toward the 14-day
+close clock. Separately, the open-interview queue keeps aging with no relief:
+`agent-retaliation-beyond-scope` (44 days), `manufacturers-need-a-handoff-rule`
+(37 days), `coordination-is-the-risk` (30 days),
+`opening-a-repo-became-remote-code-execution` (16 days),
+`industry-buys-identity-not-containment` (9 days), and this file (2 days) all still have
+empty `## Author answers`. Fifteen to thirty minutes on whichever is easiest to answer
+cold would produce next week's rung-1 material; `industry-buys-identity-not-containment`
+has the most concrete anchor (a named executive on record) and reuses a thesis the
+author already owns from a published post, so it may be the quickest to turn around.
