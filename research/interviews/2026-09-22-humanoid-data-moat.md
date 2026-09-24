@@ -60,9 +60,12 @@ the only material available to fill that gap is External research, so drafting a
 from it now would be external synthesis wearing the author's voice, not the author's own
 material. It needs an interview (Tuesday's job), not a direct draft. No new spark has
 been added since the 2026-08-29 具身智能 line, which is already the material behind
-PR #149. **Rung 4:** the two formal tracked predictions
-(`agent-coordination-debt`, due end of 2027; `taste-is-a-bet`, due end of 2028) are not
-due, and there is no new evidence sufficient to score either — scoring now would be the
+PR #149. **Rung 4:** checked every published post carrying a falsifiable claim, not just
+the two with frontmatter `prediction:` fields — `agent-coordination-debt` (end of 2027),
+`taste-is-a-bet` (end of 2028), and the three consulting essays' prose-form "Prediction
+tracker" sections (`consulting-barbell`, `consulting-coordination`, `consulting-outcomes`,
+all scored end of 2027 with an end-2028 falsifier window). None of the five is due, and
+there is no new evidence sufficient to score any of them — scoring now would be the
 premature "too early" filler `docs/material-form.md` §2 forbids. The two strongest
 published-post-connector candidates are exactly the subjects of the still-unanswered
 `industry-buys-identity-not-containment` (a named CrowdStrike executive's identity-vs-intent
