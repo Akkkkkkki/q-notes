@@ -44,12 +44,23 @@ exists: `2026-09-08-opening-a-repo-became-remote-code-execution`,
 `2026-09-15-industry-buys-identity-not-containment`, and this file all still have a
 completely empty `## Author answers` section. **Rung 2:** none of those three has any
 partial answer to use as unsigned Note material — all three sections are the blank
-template text only. **Rung 3:** re-audited every line in `research/inbox.md`; each
-already carries a `→` pointer into completed work, and the one line with no onward path
-(2026-07-22, "Agent rollouts spread through coworkers before policy catches up") is the
-author's own explicit decline ("we don't have much to say about it that is new"). No new
-spark has been added since the 2026-08-29 具身智能 line, which is already the material
-behind PR #149. **Rung 4:** the two formal tracked predictions
+template text only. **Rung 3:** re-audited every line in `research/inbox.md` on its own
+merits rather than treating a `→` pointer as proof the material is spent — a pointer
+records where a spark went, not that every branch of it finished. Two lines needed that
+closer look. The 2026-07-22 line ("Agent rollouts spread through coworkers before policy
+catches up") has no onward path because the author explicitly declined it in its own
+text ("we don't have much to say about it that is new"). The 2026-07-17
+manufacturing/robotics line points to three places, one of which — `research/backlog.md`'s
+2026-08-28 item "A robot that scores worse can be the more capable system" — is still
+`Status: Backlog`, not completed. Re-audited that branch specifically: it is not yet
+developable Note material, for the same reason the 2026-09-03 report gave and nothing
+has changed since — the spark's own text asks for "intelligence questions... only a deep
+industry expert can have a good point of view on" (an explicit author domain-limit), and
+the only material available to fill that gap is External research, so drafting a Note
+from it now would be external synthesis wearing the author's voice, not the author's own
+material. It needs an interview (Tuesday's job), not a direct draft. No new spark has
+been added since the 2026-08-29 具身智能 line, which is already the material behind
+PR #149. **Rung 4:** the two formal tracked predictions
 (`agent-coordination-debt`, due end of 2027; `taste-is-a-bet`, due end of 2028) are not
 due, and there is no new evidence sufficient to score either — scoring now would be the
 premature "too early" filler `docs/material-form.md` §2 forbids. The two strongest
@@ -81,5 +92,8 @@ close clock. Separately, the open-interview queue keeps aging with no relief:
 `industry-buys-identity-not-containment` (9 days), and this file (2 days) all still have
 empty `## Author answers`. Fifteen to thirty minutes on whichever is easiest to answer
 cold would produce next week's rung-1 material; `industry-buys-identity-not-containment`
-has the most concrete anchor (a named executive on record) and reuses a thesis the
-author already owns from a published post, so it may be the quickest to turn around.
+has the most concrete anchor (a named executive on record) and connects to a thesis the
+author argued in a published post — historical continuity only under strict-v1, not
+current `Q-explicit` ownership by itself, so it still needs a fresh interview answer (or
+an explicit `positions.md`/Stance adoption) before that connection could be drafted — so
+it may be the quickest interview to turn around, not the quickest draft to skip to.
