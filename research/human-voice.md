@@ -224,9 +224,43 @@ published posts so a hit means something real rather than background noise.
 | One name for one thing | a coined term is reused, not just defined | all passed |
 | 长句 / 万能动词 / 翻译腔模板 (§11–13) | see the zh thresholds in the script | 9 hits across 5 zh posts |
 | Mental-history claim ("I used to think...", 我以前认为…) | flag every hit, capped at 3 | 1 post (`taste-is-a-bet`, a real author correction) |
+| **Nobody home (§1)** | ≥ 3 author markers / 1,000 words, on a cited or long piece | 9 of 14 posts fail (0.0–2.3; quotes, links and slugs excluded) |
+| **Punchline metronome (§1, §3.2)** | ≤ 20% of paragraphs are a single sentence | 3 posts fail (22–29%) |
+| **Template closer (§3.4)** | ≤ 2 other *active* posts share the closer's frame | 5 posts fail, all on "by the end of 2027, X will Y" |
 
-Every one of those is now clear. That pass is the "after" column: 26 style warnings across the
-eighteen published files, down to zero, with every number and source link byte-identical.
+Every rule above the bold rows is now clear. That pass is the "after" column: 26 style warnings
+across the eighteen published files, down to zero, with every number and source link
+byte-identical.
+
+The three bold rows were added on 2026-09-18 and are not clear — they are the
+`docs/reviews/2026-09-18-active-corpus-audit.md` findings made mechanical, and 9 of the 14
+active English posts trip at least one. They are deliberately calibrated differently from
+everything above them. The older thresholds were tuned against the published corpus so a
+warning would mean "unusual for us," which is the right instinct for a texture rule and the
+wrong one for a structural one: if the corpus itself is the failure, calibrating to it
+defines the failure as normal. That is exactly what happened — the lint certified as clean
+a set of posts that read as machine-written, because it was measuring the sentences and the
+problem was in the sourcing. The new rows are instead calibrated against the *split* in the
+corpus, between posts whose argument is built on author material and posts assembled from
+research with the author's contribution as a garnish. (Not "had a spark" versus "didn't" —
+three of the nine trace to the same 2026-06-19 inbox spark and still read as machine-written,
+because it set the topic rather than carrying the argument. The audit's §1 works that
+through.) On that axis there are no borderline cases, so none of the three needed a judgment
+call about where to put the line.
+
+The template-closer row is deliberately stricter than §3.4 as worded, and its warning
+says which rule it is applying rather than claiming to be that one. A three-post window
+lets a frame come back every fourth piece forever, which is the tic §3.4 exists to stop,
+and a reader meets the archive as a shelf rather than a sliding window — five of fourteen
+is what they actually see. The comparison therefore runs over the whole shelf, but only
+the part still on it: a post that has been archived or superseded stops counting, so
+retiring a piece releases its framing instead of locking it away forever.
+
+The "nobody home" row is the one to be careful with, and its warning text says so: the
+remedy is never a first-person sentence. §3.5 governs. A hit means go back and look at what
+the Author Kernel actually held, and if it held nothing, that is an interview gap for the PR
+body — the one thing that must not happen is the drafter reading this row as a quota and
+salting "I think" through a piece it has no standing to write in the first person.
 
 **Why these thresholds are trusted.** Commit `Apply the human pass to the two most
 recent posts` (2026-07-17) ran §4 by hand over two posts and nothing else, which makes
