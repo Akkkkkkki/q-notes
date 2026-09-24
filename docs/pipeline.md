@@ -97,8 +97,8 @@ chosen for a brief is marked `Interviewing since YYYY-MM-DD`; the phone client r
 
 `automations/03-drafter.md` checks explicit intent and existing work before starting.
 No intent means no draft/PR, with a short run response if needed and no filler commit.
-An authorized brief that ends without a draft returns to `Answers in progress (date)`,
-so the same request does not repeat on the next run.
+An authorized brief that ends without a draft is recorded as `Closed (no draft, date)`,
+releasing its backlog topic, so the request neither repeats nor comes back as a prompt.
 
 Build the Author Kernel and Claim Ledger from safe input/source references (§10), then
 run Material Audit and choose the smallest honest form. Reuse claim IDs rather than

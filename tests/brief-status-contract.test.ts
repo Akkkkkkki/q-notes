@@ -45,19 +45,27 @@ describe('routine status writes match the phone client (#152, #153)', () => {
     });
   });
 
-  it('Routine 03 hands back a no-draft green light as a reopenable, non-ready brief', () => {
-    const template = statusTemplate(
-      read('automations/03-drafter.md'),
-      /`(Answers in progress \(YYYY-MM-DD\))`/
+  it('Routine 03 records a no-draft outcome as finished, not as a new prompt to the author', () => {
+    const drafter = read('automations/03-drafter.md');
+    const briefStatus = statusTemplate(drafter, /`(Closed \(no draft, YYYY-MM-DD\))`/).replace(
+      'YYYY-MM-DD',
+      daysAgo(0)
     );
-    const status = template.replace('YYYY-MM-DD', daysAgo(0));
     const brief = parseBrief(
       'research/interviews/2026-09-01-example.md',
-      `# Interview: Example\n\n**Status:** ${status}\n\n## The idea in three sentences\nIdea.\n\n## Questions\n1. Q?\n\n## Author answers\n\n### Q1\nAn answer.\n`
+      `# Interview: Example\n\n**Status:** ${briefStatus}\n\n## The idea in three sentences\nIdea.\n\n## Questions\n1. Q?\n\n## Author answers\n\n### Q1\nAn answer.\n`
     );
-
+    // Closed briefs drop out of Flow's needsYou list and are not re-offered as requests.
+    expect(brief.closed).toBe(true);
     expect(brief.ready).toBe(false);
-    expect(brief.closed).toBe(false);
     expect(brief.drafted).toBe(false);
+    expect(brief.questions[0].answer).toBe('An answer.');
+
+    const topicStatus = statusTemplate(drafter, /`(Rejected \(YYYY-MM-DD, no draft from interview\))`/).replace(
+      'YYYY-MM-DD',
+      daysAgo(0)
+    );
+    const backlog = `# Research Backlog\n\n## ${daysAgo(40)} — Chosen topic\n\n**Status:** ${topicStatus}\n`;
+    expect(parseBacklog(backlog)[0].status).toBe('rejected');
   });
 });
