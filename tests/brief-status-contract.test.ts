@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { rejectItem } from '../worker/backlog';
+import { briefBacklogSource, rejectItem } from '../worker/backlog';
 import { parseBacklog } from '../worker/flow';
 import { parseBrief } from '../worker/interview';
 
@@ -31,6 +31,18 @@ describe('routine status writes match the phone client (#152, #153)', () => {
     expect(parseBacklog(backlog)[0].status).toBe('live');
     const rejected = rejectItem(backlog, topicDate, 'Chosen topic', '**Status:** Rejected');
     expect(rejected).toMatchObject({ status: 400 });
+  });
+
+  it('Routine 02 links the brief to its backlog item in the form the close path reads', () => {
+    const template = statusTemplate(
+      read('automations/02-interview-brief.md'),
+      /`(\*\*Source:\*\* backlog item YYYY-MM-DD — <exact backlog title>)`/
+    );
+    const line = template.replace('YYYY-MM-DD', '2026-09-07').replace('<exact backlog title>', 'A chosen topic');
+    expect(briefBacklogSource(`# Interview: X\n\n${line}\n**Status:** Awaiting answers\n`)).toEqual({
+      date: '2026-09-07',
+      title: 'A chosen topic',
+    });
   });
 
   it('Routine 03 hands back a no-draft green light as a reopenable, non-ready brief', () => {

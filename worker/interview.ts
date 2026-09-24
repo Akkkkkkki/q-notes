@@ -1,5 +1,6 @@
 import type { Env } from './types';
 import { getFile, putFile, listDir, todayIn, json } from './github';
+import { releaseBacklogForBrief } from './backlog';
 
 /**
  * Interview surface (Companion Phase 2, docs/companion-vision.md §3.2).
@@ -151,7 +152,11 @@ export async function closeBrief(request: Request, env: Env): Promise<Response> 
 
     const slug = path.split('/').pop()!.replace(/\.md$/, '');
     const result = await putFile(env, path, content, `interview: declined (${slug})`, file.sha);
-    if (result.ok) return json({ ok: true });
+    if (result.ok) {
+      // Release the topic the brief came from, or it stays `Interviewing` forever.
+      const backlog = await releaseBacklogForBrief(env, file.content, date);
+      return json({ ok: true, backlog });
+    }
     if (result.status !== 409) return json({ error: `GitHub API error (${result.status})` }, 502);
   }
   return json({ error: 'Write conflict, please retry' }, 409);
