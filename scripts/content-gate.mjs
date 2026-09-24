@@ -171,26 +171,19 @@ const EN_SOLO_PARA_MIN_PARAS = 12; // below this the share swings on one paragra
 // surfaces (#134), and a lint that kept counting it would contradict the lifecycle
 // and make the frame unreusable forever on the strength of a withdrawn piece.
 //
-// The frame is the assertion, not the date. "By the end of 2027, serious teams *will*
-// treat X as Y" is the template; "if by 2028 I still can't find that link, the other
-// piece was closer to right" is a genuine conditional test and stays legal, which is
-// why the pattern requires the forecast verb and refuses a conditional clause.
+// The frame is a dated forecast: "by 20XX", then a forecast verb in the same sentence.
+// The verb is what makes it a forecast — "if by 2028 I still can't find that link, the
+// other piece was closer to right" names a year but asserts nothing about it, and does
+// not match. A conditional does *not* exempt a sentence that does match: "by 2027, if
+// adoption continues, teams will…" is the same closing move with a hedge attached, and
+// §3.4 is about the move. An earlier version tried to exempt conditions that governed
+// the forecast; it never fired on a real post and produced seven rounds of defects, so
+// it was removed rather than patched an eighth time.
 const EN_CLOSER_PARAGRAPHS = 3; // how much of the tail counts as "the closer"
 const EN_CLOSER_FRAME_MAX = 2; // other posts allowed to share the frame before it is a template
 const EN_CLOSER_FRAMES = [
   {
-    // The modal is captured so the conditional can be positioned against *it*: the
-    // date is only the frame's opening, and a condition can legitimately sit between
-    // the two ("By 2027, if adoption continues, teams will…").
-    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(will|I\s+expect|I'd\s+expect|should)\b/id,
-    conditional: /\b(?:if|unless|whether)\b/i, // before the modal: all three subordinate
-    // After the modal: "if"/"unless" condition the forecast, unless a cognition verb
-    // governs the "if" — those take an interrogative complement, not a condition. The
-    // list is a closed lexical class, not a widening knob: verbs that answer a
-    // question rather than depend on one.
-    postposed: /\b(?:if|unless)\b/i,
-    complementVerb:
-      /\b(?:knows?|knowing|knew|sees?|seeing|saw|asks?|asking|asked|tells?|telling|told|learns?|learning|learned|finds?|finding|found|determines?|determining|determined|discovers?|discovering|discovered|decides?|deciding|decided|wonders?|wondering|wondered|checks?|checking|checked|understands?|understanding|understood)\b[^.!?]{0,30}$/i,
+    re: /(?:^|[^a-z])by\s+(?:the\s+end\s+of\s+)?20\d\d\b[^.!?]*?\b(?:will|I\s+expect|I'd\s+expect|should)\b/i,
     label: 'an asserted forecast ("by the end of 20XX, X will Y")',
   },
 ];
@@ -391,67 +384,9 @@ const proseBlocks = (text) =>
     .map((p) => p.replace(HTML_COMMENT, ' ').trim())
     .filter(isProseBlock);
 const proseParagraphs = (body) => proseBlocks(stripCode(body).replace(/^#+ .*$/gm, ''));
-// Does this closer use the frame? Checked sentence by sentence so a conditional
-// elsewhere in the tail cannot excuse an asserted forecast, and vice versa. The
-// conditional only counts when it precedes the *modal*, because that is what it means
-// to govern a forecast — and the modal, not the date, is where the forecast is
-// asserted. All three orderings fall out of that one comparison:
-//   "If by 2028 I still can't find that link…"      cond governs  → a real test
-//   "By 2027, if adoption continues, teams will…"   cond governs  → a real test
-//   "By 2027, teams will stop debating whether…"    cond follows  → the template
-//   "Whether X succeeds is beside the point; by     cond is in
-//    2027, teams will…"                             another clause → the template
-// A conditional exempts the forecast only when it *governs* it, which means being in
-// the forecast's own clause. A clause opens at a semicolon or at a comma followed by a
-// coordinating conjunction, and runs to the next semicolon or the end of the sentence.
-// Deliberately *not* boundaries: a bare comma, which would cut "By 2027, if adoption
-// continues, teams will…" apart, and an em dash, which usually wraps a parenthetical.
-//
-// Position relative to the modal decides which words count, because English puts
-// different things on each side of it:
-//   before — "if", "unless" and "whether" all subordinate the forecast
-//   after  — "if"/"unless" are a postposed condition ("teams will X if Y"), but
-//            "whether" is almost always an embedded complement ("debating whether X"),
-//            and so is an "if" governed by a verb of cognition ("teams will *know* if
-//            agents need owners" is a question, not a condition)
-// The complement test applies on both sides: "teams that *know* whether agents need
-// owners will standardize" is an assertion about informed teams, not a conditional.
-// That asymmetry is the whole rule; every sentence shape below falls out of it.
-//   "If by 2028 I still can't find that link…"                    → a real test
-//   "By 2027, if adoption continues, teams will…"                 → a real test
-//   "By 2027, teams will treat ownership… if adoption continues."  → a real test
-//   "By 2027, teams will stop debating whether agents need owners" → the template
-//   "By 2027, teams will know if agents need owners."              → the template
-//   "Whether X succeeds is beside the point; by 2027, teams will…" → the template
-//   "If this launch fails, we will revisit it, but by 2027 teams will…" → the template
-// Is there a conditional in `text` that actually governs, rather than sitting as the
-// complement of a verb of cognition? Checked per occurrence: one embedded complement
-// must not hide a second, genuinely governing condition elsewhere in the same window.
-const governingCondition = (text, frame, re) => {
-  for (const m of text.matchAll(new RegExp(re.source, 'gi'))) {
-    if (!frame.complementVerb.test(text.slice(0, m.index))) return true;
-  }
-  return false;
-};
-
-const usesCloserFrame = (closer, frame) =>
-  closer.split(/(?<=[.!?]["'”’)\]]?)\s+/).some((s) => {
-    const hit = s.match(frame.re);
-    if (!hit) return false;
-    const modalAt = hit.indices?.[1]?.[0] ?? hit.index;
-    const before = s.slice(0, modalAt);
-    const boundary = [...before.matchAll(/;|,\s+(?:but|and|so|yet|while|though)\s/g)].pop();
-    const clauseStart = boundary ? boundary.index + boundary[0].length : 0;
-    // The post-modal window ends at the next clause boundary too, by the same rule the
-    // pre-modal window uses: "…teams will standardize ownership, but if this launch
-    // fails…" is a separate clause and cannot condition the forecast.
-    const afterAll = s.slice(modalAt);
-    const endMatch = afterAll.match(/;|,\s+(?:but|and|so|yet|while|though)\s/);
-    const clauseEnd = endMatch ? modalAt + endMatch.index : s.length;
-    const governsBefore = governingCondition(s.slice(clauseStart, modalAt), frame, frame.conditional);
-    const governsAfter = governingCondition(s.slice(modalAt, clauseEnd), frame, frame.postposed);
-    return !(governsBefore || governsAfter);
-  });
+// Does this closer use the frame? The pattern cannot cross a sentence terminator, so
+// one test over the whole tail is a per-sentence test.
+const usesCloserFrame = (closer, frame) => frame.re.test(closer);
 
 // Words the voiceprint never-list and STE's marketing-adjective rule both ban.
 // The corpus scores zero on all of these — the drafter already avoids them — so

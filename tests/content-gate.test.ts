@@ -612,45 +612,33 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
     expect(gate('ca.en.md', EN_FM, body)).toContain('template closer');
   });
 
-  it('leaves a conditional test alone', () => {
+  it('leaves a dated sentence with no forecast verb alone', () => {
     const body = 'Agents make the bottleneck visible.\n\nIf by 2028 I still cannot find that link, the other piece was closer to right.';
     expect(gate('cb.en.md', EN_FM, body)).not.toContain('template closer');
   });
 
-  it('leaves a condition sitting between the date and the modal alone', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy 2027, if adoption continues, teams will treat ownership as part of the process.';
-    expect(gate('ch.en.md', EN_FM, body)).not.toContain('template closer');
-  });
-
-  it('flags a pre-modal complement, not a condition', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams that know whether agents need owners will standardize ownership.';
-    expect(gate('co.en.md', EN_FM, body)).toContain('template closer');
+  it('does not let a conditional exempt the frame', () => {
+    // The frame is the closing move, hedged or not. Each shape below was once exempted
+    // or special-cased by a conditional carve-out that never fired on a real post.
+    const closers = [
+      'By 2027, if adoption continues, teams will treat ownership as part of the process.',
+      'By 2027, teams will treat ownership as part of the process if adoption continues.',
+      'If by 2028 the metric still will not appear, the other piece was closer to right.',
+      'By 2027, teams will know if agents need owners.',
+      'By the end of 2027, teams will stop debating whether agents need owners.',
+      'Whether this launch succeeds is beside the point; by 2027, teams will treat ownership as part of the process.',
+      'If this launch fails, we will revisit it, but by 2027 serious teams will treat ownership as part of the process.',
+    ];
+    closers.forEach((closer, i) => {
+      const body = `Agents make the bottleneck visible.\n\n${closer}`;
+      expect(gate(`cx${i}.en.md`, EN_FM, body), closer).toContain('template closer');
+    });
   });
 
   it('honours a lifecycle value with an inline YAML comment', () => {
     const fm = `${EN_FM}\neditorialStatus: archived # withdrawn, kept for the URL`;
     const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
     expect(gate('cp.en.md', fm, body)).not.toContain('template closer');
-  });
-
-  it('flags a forecast whose condition is in a later coordinated clause', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will standardize ownership, but if this launch fails, we will revisit tooling.';
-    expect(gate('cr.en.md', EN_FM, body)).toContain('template closer');
-  });
-
-  it('flags an "if" governed by a verb of cognition', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will know if agents need owners.';
-    expect(gate('cn.en.md', EN_FM, body)).toContain('template closer');
-  });
-
-  it('leaves a postposed condition alone', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy 2027, teams will treat ownership as part of the process if adoption continues.';
-    expect(gate('cm.en.md', EN_FM, body)).not.toContain('template closer');
-  });
-
-  it('flags a forecast after a comma-coordinated clause', () => {
-    const body = 'Agents make the bottleneck visible.\n\nIf this launch fails, we will revisit it, but by 2027 serious teams will treat ownership as part of the process.';
-    expect(gate('ck.en.md', EN_FM, body)).toContain('template closer');
   });
 
   it('does not let trailing reference definitions displace the closer', () => {
@@ -677,21 +665,6 @@ describe('template closers across the corpus (human-voice §3.4)', () => {
     // before it is treated as prose rather than dropped as a list item.
     const body = 'Agents make the bottleneck visible.\n\n2026 exposed the bottleneck.\n\nBy the end of 2027, serious teams will treat ownership as part of the process.';
     expect(gate('cl.en.md', EN_FM, body)).toContain('template closer');
-  });
-
-  it('flags a forecast whose only conditional is in another clause', () => {
-    const body = 'Agents make the bottleneck visible.\n\nWhether this launch succeeds is beside the point; by 2027, teams will treat ownership as part of the process.';
-    expect(gate('cj.en.md', EN_FM, body)).toContain('template closer');
-  });
-
-  it('flags an asserted forecast that merely embeds "whether"', () => {
-    const body = 'Agents make the bottleneck visible.\n\nBy the end of 2027, teams will stop debating whether agents need owners.';
-    expect(gate('ce.en.md', EN_FM, body)).toContain('template closer');
-  });
-
-  it('leaves a conditional that governs the forecast alone', () => {
-    const body = 'Agents make the bottleneck visible.\n\nIf by 2028 the metric still will not appear, the other piece was closer to right.';
-    expect(gate('cf.en.md', EN_FM, body)).not.toContain('template closer');
   });
 
   it('honours a quoted lifecycle value', () => {
