@@ -3,7 +3,7 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-const AUTHOR_ROUTES = ['/flow/', '/capture/', '/interview/', '/desk/'];
+const AUTHOR_ROUTES = new Set(['/flow/', '/capture/', '/interview/', '/desk/']);
 
 export default defineConfig({
   output: 'static',
@@ -29,7 +29,8 @@ export default defineConfig({
     mdx(),
     sitemap({
       // Author workspace routes are deployed static shells, not public reading pages.
-      filter: (page) => !AUTHOR_ROUTES.some((route) => page.includes(route))
+      // Match the exact pathname so a tag or post that happens to be named `desk` stays listed.
+      filter: (page) => !AUTHOR_ROUTES.has(new URL(page).pathname)
     })
   ]
 });
