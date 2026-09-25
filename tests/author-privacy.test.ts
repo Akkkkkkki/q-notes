@@ -31,7 +31,10 @@ describe('author workspace discovery boundary', () => {
     const fallback = layout.slice(layout.indexOf('data-i18n-html="shell.connectFine"'));
     const fallbackText = fallback.slice(0, fallback.indexOf('</p>'));
     for (const text of [...hints, fallbackText]) {
-      expect(text).not.toMatch(/wrangler|CAPTURE_TOKEN|recover/i);
+      // No shell command, and no "recover": deployed secrets can't be read back.
+      expect(text).not.toMatch(/wrangler|npx|recover/i);
+      // Name the binding to rotate: the Worker also holds GITHUB_TOKEN.
+      expect(text).toContain('CAPTURE_TOKEN');
       expect(text).toMatch(/Variables and Secrets/);
     }
   });
