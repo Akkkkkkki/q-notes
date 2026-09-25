@@ -1,5 +1,6 @@
 import type { Env } from './types';
 import { getFile, putFile, listDir, todayIn, json } from './github';
+import { releaseBacklogForBrief } from './backlog';
 
 /**
  * Interview surface (Companion Phase 2, docs/companion-vision.md §3.2).
@@ -137,11 +138,23 @@ export async function closeBrief(request: Request, env: Env): Promise<Response> 
   const path = body.path ?? '';
   if (!isBriefPath(path)) return json({ error: 'Invalid brief path' }, 400);
 
+  const brief = await getFile(env, path);
+  if (!brief) return json({ error: 'Brief not found' }, 404);
+  const date = todayIn(env.SPARK_TIMEZONE);
+
+  // Release the topic the brief came from *before* closing it, or it stays
+  // `Interviewing` forever. If the release fails the brief stays open and the
+  // author can simply decline again; a closed brief would hide that control.
+  // Retrying after a later failure is safe: an already-released item is left alone.
+  const backlog = await releaseBacklogForBrief(env, brief.content, date);
+  if (backlog === 'failed') {
+    return json({ error: 'Could not release the backlog topic; the brief is still open, please retry' }, 502);
+  }
+
   for (let attempt = 0; attempt < 2; attempt++) {
-    const file = await getFile(env, path);
+    const file = attempt === 0 ? brief : await getFile(env, path);
     if (!file) return json({ error: 'Brief not found' }, 404);
 
-    const date = todayIn(env.SPARK_TIMEZONE);
     let content;
     if (/^\*\*Status:\*\*.*$/m.test(file.content)) {
       content = file.content.replace(/^\*\*Status:\*\*.*$/m, `**Status:** Closed (not this topic, ${date})`);
@@ -151,7 +164,7 @@ export async function closeBrief(request: Request, env: Env): Promise<Response> 
 
     const slug = path.split('/').pop()!.replace(/\.md$/, '');
     const result = await putFile(env, path, content, `interview: declined (${slug})`, file.sha);
-    if (result.ok) return json({ ok: true });
+    if (result.ok) return json({ ok: true, backlog });
     if (result.status !== 409) return json({ error: `GitHub API error (${result.status})` }, 502);
   }
   return json({ error: 'Write conflict, please retry' }, 409);

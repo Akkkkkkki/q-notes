@@ -63,10 +63,7 @@ export function rejectItem(
   statusLine: string
 ): { content: string } | { error: string; status: number } {
   const lines = content.split('\n');
-  const start = lines.findIndex((l) => {
-    const m = l.match(/^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$/);
-    return !!m && m[1] === date && m[2].trim() === title;
-  });
+  const start = findItem(lines, date, title);
   if (start === -1) return { error: 'Topic not found in the backlog', status: 404 };
 
   let end = lines.length;
@@ -94,4 +91,77 @@ export function rejectItem(
   // No Status line in the block (the template always has one) — insert it.
   lines.splice(start + 1, 0, '', statusLine);
   return { content: lines.join('\n') };
+}
+
+function findItem(lines: string[], date: string, title: string): number {
+  return lines.findIndex((l) => {
+    const m = l.match(/^##\s+(\d{4}-\d{2}-\d{2})\s+—\s+(.+)$/);
+    return !!m && m[1] === date && m[2].trim() === title;
+  });
+}
+
+/**
+ * The interviewer (routine 02) links a brief to its topic with
+ * `**Source:** backlog item <date> — <title>` and marks that item
+ * `Interviewing since …`. An interviewing item can't be passed from Today and
+ * never expires, so declining the brief has to release the item as well or it
+ * stays live forever.
+ */
+export function briefBacklogSource(brief: string): { date: string; title: string } | null {
+  const m = brief.match(/^\*\*Source:\*\*\s*backlog item (\d{4}-\d{2}-\d{2})\s+—\s+(.+?)(?:\s+\|\s.*)?$/m);
+  return m ? { date: m[1], title: m[2].trim() } : null;
+}
+
+/**
+ * Flip an `Interviewing…` item's Status line. Pure, like rejectItem. Any other
+ * status (drafted, rejected, expired) is a real outcome and is left alone, as
+ * is a missing item: both return null.
+ */
+export function releaseInterviewedItem(
+  content: string,
+  date: string,
+  title: string,
+  statusLine: string
+): { content: string } | null {
+  const lines = content.split('\n');
+  const start = findItem(lines, date, title);
+  if (start === -1) return null;
+  for (let i = start + 1; i < lines.length && !/^##\s/.test(lines[i]); i++) {
+    const m = lines[i].match(/^\*\*Status:\*\*\s*(.*)$/);
+    if (!m) continue;
+    if (!/^interviewing/i.test(m[1])) return null;
+    lines[i] = statusLine;
+    return { content: lines.join('\n') };
+  }
+  return null;
+}
+
+/**
+ * Release the backlog topic behind a declined brief. Best effort: the brief is
+ * already closed, so a failure here is reported to the caller, never thrown.
+ */
+export async function releaseBacklogForBrief(
+  env: Env,
+  brief: string,
+  date: string
+): Promise<'released' | 'unchanged' | 'failed'> {
+  const source = briefBacklogSource(brief);
+  if (!source) return 'unchanged';
+  const statusLine = `**Status:** Rejected (${date}, declined in interview: not this topic)`;
+  const short = source.title.length > 50 ? source.title.slice(0, 47) + '...' : source.title;
+
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const file = await getFile(env, BACKLOG_PATH);
+      if (!file) return 'failed';
+      const result = releaseInterviewedItem(file.content, source.date, source.title, statusLine);
+      if (!result) return 'unchanged';
+      const write = await putFile(env, BACKLOG_PATH, result.content, `backlog: release declined "${short}"`, file.sha);
+      if (write.ok) return 'released';
+      if (write.status !== 409) return 'failed';
+    }
+  } catch {
+    return 'failed';
+  }
+  return 'failed';
 }

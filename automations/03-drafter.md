@@ -340,8 +340,14 @@ File placement depends on whether the Phase 2 bilingual site work (`docs/pipelin
    paragraph lengths, 万能动词. Fix them before the author sees them; leave a warning
    standing only when the fix would cost a load-bearing line, and say so in the PR body.
 1. Only after a draft exists, link it from the selected source and mark an authorized
-   brief `Status: Drafted`. Do not alter unsigned answers or mark a no-draft outcome as
-   consumed. Do not publish private source text in working notes or PR metadata.
+   brief `Status: Drafted`. Do not alter unsigned answers. When an authorized brief ends
+   with no draft, record that finished outcome so the request is consumed without
+   becoming a new prompt to the author: set the brief to `Closed (no draft, YYYY-MM-DD)`,
+   and if its `**Source:**` backlog item is still `Interviewing…`, set that item to
+   `Rejected (YYYY-MM-DD, no draft from interview)`. Leave the answers untouched; a later
+   explicit drafting request can still use them. Give the one-line reason in the commit
+   message and run response, not in the brief. Do not publish private source text in
+   working notes or PR metadata.
 2. Run `npm run build`; fix what breaks.
 3. Open a **ready** PR for review, never auto-merge. Record the request/authorization
    reference, supported point, scope left open, and validation. Keep the existing

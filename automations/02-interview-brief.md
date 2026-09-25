@@ -35,6 +35,13 @@ makes Git or PRs private.
 <author input only; English, 中文, or mixed; fragments welcome>
 ```
 
+When the chosen material is an existing `research/backlog.md` item, write the brief's
+source as `**Source:** backlog item YYYY-MM-DD — <exact backlog title>` and set that
+item's `**Status:**` to `Interviewing since YYYY-MM-DD` in the same commit. The phone
+client parses both: the status stops the topic being rejected mid-interview or aging out
+of Flow while its brief is open, and the source line lets "not this topic" release the
+item again. It is bookkeeping, not a publishing obligation.
+
 Optional `→ ` / `→ push: ` / `→ read: ` lines remain supported by the phone client.
 Use them sparingly, only when helpful. They are model suggestions, not author answers.
 Preserve `free` / `nudge-assisted` provenance on saved answers. Do not turn a suggested

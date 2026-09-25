@@ -90,12 +90,15 @@ Archive posts provide history/source discovery, never current-position authoriza
 `automations/02-interview-brief.md` starts from author-selected material. Identify what
 seems interesting and the consequential gap, then ask one useful question. More questions
 are optional. No interview is required for an existing draft. Unsigned answers stay
-untouched, including near expiry or after every question has an answer.
+untouched, including near expiry or after every question has an answer. A backlog item
+chosen for a brief is marked `Interviewing since YYYY-MM-DD`; the phone client relies on it.
 
 ### 4.3 Requested drafting — Drafter
 
 `automations/03-drafter.md` checks explicit intent and existing work before starting.
 No intent means no draft/PR, with a short run response if needed and no filler commit.
+An authorized brief that ends without a draft is recorded as `Closed (no draft, date)`,
+releasing its backlog topic, so the request neither repeats nor comes back as a prompt.
 
 Build the Author Kernel and Claim Ledger from safe input/source references (§10), then
 run Material Audit and choose the smallest honest form. Reuse claim IDs rather than
