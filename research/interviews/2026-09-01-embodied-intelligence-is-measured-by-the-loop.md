@@ -125,6 +125,54 @@ of them structurally, not by topic. Rung 5 is the rung that applies. No `## Mate
 Audit`, `## Form decision`, `## Bilingual parity`, `## A/B calibration`, or `## Claim
 ledger` sections follow — there is no draft to audit.
 
+## Drafter repair — 2026-10-03
+
+Routine 03b (editorial critic) reviewed head `f8a8541e` on 2026-09-24 and returned
+**CUT**, with three blocking reasoning failures, all subtractive:
+
+1. The C4 funding paragraph (EN ¶6; the tail of ZH ¶2) placed sector financing next to
+   the vocabulary complaint even though C4 was marked optional/non-load-bearing — the
+   exact vocabulary→valuation arc PR #139 was closed for — and the stated figure
+   ("added 22 new... unicorns") conflated the H1-2026 total (22, up from 3) with an
+   increase. **Deleted** the paragraph (EN) and the corresponding clause (ZH) entirely;
+   dropped C4 from the ledger and parity table below. The "vocabulary wins attention"
+   point survives in the closing paragraph, which was never in question.
+2. "Nobody's published that comparison, including me." / "没有人做过这个对比，我也没有。"
+   was an unsupported universal negative — nothing in the sources or the author's
+   answers shows that no such comparison exists anywhere. **Deleted** in both languages;
+   the author's own "I don't know" (C2) already carries the same honesty.
+3. The sentence right after it ("the marketing asserts a closed loop with total
+   confidence, and confidence is exactly what the vocabulary hasn't earned yet" / the
+   ZH "但这才是……还没挣到" sentence) doubted whether a *closed loop* exists at all —
+   but per C1/C2/C8 the unearned part is whether the *decision* step is intelligent, a
+   loop existing in the engineering sense is not in question (¶ confirms a thermostat
+   has one). This was the exact #139 mix-up the first redo was supposed to fix, back in
+   a new paragraph. **Deleted** in both languages, per the critic's own subtractive
+   option; the following paragraph ("That's a narrower claim than...") already follows
+   cleanly from the crib paragraph's "I don't know whether the same actions would still
+   fire."
+
+No new claim, theory, or author judgment was added — this is a pure subtraction, so it
+does not require a fresh critic pass under the "claim-preserving" carve-out (removing
+an already-optional/non-load-bearing claim and two sentences that overstated the
+sources narrows scope, it doesn't change it). Also fixed one of the critic's optional
+warnings while already touching this paragraph: ZH ¶5 "也有失灵的时候" (the test
+*fails* at scale) overstated the certainty of the author's own hedge (Q4: "I think
+so... maybe"; EN: "I'm honestly not sure the line holds") — reworded to "也不一定还站得
+住" to match. Left the other optional warnings alone: the July 2026 launch date was
+re-verified this run via a fresh targeted search (multiple independent search-result
+summaries, including one that initially looked like it contradicted July by returning
+an unrelated adult sleep-mat product's launch, now ruled out) and confirmed correct, so
+nothing to change there; the crib's event-priority classifier detail and the Q5 "may"
+hedge were left as the author's own two A/B calibration choices (both "A," landed via
+Desk on 2026-10-03) already endorsed the current wording for the opening and closer,
+and changing either now would override an explicit author decision the critic's
+warning was only optional against.
+
+Title: the author swapped the title to EN option 3 / ZH option 3 via Desk's ship-time
+slot on 2026-10-03 (pushed directly to this branch) — reflected in the Title options
+section below.
+
 **What the human should review:** this is the second straight week with no draft PR,
 though not the pipeline-health failure that phrase might suggest — `docs/pipeline.md` §9
 counts a drafter run as producing "nothing" only when it has "no artifact, no report,"
@@ -240,7 +288,6 @@ backlog research was sourced):
 C1. "Embodied intelligence" is a claim about the intelligence, not about having a body — Q-explicit (interview Q1) — Required in: EN + ZH
 C2. The test: remove the intelligence and see if the product still serves the user the same way; whether that changes anything for a given product (e.g. the crib) is a separate, unresolved empirical question, not asserted either way — Q-explicit (interview Q2) — Required in: EN + ZH
 C3. The 亲宝宝 "AI睡眠舱" crib, on sale July 2026, marketed as completing a "perception-decision-execution-feedback" closed loop, with a documented sensing/action set — External (中国日报网 et al., re-validated) — Required in: EN + ZH
-C4. China's embodied-intelligence sector added 22 new ¥10B+ unicorns in H1 2026 (¥93.5B total financing) — External (搜狐/新浪财经/IT之家/36氪, re-validated) — Required in: optional (background clause, explicitly hedged as correlation not causation, non-load-bearing)
 C5. The removal test gets harder to apply once an unexplainably huge, hard-to-explain model drives the behavior, echoing how LLM scale made "intelligence" read as description rather than metaphor — Q-explicit, tentative (interview Q4) — Required in: EN + ZH
 C6. The author has no settled fuzzy-boundary case yet and says so explicitly, leaving it an open question — Q-explicit (interview Q3) — Required in: EN + ZH
 C7. Adjacent terms (embodied AI, physical AI, smart hardware, IoT, robotics) get conflated with 具身智能, fueling hype/bubbles; the author admits a personal "small sense of jealousy" toward hype-makers — Q-explicit (interview Q5) — Required in: EN + ZH
@@ -250,6 +297,10 @@ No `Model-hypothesis` claims exist in this draft — C5 originates from the auth
 hedge (Q4), and C8 is a conservative near-inference from C1+C2, not a model-built
 theory — so no `## Candidate hypotheses` section follows.
 
+*(C4, the optional/non-load-bearing funding-scale claim, was dropped in the 2026-10-03
+repair above per the editorial critic's CUT verdict — see the Drafter repair section.
+IDs are not renumbered, to keep the ledger stable.)*
+
 ## Bilingual parity
 
 | ID | Claim | EN | ZH | Notes |
@@ -257,11 +308,12 @@ theory — so no `## Candidate hypotheses` section follows.
 | C1 | Intelligence, not body | ✅ | ✅ | zh opens from the original 2026-08-29 inbox spark instead of the definition; en opens from the general irritation |
 | C2 | Removal test (unresolved for the crib) | ✅ | ✅ | both explicitly hedge "I don't know" / "我不知道" rather than asserting a result |
 | C3 | Crib example | ✅ | ✅ | same source, same figures, both languages |
-| C4 | Funding scale (optional, hedged) | ✅ | ✅ | both explicitly say correlation isn't causation; neither ties the term to valuation |
 | C5 | Scale blurs the test (tentative) | ✅ | ✅ | equivalent hedge ("我说不准" / "I don't have a settled answer") |
 | C6 | No settled boundary case yet | ✅ | ✅ | equivalent open invitation in both |
 | C7 | Term conflation + jealousy admission | ✅ | ✅ | zh folds the funding-deck/headline examples into a short clause instead of en's parallel pair, to avoid a 排比 construction in Chinese |
 | C8 | Loop ≠ intelligence (thermostat) | ✅ | ✅ | same thermostat example, both languages |
+
+*(C4 removed 2026-10-03 per editorial critic CUT — see Drafter repair section above.)*
 
 ## Voice
 
@@ -322,15 +374,15 @@ Human pass (`research/human-voice.md` §4) ran on both language versions after d
 
 ## Title options
 
-**English** (used first):
-1. Embodied intelligence is the intelligence, not the body
-2. A crib is not embodied intelligence, yet
-3. Pull the intelligence out and see what's left
+**English** (option 3 selected by the author via Desk's ship-time slot, 2026-10-03):
+1. Pull the intelligence out and see what's left *(now in use)*
+2. Embodied intelligence is the intelligence, not the body
+3. A crib is not embodied intelligence, yet
 
-**中文**（已用的排第一）：
-1. 具身智能，是智能，不是身体
-2. 婴儿床算不上具身智能：现在还不算
-3. 把智能拿掉，看还剩下什么
+**中文**（作者通过 Desk ship-time slot 于 2026-10-03 选择选项 3）：
+1. 把智能拿掉，看还剩下什么 *(现在使用)*
+2. 具身智能，是智能，不是身体
+3. 婴儿床算不上具身智能：现在还不算
 
 **What the human should review:** whether the crib is the strongest available anchor, or
 whether the author has since run into a sharper example; whether the loop/intelligence
