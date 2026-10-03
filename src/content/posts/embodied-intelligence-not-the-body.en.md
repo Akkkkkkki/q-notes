@@ -1,5 +1,5 @@
 ---
-title: "Embodied intelligence is the intelligence, not the body"
+title: "Pull the intelligence out and see what's left"
 date: 2026-09-17
 excerpt: "\"Embodied intelligence\" is a claim about the intelligence, not the body. My test: pull the intelligence out and see if anything changes. Whether an AI-branded baby crib would survive that swap is a real, unanswered question. Whether a big enough model would earn a pass anyway is another one I haven't settled."
 tags: ["ai", "robotics", "language", "note"]
