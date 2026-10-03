@@ -1108,7 +1108,7 @@ This file is the queue for AI-assisted essay discovery. The topic-scout automati
 
 ## 2026-08-31 — "Embodied intelligence" is measured by the loop, not the sensor
 
-**Status:** Interviewing since 2026-09-01
+**Status:** Drafted in `src/content/posts/embodied-intelligence-not-the-body.en.md` and `src/content/posts/embodied-intelligence-not-the-body.zh.md` on 2026-09-17 (second attempt; first attempt PR #139 closed unmerged 2026-09-10 for an unverified removal-test assertion, a causal valuation claim, and an overclaiming/fabricated-history opening — see interview file for the fixes made in this redo)
 
 **One-line thesis:** "Embodied intelligence" started as a specific claim — that intelligence emerges from a tight perception-decision-action-feedback loop coupling a body to its environment — and has drifted into a label any product with a sensor and an algorithm can claim; the honest test is whether removing the "loop" story changes what the thing actually does.
 
