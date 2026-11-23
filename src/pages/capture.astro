@@ -326,12 +326,9 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
           await api('/api/spark', queue[0]);
         } catch (e) {
           if (e.unauthorized) needToken();
-          // A 4xx means the Worker rejected this item (e.g. a tidied capture
-          // over its line limit); retrying can't fix it, and leaving it at the
-          // head would block every later capture behind a permanently
-          // unsyncable entry. Quarantine it: halve a multi-line item into
-          // chunks that can pass — lossless for the too-many-lines case — or
-          // drop a single unsyncable line, then keep draining.
+          // Only the explicit too-many-lines validation error is safe to
+          // split. All other failures, including 401/402/403/429, must keep
+          // the queue intact until authentication or the upstream recovers.
           if (e.serverError && e.status === 400 && /^too many lines \(max \d+\)$/.test(e.message)) {
             const bad = queue[0];
             if (Array.isArray(bad.lines) && bad.lines.length > 1) {
