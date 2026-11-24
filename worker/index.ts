@@ -302,7 +302,7 @@ async function appendSpark(request: Request, env: Env): Promise<Response> {
   const texts = raw.map((t) => collapse(typeof t === 'string' ? t : '')).filter(Boolean);
   if (!texts.length) return json({ error: 'text is required' }, 400);
   if (texts.length > MAX_SPARK_LINES) {
-    return json({ error: `too many lines (max ${MAX_SPARK_LINES})` }, 400);
+    return json({ error: `too many lines (max ${MAX_SPARK_LINES})`, code: 'too_many_lines' }, 400);
   }
   for (const t of texts) {
     if (t.length > MAX_SPARK_LENGTH) {

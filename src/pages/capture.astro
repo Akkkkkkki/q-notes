@@ -137,6 +137,13 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
   <button id="send" type="button" class="btn-ink btn-block" data-i18n="capture.save">Save thought</button>
   <div id="dest"></div>
 
+  <section id="queue-recovery" class="card" hidden>
+    <p id="queue-status" role="status" aria-live="polite"></p>
+    <p class="sub" data-i18n="capture.recoveryHint">Waiting thoughts stay on this device. Export a copy to recover or edit rejected content.</p>
+    <button id="retry-queue" type="button" class="btn-ghost" data-i18n="capture.retrySync">Retry sync</button>
+    <button id="export-queue" type="button" class="btn-ghost" data-i18n="capture.exportQueue">Export waiting thoughts</button>
+  </section>
+
   <section id="recent" class="stage" hidden>
     <h2 data-i18n="capture.recentTitle">Recent thoughts</h2>
     <ul></ul>
@@ -300,15 +307,26 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
         sendEl.classList.remove('saved');
       }, 1800);
     }
-    function getQueue() { try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; } catch { return []; } }
+    function getQueue() {
+      const raw = localStorage.getItem(QUEUE_KEY);
+      const queue = raw === null ? [] : JSON.parse(raw);
+      // Unreadable storage is still data. Never replace it with an empty queue.
+      if (!Array.isArray(queue)) throw new Error('invalid capture queue');
+      return queue;
+    }
     function setQueue(q) { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+    function storageFailed() {
+      setStatus(t('capture.storageFailed'));
+      $('queue-recovery').hidden = false;
+      $('queue-status').textContent = t('capture.storageFailed');
+    }
     // Stash the capture locally and clear the composer, so a failed send never loses it.
     function queueSpark(spark) {
       const q = getQueue();
       q.push(spark);
       setQueue(q);
       clearComposer();
-      loadRecent();
+      showQueue();
     }
     function clearComposer() {
       sparkEl.value = '';
@@ -319,47 +337,65 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       updateDest();
     }
 
+    let flushing;
+    let syncPaused = false;
+    let syncError = '';
+
+    function showQueue() {
+      const n = getQueue().length;
+      $('queue-recovery').hidden = !n;
+      $('queue-status').textContent = t('capture.waitingToSync', { n }) + (syncError ? ' — ' + syncError : '');
+    }
+
+    // Only one drain at a time: startup, Save, and online can overlap. Read
+    // storage again after each await so a newly queued capture is never erased.
     async function flushQueue() {
-      let queue = getQueue();
-      while (queue.length) {
+      if (flushing) return flushing;
+      if (!getToken()) { needToken(); setStatus(t('capture.connectToSync')); return false; }
+      if (syncPaused) return false;
+      flushing = drainQueue();
+      try { return await flushing; }
+      finally { flushing = null; showQueue(); }
+    }
+
+    async function drainQueue() {
+      while (getQueue().length) {
+        const head = getQueue()[0];
         try {
-          await api('/api/spark', queue[0]);
+          await api('/api/spark', head);
         } catch (e) {
           if (e.unauthorized) needToken();
-          // A 4xx means the Worker rejected this item (e.g. a tidied capture
-          // over its line limit); retrying can't fix it, and leaving it at the
-          // head would block every later capture behind a permanently
-          // unsyncable entry. Quarantine it: halve a multi-line item into
-          // chunks that can pass — lossless for the too-many-lines case — or
-          // drop a single unsyncable line, then keep draining.
-          if (e.serverError && e.status >= 400 && e.status < 500) {
-            const bad = queue[0];
-            if (Array.isArray(bad.lines) && bad.lines.length > 1) {
-              const mid = Math.ceil(bad.lines.length / 2);
-              queue = [
-                { ...bad, lines: bad.lines.slice(0, mid) },
-                { ...bad, url: '', lines: bad.lines.slice(mid) },
-                ...queue.slice(1),
-              ];
-            } else {
-              console.warn('capture: dropping an unsyncable queued thought', bad);
-              queue = queue.slice(1);
-            }
-            setQueue(queue);
+          // Split only the Worker's explicit line-count validation. The exact
+          // legacy message also supports an older Worker during a rollout.
+          const tooManyLines = e.serverError && e.status === 400 &&
+            (e.code === 'too_many_lines' || (!e.code && /^too many lines \(max [1-9]\d*\)$/.test(e.message)));
+          if (tooManyLines && Array.isArray(head.lines) && head.lines.length > 1) {
+            const mid = Math.ceil(head.lines.length / 2);
+            setQueue([
+              { ...head, lines: head.lines.slice(0, mid) },
+              { ...head, url: '', lines: head.lines.slice(mid) },
+              ...getQueue().slice(1),
+            ]);
             continue;
           }
-          setQueue(queue);
-          if (e.serverError) throw e;
-          setStatus(t('capture.waitingToSync', { n: queue.length }));
+          // An auth, payment, quota, conflict, validation, or unknown response
+          // never authorizes deleting content. Keep it exportable, and require
+          // an explicit retry for HTTP failures instead of retrying on online.
+          syncPaused = !!(e.unauthorized || e.serverError);
+          syncError = e.unauthorized ? t('capture.connectToSync')
+            : e.serverError ? t('capture.syncPaused') + ' ' + e.message : '';
+          setStatus(syncError || t('capture.waitingToSync', { n: getQueue().length }));
           return false;
         }
-        queue = queue.slice(1);
-        setQueue(queue);
+        // Remove only an acknowledged item; preserve appends made in flight.
+        setQueue(getQueue().slice(1));
       }
+      syncError = '';
       return true;
     }
 
     async function send() {
+      if (sendEl.disabled) return;
       const texts = currentLines();
       if (!texts.length) return;
       const spark = { lines: texts, kind, url: sharedUrl, date: localDate() };
@@ -367,34 +403,15 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
       sendEl.disabled = true;
       setStatus(t('capture.saving'));
       try {
+        // Persist before any network activity, including flushing older items.
+        // If storage fails, leave the composer intact for copying or retrying.
+        queueSpark(spark);
         const flushed = await flushQueue();
-        if (!flushed) throw new Error('offline');
-        await api('/api/spark', spark);
-        clearComposer();
-        flashSaved(t('capture.saved'));
-        setStatus(t('capture.inInbox'));
+        flashSaved(t(flushed ? 'capture.saved' : 'capture.savedHere'));
+        setStatus(flushed ? t('capture.inInbox') : syncError || t('capture.waitingToSync', { n: getQueue().length }));
         loadRecent();
       } catch (e) {
-        if (e.unauthorized) {
-          queueSpark(spark);
-          flashSaved(t('capture.savedHere'));
-          setStatus(t('capture.connectToSync'));
-          // Any 503 (secrets gone, or one the health check couldn't attribute)
-          // is retryable, so the thought belongs in the local queue either way.
-        } else if (e.config || e.retryable) {
-          queueSpark(spark);
-          flashSaved(t('capture.savedHere'));
-          setStatus(t('capture.willSyncServer', { n: getQueue().length }));
-        } else if (e.serverError && e.status >= 400 && e.status < 500) {
-          setStatus(e.message);
-        } else if (e.serverError) {
-          console.error('spark send failed:', e.message);
-          setStatus(t('capture.cantReach'));
-        } else {
-          queueSpark(spark);
-          flashSaved(t('capture.saved'));
-          setStatus(t('capture.willSyncOnline', { n: getQueue().length }));
-        }
+        storageFailed();
       } finally {
         sendEl.disabled = false;
         if (mode === 'raw') sparkEl.focus();
@@ -402,16 +419,21 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
 
     async function loadRecent() {
+      let queue;
+      try { queue = getQueue(); showQueue(); }
+      catch { storageFailed(); return; }
       const ul = recentEl.querySelector('ul');
       recentEl.hidden = false;
-      const pending = getQueue().flatMap((s) => (s.lines || [s.text || '']).map(
+      const pending = queue.flatMap((s) => (s.lines || [s.text || '']).map(
         (line) => '<li class="pending">' + esc((s.date || localDate()) + ' — ' + line) + ' · ' + t('capture.syncing') + '</li>'
       ));
       let synced = [];
-      if (getToken()) {
+      if (getToken() && !syncPaused) {
         try {
           synced = (await api('/api/sparks')).sparks || [];
-        } catch { /* reward loop only — never block capture */ }
+        } catch (e) {
+          if (e.unauthorized) { syncPaused = true; needToken(); }
+        }
       }
       const rows = pending.concat(synced.map((s) => '<li>' + esc(s) + '</li>')).slice(0, 3);
       ul.innerHTML = rows.length
@@ -450,19 +472,37 @@ import CompanionLayout from '../layouts/CompanionLayout.astro';
     }
 
     sendEl.addEventListener('click', send);
+    $('retry-queue').addEventListener('click', () => {
+      syncPaused = false;
+      syncError = '';
+      flushQueue().then((ok) => { if (ok) setStatus(t('capture.inInbox')); loadRecent(); })
+        .catch(storageFailed);
+    });
+    $('export-queue').addEventListener('click', () => {
+      // Local download only. Include every entry and its metadata, even when
+      // Recent thoughts shows just three rows. Export never empties the queue.
+      const url = URL.createObjectURL(new Blob([localStorage.getItem(QUEUE_KEY) || '[]'], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'q-notes-waiting-' + localDate() + '.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
     sparkEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
     });
     window.addEventListener('online', () => {
       flushQueue().then((ok) => { if (ok && getQueue().length === 0) setStatus(''); loadRecent(); })
-        .catch(() => loadRecent());
+        .catch(storageFailed);
     });
 
     updateDest();
     if (!getToken()) needToken();
-    const pendingCount = getQueue().length;
-    if (pendingCount) setStatus(t('capture.waitingToSync', { n: pendingCount }));
+    try {
+      const pendingCount = getQueue().length;
+      if (pendingCount) setStatus(t('capture.waitingToSync', { n: pendingCount }));
+    } catch { storageFailed(); }
     flushQueue().then((ok) => { if (ok) refreshBadges(false); loadRecent(); })
-      .catch(() => loadRecent());
+      .catch(storageFailed);
   </script>
 </CompanionLayout>

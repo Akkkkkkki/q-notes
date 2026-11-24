@@ -73,6 +73,20 @@ describe('GET /api/health', () => {
 });
 
 describe('POST /api/spark', () => {
+  it.each(['GET', 'PUT'])('maps an upstream GitHub 401 on %s to 502, without writing content', async (method) => {
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      if ((init?.method ?? 'GET') === method) {
+        return new Response('{"message":"Bad credentials"}', { status: 401 });
+      }
+      return gh.fetch(input, init);
+    });
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/spark', { text: 'synthetic queued thought' });
+    expect(status).toBe(502);
+    expect(data.error).toBe(method === 'GET' ? 'GitHub read failed (401)' : 'GitHub API error (401)');
+    expect(gh.commits).toHaveLength(0);
+    expect(gh.files.get(INBOX)).not.toContain('synthetic queued thought');
+  });
+
   it('appends a dated one-line spark to the inbox', async () => {
     const { status, data } = await call(worker, makeEnv(), 'POST', '/api/spark', {
       text: 'agents are the new CLIs',
@@ -144,8 +158,9 @@ describe('POST /api/spark', () => {
 
   it('rejects a capture with too many lines', async () => {
     const lines = Array.from({ length: 21 }, (_, i) => `thought ${i}`);
-    const { status } = await call(worker, makeEnv(), 'POST', '/api/spark', { lines });
+    const { status, data } = await call(worker, makeEnv(), 'POST', '/api/spark', { lines });
     expect(status).toBe(400);
+    expect(data).toEqual({ error: 'too many lines (max 20)', code: 'too_many_lines' });
   });
 
   it('retries once on a write conflict, then succeeds', async () => {

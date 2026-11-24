@@ -530,6 +530,7 @@ const tabs = [
         const UI_LANG_KEY = 'qn-ui-lang';
         const FLOW_KEY = 'qn-flow-cache';
         const FLOW_TTL = 5 * 60 * 1000;
+        let rejectedToken = null;
 
         // ---- UI language (en / zh) ----
         // Separate from the dictation language (LANG_KEY): this governs the app
@@ -578,6 +579,10 @@ const tabs = [
             'capture.cantReach': 'couldn’t reach the server — tap Save to try again',
             'capture.willSyncOnline': 'will sync when back online ({n} waiting)',
             'capture.waitingToSync': '{n} waiting to sync',
+            'capture.recoveryHint': 'Waiting thoughts stay on this device. Export a copy to recover or edit rejected content.',
+            'capture.retrySync': 'Retry sync', 'capture.exportQueue': 'Export waiting thoughts',
+            'capture.syncPaused': 'Sync paused. Your thoughts are kept here.',
+            'capture.storageFailed': 'Could not update local storage. Keep this page open and copy or export your thoughts.',
             'capture.recentEmpty': 'Your saved thoughts will show up here — try one above.',
             'capture.recentEg': '2026-07-08 — consulting outcomes are unfalsifiable',
             'capture.syncing': 'syncing…', 'capture.listening': 'listening…',
@@ -728,6 +733,10 @@ const tabs = [
             'capture.cantReach': '连不上服务器——点保存再试一次',
             'capture.willSyncOnline': '恢复联网后自动同步（{n} 条等待中）',
             'capture.waitingToSync': '{n} 条等待同步',
+            'capture.recoveryHint': '等待同步的想法保留在本机。导出备份后，可以找回或修改被拒绝的内容。',
+            'capture.retrySync': '重试同步', 'capture.exportQueue': '导出等待同步的想法',
+            'capture.syncPaused': '同步已暂停。想法仍保留在本机。',
+            'capture.storageFailed': '无法更新本机存储。请保持页面打开，复制或导出你的想法。',
             'capture.recentEmpty': '你保存的想法会显示在这里——先在上面写一条试试。',
             'capture.recentEg': '2026-07-08 — 咨询的成果无法证伪',
             'capture.syncing': '同步中…', 'capture.listening': '聆听中…',
@@ -936,15 +945,26 @@ const tabs = [
         }
 
         async function api(path, body) {
+          const token = getToken();
+          // Stop reusing a missing/rejected device key across capture, Recent,
+          // and badges. Connecting changes the key and reloads the page.
+          if (!token || token === rejectedToken) {
+            needToken();
+            throw Object.assign(new Error('unauthorized'), { unauthorized: true, status: 401 });
+          }
           const res = await fetch(path, {
             method: body === undefined ? 'GET' : 'POST',
             headers: {
-              Authorization: 'Bearer ' + getToken(),
+              Authorization: 'Bearer ' + token,
               ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
             },
             body: body !== undefined ? JSON.stringify(body) : undefined,
           });
-          if (res.status === 401) { needToken(); throw Object.assign(new Error('unauthorized'), { unauthorized: true }); }
+          if (res.status === 401) {
+            rejectedToken = token;
+            needToken();
+            throw Object.assign(new Error('unauthorized'), { unauthorized: true, status: 401 });
+          }
           // 503 has two very different causes. The Worker having lost its
           // secrets is a server problem, not a key problem — that earns the red
           // banner. But an optional feature being unconfigured (web push, when
@@ -954,7 +974,7 @@ const tabs = [
           // along. So confirm against /api/health before blaming the secrets,
           // and name the ones actually missing rather than guessing both.
           if (res.status === 503) {
-            const data = await res.json().catch(() => ({}));
+            const data = (await res.json().catch(() => null)) || {};
             const secrets = data.code === 'push_unconfigured' ? null : await secretsGone();
             // Either way a 503 is the server's fault and worth retrying later,
             // so callers holding unsaved work (capture) can queue it locally.
@@ -965,8 +985,8 @@ const tabs = [
             throw Object.assign(new Error(data.error || 'request failed (503)'), { serverError: true, status: 503, retryable: true });
           }
           if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            throw Object.assign(new Error(data.error || 'request failed (' + res.status + ')'), { serverError: true, status: res.status });
+            const data = (await res.json().catch(() => null)) || {};
+            throw Object.assign(new Error(data.error || 'request failed (' + res.status + ')'), { serverError: true, status: res.status, code: data.code });
           }
           return res.json();
         }
